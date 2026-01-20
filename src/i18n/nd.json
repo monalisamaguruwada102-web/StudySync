@@ -1,0 +1,29 @@
+{
+    "common": {
+        "search": "Dinga",
+        "home": "Ekhaya",
+        "saved": "Okulondolozileyo",
+        "chat": "Ukuxoxa",
+        "profile": "Iphurofayili",
+        "verified": "Kuvunyelwe",
+        "loading": "Kusayezwa...",
+        "save": "Londoloza",
+        "cancel": "Misa"
+    },
+    "home": {
+        "greeting": "Sawubona, ",
+        "findHome": "Dinga indawo yokuhlala",
+        "filter": "Hlunga",
+        "nearby": "Eduze lawe",
+        "featured": "Okukhethiweyo",
+        "categories": "Izinhlobo"
+    },
+    "listing": {
+        "secureRoom": "Vikela Ikamelo",
+        "description": "Incazelo",
+        "amenities": "Okukhona",
+        "reviews": "Imibono yabantu",
+        "contactOwner": "Khuluma loMnikazi",
+        "priceUnit": "genyanga"
+    }
+}

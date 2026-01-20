@@ -1,0 +1,29 @@
+{
+    "common": {
+        "search": "Search",
+        "home": "Home",
+        "saved": "Saved",
+        "chat": "Chat",
+        "profile": "Profile",
+        "verified": "Verified",
+        "loading": "Loading...",
+        "save": "Save",
+        "cancel": "Cancel"
+    },
+    "home": {
+        "greeting": "Hello, ",
+        "findHome": "Find your home",
+        "filter": "Filter",
+        "nearby": "Nearby you",
+        "featured": "Featured",
+        "categories": "Categories"
+    },
+    "listing": {
+        "secureRoom": "Secure Room",
+        "description": "Description",
+        "amenities": "Amenities",
+        "reviews": "Reviews",
+        "contactOwner": "Contact Owner",
+        "priceUnit": "per month"
+    }
+}

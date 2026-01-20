@@ -1,0 +1,29 @@
+{
+    "common": {
+        "search": "Tsvaga",
+        "home": "Kumba",
+        "saved": "Zvamakachengeta",
+        "chat": "Kukurukura",
+        "profile": "Purofairu",
+        "verified": "Zvakagamuchirwa",
+        "loading": "Zvinouya...",
+        "save": "Chengetedza",
+        "cancel": "Misa"
+    },
+    "home": {
+        "greeting": "Mhoro, ",
+        "findHome": "Tsvaga kwekufara",
+        "filter": "Seka",
+        "nearby": "Pedyo newe",
+        "featured": "Zvakasarudzwa",
+        "categories": "Mhando"
+    },
+    "listing": {
+        "secureRoom": "Chengetedza Kamuri",
+        "description": "Tsanangudzo",
+        "amenities": "Zviripo",
+        "reviews": "Zvinofungwa nevanhu",
+        "contactOwner": "Taura neMuridzi",
+        "priceUnit": "pamwedzi"
+    }
+}
