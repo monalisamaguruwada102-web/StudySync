@@ -1,14 +1,17 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Colors } from '../theme/Theme';
+import { Colors, Theme } from '../theme/Theme';
 
-type ThemeMode = 'light' | 'dark';
+type ThemeMode = 'light' | 'dark' | 'midnight' | 'forest';
 
 interface ThemeContextType {
     mode: ThemeMode;
     toggleTheme: () => void;
+    setTheme: (newMode: ThemeMode) => void;
     isDark: boolean;
+    colors: any;
+    shadows: any;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -29,15 +32,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             if (savedTheme) {
                 setMode(savedTheme as ThemeMode);
             } else if (systemScheme) {
-                setMode(systemScheme);
+                setMode(systemScheme as ThemeMode);
             }
         } catch (error) {
             console.error('Failed to load theme:', error);
         }
     };
 
-    const toggleTheme = async () => {
-        const newMode = mode === 'light' ? 'dark' : 'light';
+    const setTheme = async (newMode: ThemeMode) => {
         setMode(newMode);
         try {
             await AsyncStorage.setItem(THEME_STORAGE_KEY, newMode);
@@ -46,8 +48,25 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
     };
 
+    const toggleTheme = async () => {
+        const nextThemes: Record<ThemeMode, ThemeMode> = {
+            'light': 'dark',
+            'dark': 'midnight',
+            'midnight': 'forest',
+            'forest': 'light'
+        };
+        await setTheme(nextThemes[mode]);
+    };
+
     return (
-        <ThemeContext.Provider value={{ mode, toggleTheme, isDark: mode === 'dark' }}>
+        <ThemeContext.Provider value={{
+            mode,
+            toggleTheme,
+            setTheme,
+            isDark: mode !== 'light',
+            colors: (Theme as any)[mode].Colors,
+            shadows: (Theme as any)[mode].Shadows
+        }}>
             {children}
         </ThemeContext.Provider>
     );

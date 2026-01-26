@@ -8,6 +8,32 @@ const MSG_KEY = '@chat_messages';
 
 class ChatService {
     async getConversations(userId: string): Promise<Conversation[]> {
+        if (IS_SUPABASE_CONFIGURED) {
+            const { data, error } = await supabase
+                .from('conversations')
+                .select('*')
+                .contains('participant_ids', [userId])
+                .order('last_message_time', { ascending: false });
+
+            if (error) throw error;
+            return (data || []).map(c => {
+                const names = c.participant_names as { [key: string]: string } | null;
+                const otherName = names
+                    ? (Object.entries(names).find(([id]) => id !== userId)?.[1] as string) || 'User'
+                    : 'User';
+
+                return {
+                    id: c.id,
+                    participantIds: c.participant_ids,
+                    participantNames: names || undefined,
+                    lastMessage: c.last_message,
+                    lastMessageTime: c.last_message_time ? new Date(c.last_message_time).getTime() : Date.now(),
+                    otherParticipantName: otherName,
+                    unreadCount: 0,
+                };
+            });
+        }
+
         try {
             const stored = await AsyncStorage.getItem(CONV_KEY);
             let conversations: Conversation[] = stored ? JSON.parse(stored) : MOCK_CONVERSATIONS;
@@ -36,6 +62,44 @@ class ChatService {
     }
 
     async getMessages(conversationId: string): Promise<Message[]> {
+        // Load from cache first for instant UI
+        let cachedMessages: Message[] = [];
+        try {
+            const stored = await AsyncStorage.getItem(`${MSG_KEY}_${conversationId}`);
+            if (stored) {
+                cachedMessages = JSON.parse(stored);
+            }
+        } catch (e) {
+            console.warn('[ChatService] Cache read error:', e);
+        }
+
+        if (IS_SUPABASE_CONFIGURED) {
+            // Return cached data immediately if available, then fetch fresh in background
+            // Note: Standard return for now, but UI will benefit from getMessages being called with cache logic
+            const { data, error } = await supabase
+                .from('messages')
+                .select('*')
+                .eq('conversation_id', conversationId)
+                .order('created_at', { ascending: true });
+
+            if (error) {
+                if (cachedMessages.length > 0) return cachedMessages;
+                throw error;
+            }
+
+            const freshMessages = (data || []).map(m => ({
+                id: m.id,
+                conversationId: m.conversation_id,
+                senderId: m.sender_id,
+                text: m.text,
+                timestamp: new Date(m.created_at).getTime(),
+            }));
+
+            // Async update cache
+            AsyncStorage.setItem(`${MSG_KEY}_${conversationId}`, JSON.stringify(freshMessages));
+            return freshMessages;
+        }
+
         try {
             const stored = await AsyncStorage.getItem(MSG_KEY);
             let messages: Message[] = stored ? JSON.parse(stored) : MOCK_MESSAGES;
@@ -44,10 +108,11 @@ class ChatService {
                 await AsyncStorage.setItem(MSG_KEY, JSON.stringify(MOCK_MESSAGES));
             }
 
-            return messages.filter(m => m.conversationId === conversationId);
+            const filtered = messages.filter(m => m.conversationId === conversationId);
+            return filtered;
         } catch (error) {
             console.error('Failed to get messages:', error);
-            return [];
+            return cachedMessages;
         }
     }
 
@@ -57,6 +122,55 @@ class ChatService {
         otherUserId: string,
         otherUserName: string
     ): Promise<Conversation> {
+        const startTime = Date.now();
+        if (IS_SUPABASE_CONFIGURED) {
+            // Check for existing conversation with these two exact participants
+            const { data: existing, error: fetchError } = await supabase
+                .from('conversations')
+                .select('*')
+                .contains('participant_ids', [currentUserId, otherUserId])
+                .single();
+
+            if (existing) {
+                console.log(`[ChatService] Found existing conversation in ${Date.now() - startTime}ms`);
+                return {
+                    id: existing.id,
+                    participantIds: existing.participant_ids,
+                    participantNames: existing.participant_names,
+                    lastMessage: existing.last_message,
+                    lastMessageTime: new Date(existing.last_message_time).getTime(),
+                    otherParticipantName: otherUserName,
+                    unreadCount: 0,
+                };
+            }
+
+            // Create new conversation
+            const { data: created, error: createError } = await supabase
+                .from('conversations')
+                .insert([{
+                    participant_ids: [currentUserId, otherUserId],
+                    participant_names: {
+                        [currentUserId]: currentUserName,
+                        [otherUserId]: otherUserName
+                    }
+                }])
+                .select()
+                .single();
+
+            if (createError) throw createError;
+            console.log(`[ChatService] Created new conversation in ${Date.now() - startTime}ms`);
+
+            return {
+                id: created.id,
+                participantIds: created.participant_ids,
+                participantNames: created.participant_names,
+                lastMessage: '',
+                lastMessageTime: Date.now(),
+                otherParticipantName: otherUserName,
+                unreadCount: 0,
+            };
+        }
+
         try {
             const stored = await AsyncStorage.getItem(CONV_KEY);
             let conversations: Conversation[] = stored ? JSON.parse(stored) : MOCK_CONVERSATIONS;

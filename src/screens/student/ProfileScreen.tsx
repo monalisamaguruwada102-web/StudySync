@@ -12,7 +12,7 @@ import {
     TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { User, Mail, Shield, LogOut, ChevronRight, Settings, Bell, Palette, Moon, Sun, ShieldCheck, Receipt, Home, LayoutDashboard } from 'lucide-react-native';
+import { User, Mail, Shield, LogOut, ChevronRight, Settings, Bell, Palette, Moon, Sun, ShieldCheck, Receipt, Home, LayoutDashboard, MessageCircle, Camera } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import { useAuth } from '../../context/AuthContext';
@@ -23,10 +23,9 @@ import { useTranslation } from 'react-i18next';
 import { authService } from '../../services/auth.service';
 import { notificationService } from '../../services/notifications.service';
 import * as ImagePicker from 'expo-image-picker';
-import { Camera } from 'lucide-react-native';
-import { IS_SUPABASE_CONFIGURED, supabase } from '../../services/supabase';
-import { decode } from 'base64-arraybuffer';
-import * as FileSystem from 'expo-file-system';
+import { storageService } from '../../services/storage.service';
+import { UserAvatar } from '../../components/UserAvatar';
+import * as FileSystem from 'expo-file-system/legacy';
 
 export const ProfileScreen = () => {
     const navigation = useNavigation<any>();
@@ -65,30 +64,8 @@ export const ProfileScreen = () => {
     };
 
     const uploadAvatar = async (uri: string) => {
-        if (!IS_SUPABASE_CONFIGURED) return uri;
-        if (uri.startsWith('http')) return uri;
-
-        try {
-            const fileName = `avatars/${user?.id}/${Date.now()}.jpg`;
-            const base64 = await FileSystem.readAsStringAsync(uri, { encoding: 'base64' });
-
-            const { data, error } = await supabase.storage
-                .from('user-assets')
-                .upload(fileName, decode(base64), {
-                    contentType: 'image/jpeg'
-                });
-
-            if (error) throw error;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('user-assets')
-                .getPublicUrl(data.path);
-
-            return publicUrl;
-        } catch (error) {
-            console.error('Avatar upload error:', error);
-            return uri;
-        }
+        if (!user?.id) throw new Error('User not authenticated');
+        return await storageService.uploadAvatar(user.id, uri);
     };
 
     const pickImage = async () => {
@@ -144,7 +121,7 @@ export const ProfileScreen = () => {
         );
     };
 
-    const SettingItem = ({ icon: Icon, label, value, onPress, showArrow = true, isLast = false, color }: any) => (
+    const SettingItem = ({ icon: Icon, label, value, onPress, showArrow = true, isLast = false, color, description }: any) => (
         <TouchableOpacity
             style={[
                 styles.settingItem,
@@ -157,7 +134,10 @@ export const ProfileScreen = () => {
             <View style={[styles.settingIcon, { backgroundColor: (color || colors.primary) + '15' }]}>
                 <Icon size={20} color={color || colors.primary} />
             </View>
-            <Text style={[styles.settingLabel, { color: colors.text }]}>{label}</Text>
+            <View style={{ flex: 1, marginRight: 8 }}>
+                <Text style={[styles.settingLabel, { color: colors.text }]}>{label}</Text>
+                {description && <Text style={[styles.settingDescription, { color: colors.textLight }]}>{description}</Text>}
+            </View>
             {value !== undefined ? (
                 <Text style={[styles.settingValue, { color: colors.textLight }]}>{value}</Text>
             ) : showArrow ? (
@@ -199,10 +179,7 @@ export const ProfileScreen = () => {
                 {/* Profile Card */}
                 <View style={[styles.profileCard, { backgroundColor: colors.surface }, shadows.medium]}>
                     <View style={styles.avatarContainer}>
-                        <Image
-                            source={{ uri: user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200' }}
-                            style={styles.avatar}
-                        />
+                        <UserAvatar uri={user?.avatar} name={user?.name} size={100} color={colors.primary} />
                         <TouchableOpacity
                             style={[styles.cameraBtn, { backgroundColor: colors.primary }]}
                             onPress={pickImage}
@@ -229,7 +206,8 @@ export const ProfileScreen = () => {
                     <View style={[styles.settingsGroup, { backgroundColor: colors.surface }, shadows.soft]}>
                         <SettingItem
                             icon={ShieldCheck}
-                            label="ShieldCheck Verification"
+                            label="Identity Verification"
+                            description="Get verified to build trust"
                             value={user?.verificationStatus === 'verified' ? 'Verified' : user?.verificationStatus === 'pending' ? 'Pending' : 'Not Verified'}
                             onPress={() => navigation.navigate('Verification')}
                             color="#3b82f6"
@@ -275,25 +253,37 @@ export const ProfileScreen = () => {
                             <SettingItem
                                 icon={ShieldCheck}
                                 label="Admin Panel"
+                                description="Manage system settings"
                                 color="#8b5cf6"
                                 onPress={() => navigation.navigate('AdminDashboard')}
                             />
                         )}
-                        <SettingItem icon={User} label="Personal Information" />
+                        <SettingItem
+                            icon={User}
+                            label="Personal Information"
+                            description="Name, Bio, Phone"
+                        />
                         <SettingItem
                             icon={Home}
                             label="My Bookings"
+                            description="View past & upcoming stays"
                             onPress={() => navigation.navigate('MyBookings')}
                         />
                         <SettingItem
                             icon={Receipt}
                             label="Payment History"
+                            description="Transactions & receipts"
                             onPress={() => navigation.navigate('PaymentHistory')}
                         />
-                        <SettingItem icon={Bell} label="Notifications" />
+                        <SettingItem
+                            icon={Bell}
+                            label="Notifications"
+                            description="In-app alerts & emails"
+                        />
                         <SettingItem
                             icon={Shield}
-                            label="Security & Privacy"
+                            label="Security"
+                            description="Password, Privacy & Safety"
                             onPress={() => navigation.navigate('Legal')}
                             isLast={true}
                         />
@@ -321,13 +311,15 @@ export const ProfileScreen = () => {
                     <Text style={[styles.sectionTitle, { color: colors.text }]}>Support</Text>
                     <View style={[styles.settingsGroup, { backgroundColor: colors.surface }, shadows.soft]}>
                         <SettingItem
-                            icon={Mail}
-                            label="Contact Support"
+                            icon={MessageCircle}
+                            label="Help & Support"
+                            description="Chat with us via WhatsApp"
                             onPress={() => navigation.navigate('Support')}
                         />
                         <SettingItem
                             icon={Palette}
-                            label="App Guidelines"
+                            label="Guidelines"
+                            description="Terms of Service & Usage"
                             onPress={handleAdminUnlock}
                             isLast={true}
                         />
@@ -637,6 +629,10 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '500',
         marginRight: 8,
+    },
+    settingDescription: {
+        fontSize: 12,
+        marginTop: 2,
     },
     logoutBtn: {
         flexDirection: 'row',

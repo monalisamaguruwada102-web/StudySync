@@ -17,11 +17,12 @@ import * as ImagePicker from 'expo-image-picker';
 import { Theme, Spacing, Typography, Shadows } from '../../theme/Theme';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../services/supabase';
+import { authService } from '../../services/auth.service';
+import { storageService } from '../../services/storage.service';
 
 export const VerificationScreen = () => {
     const navigation = useNavigation<any>();
-    const { user } = useAuth();
+    const { user, refreshUser } = useAuth();
     const { isDark } = useTheme();
     const colors = isDark ? Theme.Dark.Colors : Theme.Light.Colors;
     const shadows = isDark ? Theme.Dark.Shadows : Theme.Light.Shadows;
@@ -55,36 +56,31 @@ export const VerificationScreen = () => {
             return;
         }
 
+        if (!user?.id) {
+            Alert.alert('Error', 'User session not found. Please log in again.');
+            return;
+        }
+
         setLoading(true);
         try {
-            // 1. Upload to Supabase Storage
-            const response = await fetch(selectedImage);
-            const blob = await response.blob();
-            const fileName = `${user?.id}/id_verification.jpg`;
+            // 1. Upload using storageService
+            const fileName = await storageService.uploadVerificationDoc(user.id, selectedImage);
 
-            const { data, error: uploadError } = await supabase.storage
-                .from('verifications')
-                .upload(fileName, blob, { contentType: 'image/jpeg', upsert: true });
+            // 2. Update Profile to 'pending' using authService
+            await authService.updateProfile(user.id, {
+                verification_status: 'pending',
+                id_document_url: fileName
+            });
 
-            if (uploadError) throw uploadError;
-
-            // 2. Update Profile to 'pending'
-            const { error: profileError } = await supabase
-                .from('profiles')
-                .update({
-                    verification_status: 'pending',
-                    id_document_url: fileName
-                })
-                .eq('id', user?.id);
-
-            if (profileError) throw profileError;
+            await refreshUser(); // Refresh local auth context
 
             setStatus('pending');
             Alert.alert('Application Sent', 'Your verification request is being reviewed by our team.');
             navigation.goBack();
-        } catch (error) {
-            console.error(error);
-            Alert.alert('Error', 'Failed to submit verification request.');
+        } catch (error: any) {
+            console.error('Verification Submission Error:', error);
+            const errorMessage = error.message || error.details || 'Unknown error';
+            Alert.alert('Error', `Failed to submit verification request. \n\nDetails: ${errorMessage}`);
         } finally {
             setLoading(false);
         }

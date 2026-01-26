@@ -30,6 +30,38 @@ export const DarkColors = {
     glass: 'rgba(30, 41, 59, 0.7)',
 };
 
+export const MidnightColors = {
+    primary: '#60a5fa',
+    primaryLight: '#000000',
+    secondary: '#34d399',
+    error: '#f87171',
+    warning: '#fbbf24',
+    text: '#ffffff',
+    textLight: '#94a3b8',
+    background: '#000000',
+    surface: '#000000',
+    border: '#1e293b',
+    white: '#ffffff',
+    black: '#000000',
+    glass: 'rgba(0, 0, 0, 0.8)',
+};
+
+export const ForestColors = {
+    primary: '#10b981',
+    primaryLight: '#064e3b',
+    secondary: '#fbbf24',
+    error: '#f87171',
+    warning: '#fef3c7',
+    text: '#ecfdf5',
+    textLight: '#a7f3d0',
+    background: '#064e3b',
+    surface: '#065f46',
+    border: '#047857',
+    white: '#ffffff',
+    black: '#000000',
+    glass: 'rgba(6, 78, 59, 0.7)',
+};
+
 export const Spacing = {
     xs: 4,
     s: 8,
@@ -90,17 +122,35 @@ export const Shadows = {
 export const Colors = LightColors;
 
 export const Theme = {
-    Light: {
+    light: {
         Colors: LightColors,
         Shadows,
     },
-    Dark: {
+    dark: {
         Colors: DarkColors,
         Shadows: {
             ...Shadows,
             soft: { ...Shadows.soft, shadowOpacity: 0.2 },
             medium: { ...Shadows.medium, shadowOpacity: 0.3 },
             strong: { ...Shadows.strong, shadowOpacity: 0.4 },
+        },
+    },
+    midnight: {
+        Colors: MidnightColors,
+        Shadows: {
+            ...Shadows,
+            soft: { ...Shadows.soft, shadowOpacity: 0.3 },
+            medium: { ...Shadows.medium, shadowOpacity: 0.4 },
+            strong: { ...Shadows.strong, shadowOpacity: 0.5 },
+        },
+    },
+    forest: {
+        Colors: ForestColors,
+        Shadows: {
+            ...Shadows,
+            soft: { ...Shadows.soft, shadowOpacity: 0.1 },
+            medium: { ...Shadows.medium, shadowOpacity: 0.2 },
+            strong: { ...Shadows.strong, shadowOpacity: 0.3 },
         },
     },
     Spacing,
@@ -110,5 +160,8 @@ export const Theme = {
         m: 16,
         l: 24,
         xl: 32,
-    }
+    },
+    // Legacy mapping (to be removed once components are updated)
+    Light: { Colors: LightColors, Shadows },
+    Dark: { Colors: DarkColors, Shadows }
 };

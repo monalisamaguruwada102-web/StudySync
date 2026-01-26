@@ -69,7 +69,19 @@ export const ChatRoomScreen = () => {
         if (!inputText.trim()) return;
 
         const text = inputText.trim();
+        const tempId = `temp_${Date.now()}`;
         setInputText('');
+
+        // 1. Optimistic Update (Immediate Feedback)
+        const optimisticMessage: Message = {
+            id: tempId,
+            conversationId,
+            senderId: user?.id || 'temp',
+            text: text,
+            timestamp: Date.now(),
+        };
+
+        setMessages(prev => [...prev, optimisticMessage]);
 
         try {
             const newMessage = await chatService.sendMessage(
@@ -79,12 +91,12 @@ export const ChatRoomScreen = () => {
                 title
             );
 
-            // If Supabase is NOT configured, we stay in simulation mode and add manually
+            // 2. Resolve temporary message with persistent server-side message
+            setMessages(prev => prev.map(m => m.id === tempId ? newMessage : m));
+
+            // Simulation Mode Auto-Reply
             const { IS_SUPABASE_CONFIGURED } = await import('../../services/supabase');
             if (!IS_SUPABASE_CONFIGURED) {
-                setMessages(prev => [...prev, newMessage]);
-
-                // Reply after delay
                 setTimeout(async () => {
                     const replyText = "Thanks for your message! I'll get back to you shortly.";
                     const replyMessage = await chatService.sendMessage(
@@ -99,11 +111,14 @@ export const ChatRoomScreen = () => {
                         `New message from ${title}`,
                         replyText
                     );
-                }, 3000);
+                }, 1500); // Faster simulation reply too
             }
 
         } catch (error) {
-            Alert.alert('Error', 'Failed to send message');
+            console.error('[ChatRoom] Send Error:', error);
+            // Optionally remove optimistic message or show error state
+            setMessages(prev => prev.filter(m => m.id !== tempId));
+            Alert.alert('Error', 'Failed to send message. Please try again.');
         }
     };
 

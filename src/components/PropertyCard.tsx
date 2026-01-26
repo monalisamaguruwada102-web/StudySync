@@ -3,10 +3,10 @@ import {
     View,
     Text,
     StyleSheet,
-    Image,
     TouchableOpacity,
     Alert,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { MapPin, Users, Heart, Star, ShieldCheck, Sparkle, Eye } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 
@@ -15,6 +15,8 @@ import { useTheme } from '../context/ThemeContext';
 import { Listing } from '../types';
 import { bookmarksService } from '../services/bookmarks.service';
 
+const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800';
+
 interface Props {
     listing: Listing;
     onPress?: () => void;
@@ -22,9 +24,7 @@ interface Props {
 
 export const PropertyCard: React.FC<Props> = ({ listing, onPress }) => {
     const navigation = useNavigation<any>();
-    const { mode, isDark } = useTheme();
-    const colors = isDark ? Theme.Dark.Colors : Theme.Light.Colors;
-    const shadows = isDark ? Theme.Dark.Shadows : Theme.Light.Shadows;
+    const { colors, shadows } = useTheme();
 
     const [isSaved, setIsSaved] = React.useState(false);
 
@@ -67,9 +67,13 @@ export const PropertyCard: React.FC<Props> = ({ listing, onPress }) => {
             <View style={styles.imageContainer}>
                 {listing.images && listing.images.length > 0 && listing.images[0] ? (
                     <Image
-                        source={{ uri: listing.images[0] }}
+                        source={{ uri: listing.images[0] || PLACEHOLDER_IMAGE }}
                         style={styles.image}
-                        fadeDuration={300}
+                        contentFit="cover"
+                        cachePolicy="disk"
+                        transition={300}
+                        placeholder={require('../../assets/icon_fixed.png')}
+                        onError={(e) => console.log(`PropertyCard image load error (${listing.id}):`, e)}
                     />
                 ) : (
                     <View style={[styles.image, styles.placeholderImage, { backgroundColor: colors.border }]}>

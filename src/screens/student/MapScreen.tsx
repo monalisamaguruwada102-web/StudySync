@@ -14,7 +14,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { ChevronLeft, Navigation, MapPin, Star, GraduationCap, School, Navigation2, Eye } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Theme, Spacing, Shadows } from '../../theme/Theme';
+import { Spacing } from '../../theme/Theme';
 import { useTheme } from '../../context/ThemeContext';
 import { listingsService } from '../../services/listings.service';
 import { Listing } from '../../types';
@@ -37,9 +37,7 @@ const INITIAL_REGION = {
 export const MapScreen = () => {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
-    const { isDark } = useTheme();
-    const colors = isDark ? Theme.Dark.Colors : Theme.Light.Colors;
-    const shadows = isDark ? Theme.Dark.Shadows : Theme.Light.Shadows;
+    const { colors, shadows } = useTheme();
 
     const [listings, setListings] = useState<Listing[]>([]);
     const [loading, setLoading] = useState(true);

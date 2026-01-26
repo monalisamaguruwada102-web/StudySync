@@ -30,7 +30,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         email: profile.email,
                         name: profile.name,
                         role: profile.role,
+                        avatar: profile.avatar,
+                        phone: profile.phone_number,
                         verificationStatus: profile.verification_status,
+                        idDocumentUrl: profile.id_document_url,
+                        studentIdVerified: profile.student_id_verified,
+                        boostCredits: profile.boost_credits,
+                        lifeTags: profile.life_tags,
                     });
                 }
             } catch (error) {
@@ -51,7 +57,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 email: profile.email,
                 name: profile.name,
                 role: profile.role,
+                avatar: profile.avatar,
+                phone: profile.phone_number,
                 verificationStatus: profile.verification_status,
+                idDocumentUrl: profile.id_document_url,
+                studentIdVerified: profile.student_id_verified,
+                boostCredits: profile.boost_credits,
+                lifeTags: profile.life_tags,
             });
         } catch (error: any) {
             throw error;
@@ -69,7 +81,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 email: profile.email,
                 name: profile.name,
                 role: profile.role,
+                avatar: profile.avatar,
+                phone: profile.phone_number,
                 verificationStatus: profile.verification_status,
+                idDocumentUrl: profile.id_document_url,
+                studentIdVerified: profile.student_id_verified,
+                boostCredits: profile.boost_credits,
+                lifeTags: profile.life_tags,
             });
         } catch (error: any) {
             throw error;
@@ -93,8 +111,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     email: profile.email,
                     name: profile.name,
                     role: profile.role,
+                    avatar: profile.avatar,
+                    phone: profile.phone_number,
                     verificationStatus: profile.verification_status,
-                    avatar: profile.avatar, // Ensure avatar is propagated
+                    idDocumentUrl: profile.id_document_url,
+                    studentIdVerified: profile.student_id_verified,
+                    boostCredits: profile.boost_credits,
+                    lifeTags: profile.life_tags,
                 });
             }
         } catch (error) {

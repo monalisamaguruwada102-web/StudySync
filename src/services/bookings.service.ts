@@ -1,25 +1,46 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase, IS_SUPABASE_CONFIGURED } from './supabase';
 import { Booking } from '../types';
+import NetInfo from '@react-native-community/netinfo';
+import { syncService } from './sync.service';
 
 const STORAGE_KEY = '@bookings_data';
 
+// Performance Optimization: Intelligent Caching
+interface CacheEntry {
+    data: Booking[];
+    timestamp: number;
+    userId: string;
+    role: 'student' | 'owner';
+}
+
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const bookingsCache = new Map<string, CacheEntry>();
+
+// Pagination defaults
+const DEFAULT_PAGE_SIZE = 20;
+const MAX_PAGE_SIZE = 50;
+
 // Mapping Helpers
-const mapToBooking = (dbBooking: any): Booking => ({
-    id: dbBooking.id,
-    listingId: dbBooking.listing_id,
-    studentId: dbBooking.student_id,
-    ownerId: dbBooking.owner_id,
-    status: dbBooking.status,
-    totalPrice: dbBooking.total_price,
-    paymentReference: dbBooking.payment_reference,
-    createdAt: dbBooking.created_at,
-    // Note: In a real app, you'd probably join with listings/profiles to get names/titles
-    listingTitle: dbBooking.listing_title,
-    studentName: dbBooking.student_name,
-    studentPhone: dbBooking.student_phone,
-    ownerPhone: dbBooking.owner_phone,
-});
+const mapToBooking = (dbBooking: any): Booking => {
+    // Return a safe object even if input is malformed or null
+    const safeData = dbBooking || {};
+
+    return {
+        id: safeData.id || `local_${Math.random().toString(36).substr(2, 9)}`,
+        listingId: safeData.listing_id || '',
+        studentId: safeData.student_id || '',
+        ownerId: safeData.owner_id || '',
+        status: safeData.status || 'pending',
+        totalPrice: Number(safeData.total_price) || 0,
+        paymentReference: safeData.payment_reference || '',
+        createdAt: safeData.created_at || new Date().toISOString(),
+        listingTitle: safeData.listing_title || 'Property',
+        studentName: safeData.student_name || 'User',
+        studentPhone: safeData.student_phone || '',
+        ownerPhone: safeData.owner_phone || '',
+    };
+};
 
 const mapToDb = (booking: Partial<Booking>) => ({
     listing_id: booking.listingId,
@@ -35,49 +56,153 @@ const mapToDb = (booking: Partial<Booking>) => ({
 });
 
 export const bookingsService = {
-    getBookingsForStudent: async (studentId: string): Promise<Booking[]> => {
-        if (IS_SUPABASE_CONFIGURED) {
-            const { data, error } = await supabase
-                .from('bookings')
-                .select('*')
-                .eq('student_id', studentId)
-                .order('created_at', { ascending: false });
+    getBookingsForStudent: async (studentId: string, page: number = 0, pageSize: number = DEFAULT_PAGE_SIZE): Promise<Booking[]> => {
+        // Cache Check (only for first page)
+        if (page === 0) {
+            const cached = bookingsCache.get(`${studentId}:student`);
+            if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
+                console.log('[BookingsService] Returning cached bookings for student');
+                return cached.data;
+            }
+        }
 
-            if (error) throw error;
-            return (data || []).map(mapToBooking);
+        if (IS_SUPABASE_CONFIGURED) {
+            try {
+                console.log('[BookingsService] Fetching bookings for student:', studentId, 'Page:', page);
+
+                const { data, error } = await supabase
+                    .from('bookings')
+                    .select('id, listing_id, student_id, owner_id, status, total_price, payment_reference, created_at, listing_title, student_name, student_phone, owner_phone')
+                    .eq('student_id', studentId)
+                    .order('created_at', { ascending: false })
+                    .range(page * pageSize, (page + 1) * pageSize - 1);
+
+                if (error) {
+                    console.error('[BookingsService] Supabase Error:', {
+                        message: error.message,
+                        details: error.details,
+                        hint: error.hint,
+                        code: error.code
+                    });
+                    throw error;
+                }
+
+                const mappedData = (data || []).map(mapToBooking);
+
+                // Update Cache (only for first page)
+                if (page === 0) {
+                    bookingsCache.set(`${studentId}:student`, {
+                        data: mappedData,
+                        timestamp: Date.now(),
+                        userId: studentId,
+                        role: 'student'
+                    });
+                }
+
+                console.log('[BookingsService] Fetched bookings count:', mappedData.length);
+                return mappedData;
+            } catch (err: any) {
+                console.error('[BookingsService] Unexpected error:', err);
+                throw err;
+            }
         }
 
         const stored = await AsyncStorage.getItem(STORAGE_KEY);
         const all: Booking[] = stored ? JSON.parse(stored) : [];
-        return all.filter(b => b.studentId === studentId);
+        const filtered = all.filter(b => b.studentId === studentId);
+        return filtered.slice(page * pageSize, (page + 1) * pageSize);
     },
 
-    getBookingsForOwner: async (ownerId: string): Promise<Booking[]> => {
-        if (IS_SUPABASE_CONFIGURED) {
-            const { data, error } = await supabase
-                .from('bookings')
-                .select('*')
-                .eq('owner_id', ownerId)
-                .order('created_at', { ascending: false });
+    getBookingsForOwner: async (ownerId: string, page: number = 0, pageSize: number = DEFAULT_PAGE_SIZE): Promise<Booking[]> => {
+        // Cache Check (only for first page)
+        if (page === 0) {
+            const cached = bookingsCache.get(`${ownerId}:owner`);
+            if (cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
+                console.log('[BookingsService] Returning cached bookings for owner');
+                return cached.data;
+            }
+        }
 
-            if (error) throw error;
-            return (data || []).map(mapToBooking);
+        if (IS_SUPABASE_CONFIGURED) {
+            try {
+                console.log('[BookingsService] Fetching bookings for owner:', ownerId, 'Page:', page);
+
+                const { data, error } = await supabase
+                    .from('bookings')
+                    .select('id, listing_id, student_id, owner_id, status, total_price, payment_reference, created_at, listing_title, student_name, student_phone, owner_phone')
+                    .eq('owner_id', ownerId)
+                    .order('created_at', { ascending: false })
+                    .range(page * pageSize, (page + 1) * pageSize - 1);
+
+                if (error) {
+                    console.error('[BookingsService] Supabase Error (Owner):', {
+                        message: error.message,
+                        details: error.details,
+                        hint: error.hint,
+                        code: error.code
+                    });
+                    throw error;
+                }
+
+                const mappedData = (data || []).map(mapToBooking);
+
+                // Update Cache (only for first page)
+                if (page === 0) {
+                    bookingsCache.set(`${ownerId}:owner`, {
+                        data: mappedData,
+                        timestamp: Date.now(),
+                        userId: ownerId,
+                        role: 'owner'
+                    });
+                }
+
+                console.log('[BookingsService] Fetched owner bookings count:', mappedData.length);
+                return mappedData;
+            } catch (err: any) {
+                console.error('[BookingsService] Unexpected error (Owner):', err);
+                throw err;
+            }
         }
 
         const stored = await AsyncStorage.getItem(STORAGE_KEY);
         const all: Booking[] = stored ? JSON.parse(stored) : [];
-        return all.filter(b => b.ownerId === ownerId);
+        const filtered = all.filter(b => b.ownerId === ownerId);
+        return filtered.slice(page * pageSize, (page + 1) * pageSize);
+    },
+
+    invalidateCache: (userId: string, role: 'student' | 'owner') => {
+        bookingsCache.delete(`${userId}:${role}`);
+        console.log(`[BookingsService] Cache invalidated for ${role}: ${userId}`);
     },
 
     createBooking: async (bookingData: Partial<Booking>): Promise<Booking> => {
+        const netInfo = await NetInfo.fetch();
+        if (!netInfo.isConnected) {
+            console.log('[BookingsService] Offline: Enqueueing booking request');
+            const action = await syncService.enqueue('CREATE_BOOKING', bookingData);
+
+            // Return a temporary booking object
+            return {
+                ...bookingData,
+                id: `queued_${action.id}`,
+                status: 'pending',
+                createdAt: new Date().toISOString(),
+            } as Booking;
+        }
+
         if (IS_SUPABASE_CONFIGURED) {
+            console.log('[BookingsService] Creating booking:', bookingData);
             const { data, error } = await supabase
                 .from('bookings')
                 .insert([mapToDb(bookingData)])
                 .select()
                 .single();
 
-            if (error) throw error;
+            if (error) {
+                console.error('[BookingsService] Create failed:', error.message, error.details, error.hint);
+                throw error;
+            }
+            console.log('[BookingsService] Booking created successfully:', data.id);
             return mapToBooking(data);
         }
 
@@ -101,12 +226,32 @@ export const bookingsService = {
             const updates: any = { status };
             if (reference) updates.payment_reference = reference;
 
-            const { error } = await supabase
+            // Get ownerId to invalidate cache
+            const { data: booking } = await supabase
                 .from('bookings')
-                .update(updates)
-                .eq('id', bookingId);
+                .select('owner_id, student_id')
+                .eq('id', bookingId)
+                .single();
 
-            if (error) throw error;
+            try {
+                const { error } = await supabase
+                    .from('bookings')
+                    .update(updates)
+                    .eq('id', bookingId);
+
+                if (error) {
+                    throw new Error(`[Database Error] ${error.message}`);
+                }
+
+                // Invalidate caches
+                if (booking) {
+                    bookingsService.invalidateCache(booking.owner_id, 'owner');
+                    bookingsService.invalidateCache(booking.student_id, 'student');
+                }
+            } catch (err: any) {
+                console.error('[BookingsService] Update error:', err);
+                throw new Error(err.message || 'The update failed. Please check your connection.');
+            }
             return;
         }
 
@@ -118,6 +263,10 @@ export const bookingsService = {
             all[index].status = status;
             if (reference) all[index].paymentReference = reference;
             await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+
+            // Invalidate local caches if any
+            bookingsService.invalidateCache(all[index].ownerId, 'owner');
+            bookingsService.invalidateCache(all[index].studentId, 'student');
         }
     },
 
@@ -125,7 +274,7 @@ export const bookingsService = {
         if (IS_SUPABASE_CONFIGURED) {
             const filterField = role === 'student' ? 'student_id' : 'owner_id';
 
-            return supabase
+            const channel = supabase
                 .channel(`bookings:${userId}`)
                 .on(
                     'postgres_changes',
@@ -136,11 +285,30 @@ export const bookingsService = {
                         filter: `${filterField}=eq.${userId}`,
                     },
                     (payload) => {
-                        const updatedBooking = mapToBooking(payload.new);
-                        callback(updatedBooking);
+                        try {
+                            console.log('[BookingsService] Subscription payload received:', payload);
+
+                            // Check if payload.new exists
+                            if (!payload.new) {
+                                console.warn('[BookingsService] Received null payload.new, skipping');
+                                return;
+                            }
+
+                            // Map and call the callback
+                            const updatedBooking = mapToBooking(payload.new);
+                            console.log('[BookingsService] Mapped booking:', updatedBooking.id);
+                            callback(updatedBooking);
+                        } catch (error) {
+                            console.error('[BookingsService] Error in subscription callback:', error);
+                            // Don't crash the app - just log the error
+                        }
                     }
                 )
-                .subscribe();
+                .subscribe((status) => {
+                    console.log('[BookingsService] Subscription status:', status);
+                });
+
+            return channel;
         }
 
         return {

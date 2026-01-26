@@ -11,7 +11,7 @@ import {
     Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Phone, Mail, ChevronRight, Info, HelpCircle, FileText, ChevronDown, CheckCircle2, X, Bot } from 'lucide-react-native';
+import { Phone, Mail, ChevronRight, Info, HelpCircle, FileText, ChevronDown, CheckCircle2, X, Bot, MessageCircle } from 'lucide-react-native';
 import { Theme, Spacing, Typography, Shadows } from '../../theme/Theme';
 import { useTheme } from '../../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
@@ -61,6 +61,22 @@ export const SupportScreen = () => {
         });
     };
 
+    const handleWhatsApp = () => {
+        const phone = '263789932832';
+        const msg = 'Hello! I need assistance with Off Rez Connect.';
+        const url = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(msg)}`;
+
+        Linking.canOpenURL(url).then(supported => {
+            if (supported) {
+                return Linking.openURL(url);
+            } else {
+                return Linking.openURL(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`);
+            }
+        }).catch(() => {
+            Alert.alert('Error', 'Unable to open WhatsApp');
+        });
+    };
+
     const SupportCard = ({ icon: Icon, title, description, onPress, color }: any) => (
         <TouchableOpacity
             style={[styles.card, { backgroundColor: colors.surface }, shadows.soft]}
@@ -94,6 +110,13 @@ export const SupportScreen = () => {
                         description="Get instant answers from our bot"
                         color="#8b5cf6"
                         onPress={() => navigation.navigate('SupportBot')}
+                    />
+                    <SupportCard
+                        icon={MessageCircle}
+                        title="Chat on WhatsApp"
+                        description="Start a chat with our support team"
+                        color="#25D366"
+                        onPress={handleWhatsApp}
                     />
                     <SupportCard
                         icon={Phone}

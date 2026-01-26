@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -30,38 +30,26 @@ export const ManageBookingsScreen = () => {
 
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [page, setPage] = useState(0);
+    const [hasMore, setHasMore] = useState(true);
 
-    useEffect(() => {
-        loadBookings();
-
-        if (!user?.id) return;
-
-        const subscription = bookingsService.subscribeToBookings(user.id, 'owner', (newBooking) => {
-            setBookings(prev => {
-                const exists = prev.some(b => b.id === newBooking.id);
-                if (exists) {
-                    return prev.map(b => b.id === newBooking.id ? newBooking : b);
-                }
-
-                // If it's a completely new request, notify the owner
-                notificationService.scheduleLocalNotification(
-                    "New Booking Request!",
-                    `${newBooking.studentName || 'A student'} has requested a booking for ${newBooking.listingTitle || 'your property'}.`
-                );
-
-                return [newBooking, ...prev];
-            });
-        });
-
-        return () => {
-            subscription.unsubscribe();
-        };
-    }, []);
+    const formatDateSafely = (dateString: string) => {
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'N/A';
+            return date.toLocaleDateString();
+        } catch (e) {
+            return 'N/A';
+        }
+    };
 
     const handleCall = (phone: string) => {
         const url = `tel:${phone}`;
-        Linking.openURL(url).catch(() => {
-            Alert.alert('Error', 'Unable to open phone dialer');
+        Linking.openURL(url).catch((err) => {
+            console.error('[ManageBookings] Call Error:', err);
+            Alert.alert('Call Failed', 'Unable to open the phone dialer. Please make sure your device supports calls.');
         });
     };
 
@@ -71,26 +59,107 @@ export const ManageBookingsScreen = () => {
 
         Linking.canOpenURL(url).then(supported => {
             if (supported) {
-                Linking.openURL(url);
+                Linking.openURL(url).catch(() => {
+                    Linking.openURL(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`).catch(() => {
+                        Alert.alert('Error', 'Unable to open WhatsApp or Browser.');
+                    });
+                });
             } else {
-                Linking.openURL(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`);
+                Linking.openURL(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`).catch(() => {
+                    Alert.alert('Error', 'Unable to open browser.');
+                });
             }
         });
     };
 
-    const loadBookings = async () => {
+    const loadBookings = useCallback(async (pageNum: number = 0, shouldRefresh: boolean = false) => {
         if (!user?.id) return;
-        setLoading(true);
+
+        if (pageNum === 0 && !shouldRefresh) setLoading(true);
+        if (shouldRefresh) setRefreshing(true);
+        if (pageNum > 0) setLoadingMore(true);
+
         try {
-            const data = await bookingsService.getBookingsForOwner(user.id);
-            setBookings(data);
-        } catch (error) {
-            console.error(error);
-            Alert.alert('Error', 'Failed to load bookings');
+            console.log('[ManageBookings] Loading bookings for owner:', user.id, 'Page:', pageNum);
+            const data = await bookingsService.getBookingsForOwner(user.id, pageNum);
+
+            if (shouldRefresh || pageNum === 0) {
+                setBookings(data);
+                setPage(0);
+                setHasMore(data.length === 20); // Assuming page size is 20
+            } else {
+                setBookings(prev => [...prev, ...data]);
+                setHasMore(data.length === 20);
+            }
+        } catch (error: any) {
+            console.error('[ManageBookings] Load Error:', error);
+            const errorMessage = error.message || error.details || error.hint || 'Unknown connectivity issue';
+            Alert.alert(
+                'Load Error',
+                `Unable to fetch booking requests. \n\nError: ${errorMessage}`,
+                [{ text: 'Retry', onPress: () => loadBookings(pageNum, shouldRefresh) }, { text: 'OK', style: 'cancel' }]
+            );
         } finally {
             setLoading(false);
+            setRefreshing(false);
+            setLoadingMore(false);
         }
-    };
+    }, [user?.id]);
+
+    const handleRefresh = useCallback(() => {
+        loadBookings(0, true);
+    }, [loadBookings]);
+
+    const handleLoadMore = useCallback(() => {
+        if (!loadingMore && hasMore && !loading && !refreshing) {
+            const nextPage = page + 1;
+            setPage(nextPage);
+            loadBookings(nextPage);
+        }
+    }, [loadingMore, hasMore, loading, refreshing, page, loadBookings]);
+
+    useEffect(() => {
+        loadBookings(0);
+
+        if (!user?.id) return;
+
+        console.log('[ManageBookings] Setting up subscription for owner:', user.id);
+
+        const subscription = bookingsService.subscribeToBookings(user.id, 'owner', (newBooking) => {
+            try {
+                console.log('[ManageBookings] Received new booking update:', newBooking.id, newBooking.status);
+
+                setBookings(prev => {
+                    const exists = prev.some(b => b.id === newBooking.id);
+                    if (exists) {
+                        console.log('[ManageBookings] Updating existing booking:', newBooking.id);
+                        return prev.map(b => b.id === newBooking.id ? newBooking : b);
+                    }
+
+                    console.log('[ManageBookings] Adding new booking:', newBooking.id);
+
+                    // If it's a completely new request, notify the owner
+                    notificationService.scheduleLocalNotification(
+                        "New Booking Request!",
+                        `${newBooking.studentName || 'A student'} has requested a booking for ${newBooking.listingTitle || 'your property'}.`
+                    );
+
+                    // Sort to keep newest at top
+                    return [newBooking, ...prev];
+                });
+
+                // Also invalidate cache so next fresh load gets the update
+                bookingsService.invalidateCache(user.id, 'owner');
+            } catch (error) {
+                console.error('[ManageBookings] Error handling booking update:', error);
+            }
+        });
+
+        return () => {
+            console.log('[ManageBookings] Cleaning up subscription');
+            subscription.unsubscribe();
+        };
+    }, [user?.id, loadBookings]);
 
     const handleUpdateStatus = async (bookingId: string, status: Booking['status']) => {
         const statusLabel = status === 'approved' ? 'Approve' : status === 'rejected' ? 'Reject' : 'Confirm Payment';
@@ -109,9 +178,11 @@ export const ManageBookingsScreen = () => {
                                 'Booking Updated',
                                 `The booking status has been updated to ${status}.`
                             );
-                            loadBookings();
-                        } catch (error) {
-                            Alert.alert('Error', 'Failed to update status');
+                            // No need to reload entire list, subscription will handle UI update
+                            // but we can locally update if we want faster feedback or if subscription is slow
+                            setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status } : b));
+                        } catch (error: any) {
+                            Alert.alert('Update Failed', error.message || 'Failed to update booking status. Please try again.');
                         }
                     }
                 }
@@ -119,7 +190,8 @@ export const ManageBookingsScreen = () => {
         );
     };
 
-    const renderBookingItem = ({ item }: { item: Booking }) => {
+    // Memoized Booking Item for performance
+    const BookingItem = React.memo(({ item }: { item: Booking }) => {
         const isPending = item.status === 'pending';
         const isApproved = item.status === 'approved';
 
@@ -149,7 +221,7 @@ export const ManageBookingsScreen = () => {
                     <View style={styles.detailItem}>
                         <Calendar size={14} color={colors.textLight} />
                         <Text style={[styles.detailText, { color: colors.textLight }]}>
-                            {new Date(item.createdAt).toLocaleDateString()}
+                            {formatDateSafely(item.createdAt)}
                         </Text>
                     </View>
                     <View style={styles.detailItem}>
@@ -205,7 +277,11 @@ export const ManageBookingsScreen = () => {
                 </View>
             </View>
         );
-    };
+    });
+
+    const renderBookingItem = useCallback(({ item }: { item: Booking }) => (
+        <BookingItem item={item} />
+    ), [colors, shadows, handleUpdateStatus, handleCall, handleWhatsApp]);
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -214,12 +290,12 @@ export const ManageBookingsScreen = () => {
                     <ChevronLeft size={28} color={colors.text} />
                 </TouchableOpacity>
                 <Text style={[styles.headerTitle, { color: colors.text }]}>Manage Bookings</Text>
-                <TouchableOpacity onPress={loadBookings} style={styles.refreshBtn}>
+                <TouchableOpacity onPress={() => loadBookings(0)} style={styles.refreshBtn}>
                     <Text style={{ color: colors.primary, fontWeight: '700' }}>Refresh</Text>
                 </TouchableOpacity>
             </View>
 
-            {loading ? (
+            {loading && !refreshing ? (
                 <View style={styles.center}>
                     <ActivityIndicator size="large" color={colors.primary} />
                 </View>
@@ -229,6 +305,22 @@ export const ManageBookingsScreen = () => {
                     renderItem={renderBookingItem}
                     keyExtractor={item => item.id}
                     contentContainerStyle={styles.list}
+                    onRefresh={handleRefresh}
+                    refreshing={refreshing}
+                    onEndReached={handleLoadMore}
+                    onEndReachedThreshold={0.5}
+                    ListFooterComponent={() => (
+                        loadingMore ? (
+                            <View style={styles.footerLoader}>
+                                <ActivityIndicator size="small" color={colors.primary} />
+                            </View>
+                        ) : null
+                    )}
+                    // Performance Optimizations
+                    initialNumToRender={10}
+                    maxToRenderPerBatch={10}
+                    windowSize={5}
+                    removeClippedSubviews={true}
                     ListEmptyComponent={
                         <View style={styles.empty}>
                             <Text style={[styles.emptyText, { color: colors.textLight }]}>No booking requests yet</Text>
@@ -365,5 +457,9 @@ const styles = StyleSheet.create({
     },
     emptyText: {
         fontSize: 16,
+    },
+    footerLoader: {
+        paddingVertical: 20,
+        alignItems: 'center',
     }
 });

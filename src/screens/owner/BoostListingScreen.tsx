@@ -44,36 +44,36 @@ export const BoostListingScreen = () => {
     const handleManualSubmit = async () => {
         setIsProcessing(true);
         try {
+            // Submit request to admin
+            await listingsService.requestBoost(listing.id, 'monthly');
+
+            // Also log payment attempt (optional, for record)
             await paymentService.submitManualPayment(user?.id || 'guest', {
-                amount: 5.00,
+                amount: 20.00,
                 reference: reference,
-                serviceName: `Listing Boost: ${listing.propertyName || listing.title}`,
+                serviceName: `Monthly Boost: ${listing.propertyName || listing.title}`,
                 propertyId: listing.id
             });
 
             setTimeout(() => {
                 setIsProcessing(false);
                 Alert.alert(
-                    'Verification Pending! ⏳',
-                    'Your payment has been submitted for review. Your listing will be boosted once verified.',
+                    'Request Submitted! 🚀',
+                    'Your monthly boost request has been sent to the admin. Active once approved.',
                     [{ text: 'OK', onPress: () => navigation.popToTop() }]
                 );
-                notificationService.scheduleLocalNotification(
-                    'Boost Pending! ⚡',
-                    `We've received your notification for "${listing.propertyName}". Activation is in progress.`
-                );
-            }, 1500);
+            }, 1000);
         } catch (error) {
             setIsProcessing(false);
-            Alert.alert('Error', 'Failed to notify us. Please try again.');
+            Alert.alert('Error', 'Failed to submit request. Please try again.');
         }
     };
 
     const handleWhatsAppPay = async () => {
         await paymentService.openWhatsAppPayment(
             reference,
-            5.00,
-            `Listing Boost: ${listing.propertyName || listing.title}`
+            20.00,
+            `Monthly Boost: ${listing.propertyName || listing.title}`
         );
     };
 
@@ -104,7 +104,10 @@ export const BoostListingScreen = () => {
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
                 <View style={[styles.previewCard, { backgroundColor: colors.surface }, shadows.soft]}>
-                    <Image source={{ uri: listing.images[0] }} style={styles.previewImage} />
+                    <Image
+                        source={{ uri: (listing.images && listing.images.length > 0) ? listing.images[0] : 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267' }}
+                        style={styles.previewImage}
+                    />
                     <View style={styles.previewInfo}>
                         <Text style={[styles.previewName, { color: colors.text }]}>{listing.propertyName}</Text>
                         <Text style={[styles.previewTitle, { color: colors.textLight }]}>{listing.title}</Text>
@@ -139,10 +142,10 @@ export const BoostListingScreen = () => {
                 </View>
 
                 <View style={[styles.priceBox, { backgroundColor: colors.surface }]}>
-                    <Text style={[styles.priceLabel, { color: colors.textLight }]}>7 Day Boost</Text>
+                    <Text style={[styles.priceLabel, { color: colors.textLight }]}>30 Day Boost</Text>
                     <View style={styles.priceRow}>
-                        <Text style={[styles.price, { color: colors.text }]}>$5.00</Text>
-                        <Text style={[styles.priceUnit, { color: colors.textLight }]}>/week</Text>
+                        <Text style={[styles.price, { color: colors.text }]}>$20.00</Text>
+                        <Text style={[styles.priceUnit, { color: colors.textLight }]}>/month</Text>
                     </View>
                 </View>
 
@@ -160,7 +163,7 @@ export const BoostListingScreen = () => {
                         </View>
                         <View style={styles.instructionRow}>
                             <Text style={[styles.instLabel, { color: colors.textLight }]}>Amount</Text>
-                            <Text style={[styles.instValue, { color: colors.text, fontWeight: '800' }]}>$5.00</Text>
+                            <Text style={[styles.instValue, { color: colors.text, fontWeight: '800' }]}>$20.00</Text>
                         </View>
                         <View style={[styles.instructionRow, { borderTopWidth: 1, borderTopColor: colors.border + '20', marginTop: 8, paddingTop: 12 }]}>
                             <Text style={[styles.instLabel, { color: colors.textLight }]}>Reference</Text>
@@ -177,7 +180,7 @@ export const BoostListingScreen = () => {
 
                     <View style={styles.whatsappNote}>
                         <Text style={[styles.noteText, { color: colors.textLight }]}>
-                            1. Pay $5.00 to the EcoCash number above.{"\n"}
+                            1. Pay $20.00 to the EcoCash number above.{"\n"}
                             2. Use the <Text style={{ fontWeight: '700', color: colors.primary }}>Reference</Text> in your payment.{"\n"}
                             3. Send proof via WhatsApp for instant activation.
                         </Text>
@@ -207,7 +210,7 @@ export const BoostListingScreen = () => {
                 >
                     <Zap size={20} color="white" fill="white" />
                     <Text style={styles.boostBtnText}>
-                        {isProcessing ? 'Notifying Admin...' : 'I Have Paid'}
+                        {isProcessing ? 'Submitting...' : 'Request Monthly Boost'}
                     </Text>
                 </TouchableOpacity>
             </View>

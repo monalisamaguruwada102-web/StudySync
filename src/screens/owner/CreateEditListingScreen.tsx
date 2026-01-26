@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Camera, Check, X, Image as ImageIcon, Building2 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -20,17 +21,17 @@ import { Theme, Spacing, Typography, Shadows } from '../../theme/Theme';
 import { useTheme } from '../../context/ThemeContext';
 import { CustomInput } from '../../components/CustomInput';
 import { CustomButton } from '../../components/CustomButton';
+import { storageService } from '../../services/storage.service';
 import { listingsService } from '../../services/listings.service';
 import { authService } from '../../services/auth.service';
 import { useAuth } from '../../context/AuthContext';
 import { Listing } from '../../types';
-import { IS_SUPABASE_CONFIGURED, supabase } from '../../services/supabase';
-import { decode } from 'base64-arraybuffer';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
 export const CreateEditListingScreen = () => {
     const navigation = useNavigation<any>();
     const route = useRoute<any>();
+    const queryClient = useQueryClient();
     const { user } = useAuth();
     const { isDark } = useTheme();
     const colors = isDark ? Theme.Dark.Colors : Theme.Light.Colors;
@@ -127,29 +128,8 @@ export const CreateEditListingScreen = () => {
     };
 
     const uploadImage = async (uri: string) => {
-        if (!IS_SUPABASE_CONFIGURED) return uri;
-
-        try {
-            const fileName = `${user?.id}/${Date.now()}.jpg`;
-            const base64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
-
-            const { data, error } = await supabase.storage
-                .from('listing-images')
-                .upload(fileName, decode(base64), {
-                    contentType: 'image/jpeg'
-                });
-
-            if (error) throw error;
-
-            const { data: { publicUrl } } = supabase.storage
-                .from('listing-images')
-                .getPublicUrl(data.path);
-
-            return publicUrl;
-        } catch (error) {
-            console.error('Upload error:', error);
-            return uri; // Fallback to local URI if upload fails
-        }
+        if (!user?.id) throw new Error('User not authenticated');
+        return await storageService.uploadListingImage(user.id, uri);
     };
 
     const handleNext = () => {
@@ -187,8 +167,24 @@ export const CreateEditListingScreen = () => {
                 if (selectedImage.startsWith('http')) {
                     imageUrls = [selectedImage];
                 } else {
-                    const uploadedUrl = await uploadImage(selectedImage);
-                    imageUrls = [uploadedUrl];
+                    try {
+                        console.log('[CreateEditListing] Attempting image upload:', selectedImage);
+                        const uploadedUrl = await uploadImage(selectedImage);
+                        if (!uploadedUrl || !uploadedUrl.startsWith('http')) {
+                            throw new Error('Upload returned an invalid URL: ' + uploadedUrl);
+                        }
+                        console.log('[CreateEditListing] Image uploaded successfully:', uploadedUrl);
+                        imageUrls = [uploadedUrl];
+                    } catch (uploadError: any) {
+                        console.error('[CreateEditListing] Image Upload Exception:', uploadError);
+                        const errorDetails = uploadError.message || JSON.stringify(uploadError);
+                        Alert.alert(
+                            'Upload Failed',
+                            `We couldn't upload your property image.\n\nError: ${errorDetails}\n\nPlease check your internet connection and try again.`
+                        );
+                        setLoading(false);
+                        return;
+                    }
                 }
             }
 
@@ -212,6 +208,12 @@ export const CreateEditListingScreen = () => {
             };
 
             await listingsService.saveListing(listingData);
+
+            // Invalidate queries to auto-refresh other screens
+            await queryClient.invalidateQueries({ queryKey: ['listings'] });
+            await queryClient.invalidateQueries({ queryKey: ['admin-pending-listings'] });
+            await queryClient.invalidateQueries({ queryKey: ['owner-listings'] });
+
             Alert.alert(
                 'Success',
                 `Property ${isEditing ? 'updated' : 'listed'} successfully! It will be visible once verified by admin.`,
@@ -407,7 +409,14 @@ export const CreateEditListingScreen = () => {
                                 onPress={pickImage}
                             >
                                 {selectedImage ? (
-                                    <Image source={{ uri: selectedImage }} style={styles.previewImage} />
+                                    <Image
+                                        source={{ uri: selectedImage }}
+                                        style={styles.previewImage}
+                                        onError={(e) => {
+                                            console.error('[CreateEditListing] Image preview load error:', e.nativeEvent.error);
+                                            // Optional: Alert.alert('Preview Error', 'Failed to load image preview.');
+                                        }}
+                                    />
                                 ) : (
                                     <View style={{ alignItems: 'center' }}>
                                         <Camera size={38} color={colors.primary} />

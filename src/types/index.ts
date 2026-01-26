@@ -10,6 +10,9 @@ export interface User {
     avatar?: string;
     verificationStatus?: 'none' | 'pending' | 'verified';
     idDocumentUrl?: string;
+    studentIdVerified?: boolean;
+    boostCredits?: number;
+    lifeTags?: string[];
 }
 
 export interface UserProfile {
@@ -22,6 +25,9 @@ export interface UserProfile {
     id_document_url?: string;
     bio?: string;
     phone_number?: string;
+    student_id_verified?: boolean;
+    boost_credits?: number;
+    life_tags?: string[];
 }
 
 export interface Amenity {
@@ -56,6 +62,7 @@ export interface Listing {
     ownerId: string;
     ownerName?: string;
     ownerPhone?: string;
+    ownerAvatar?: string;
     propertyName: string;
     title: string;
     description: string;
@@ -70,6 +77,8 @@ export interface Listing {
     isVerified?: boolean;
     isPremium?: boolean;
     boostExpiry?: string;
+    boostStatus?: 'none' | 'pending' | 'active' | 'rejected';
+    boostPeriod?: 'weekly' | 'monthly';
     coordinates?: Coordinates;
     reviews?: Review[];
     rating?: number;
@@ -82,6 +91,8 @@ export interface Listing {
     type?: string;
     ecocashNumber?: string;
     distanceLabel?: string;
+    fullUntil?: string;
+    isPriorityVerification?: boolean;
 }
 
 
@@ -104,6 +115,7 @@ export interface Conversation {
     unreadCount?: number;
 }
 
+
 export interface Booking {
     id: string;
     listingId: string;
@@ -117,4 +129,66 @@ export interface Booking {
     studentName?: string;
     studentPhone?: string;
     ownerPhone?: string;
+}
+
+export interface RentPayment {
+    id: string;
+    bookingId: string;
+    studentId: string;
+    ownerId: string;
+    amount: number;
+    monthYear: string;
+    status: 'pending' | 'paid' | 'late';
+    paymentDate: string;
+    createdAt: string;
+}
+
+export interface MaintenanceRequest {
+    id: string;
+    listingId: string;
+    studentId: string;
+    ownerId: string;
+    title: string;
+    description: string;
+    status: 'pending' | 'in-progress' | 'resolved' | 'cancelled';
+    priority: 'low' | 'medium' | 'high' | 'urgent';
+    imageUrl?: string;
+    createdAt: string;
+}
+
+export interface Lease {
+    id: string;
+    bookingId: string;
+    studentId: string;
+    ownerId: string;
+    houseRules: string;
+    depositTerms: string;
+    rentSchedule: string;
+    status: 'pending' | 'signed' | 'expired' | 'cancelled';
+    pdfUrl?: string;
+    scannedAt?: string;
+    createdAt: string;
+}
+
+export interface RevenueStat {
+    ownerId: string;
+    listingId: string;
+    monthYear: string;
+    totalRevenue: number;
+    paymentCount: number;
+    lastPaymentAt: string;
+}
+
+export interface UtilityBill {
+    id: string;
+    listingId: string;
+    ownerId: string;
+    monthYear: string;
+    billType: 'electricity' | 'water' | 'internet' | 'other';
+    totalAmount: number;
+    splitAmount: number;
+    dueDate?: string;
+    status: 'pending' | 'collected' | 'paid';
+    imageUrl?: string;
+    createdAt: string;
 }

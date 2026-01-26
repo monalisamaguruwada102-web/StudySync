@@ -4,35 +4,55 @@
     "slug": "off-rez-connect",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "assets/off-rez-branding.jpg",
+    "icon": "./assets/icon_fixed.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "assets/off-rez-branding.jpg",
+      "image": "./assets/splash_fixed.png",
       "resizeMode": "contain",
-      "backgroundColor": "#020617"
+      "backgroundColor": "#ffffff"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.offrez.connect"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "assets/adaptive-icon.png",
-        "backgroundColor": "#1e3a8a"
+        "foregroundImage": "./assets/adaptive_icon_fixed.png",
+        "backgroundColor": "#ffffff"
       },
       "package": "com.offrez.connect"
     },
     "web": {
-      "favicon": "assets/favicon.png"
+      "favicon": "./assets/icon_fixed.png"
     },
     "plugins": [
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "2.1.0",
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0"
+          }
+        }
+      ]
     ],
     "extra": {
       "eas": {
         "projectId": "dbf18997-d771-416f-b7a5-95cde9eb9468"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/dbf18997-d771-416f-b7a5-95cde9eb9468"
     }
   }
 }

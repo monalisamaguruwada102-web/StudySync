@@ -29,6 +29,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { listingsService } from '../../services/listings.service';
 import { useAuth } from '../../context/AuthContext';
 import { analyticsService } from '../../services/analytics.service';
+import { UserAvatar } from '../../components/UserAvatar';
 
 const { width } = Dimensions.get('window');
 
@@ -107,10 +108,7 @@ export const OwnerDashboardScreen = () => {
                         <Text style={[styles.welcomeText, { color: colors.textLight }]}>Welcome back,</Text>
                         <Text style={[styles.ownerName, { color: colors.text }]}>{user?.name} 👋</Text>
                     </View>
-                    <Image
-                        source={{ uri: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100' }}
-                        style={styles.profileAvatar}
-                    />
+                    <UserAvatar uri={user?.avatar} name={user?.name} size={56} color={colors.primary} />
                 </View>
 
                 {/* Stats Grid - 2x2 with improved alignment */}

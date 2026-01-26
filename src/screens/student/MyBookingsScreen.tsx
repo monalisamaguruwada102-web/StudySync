@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -29,50 +29,109 @@ export const MyBookingsScreen = () => {
 
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [page, setPage] = useState(0);
+    const [hasMore, setHasMore] = useState(true);
+
+    const formatDateSafely = (dateString: string) => {
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'N/A';
+            return date.toLocaleDateString();
+        } catch (e) {
+            return 'N/A';
+        }
+    };
+
+    const loadBookings = useCallback(async (pageNum: number = 0, shouldRefresh: boolean = false) => {
+        if (!user?.id) return;
+
+        if (pageNum === 0 && !shouldRefresh) setLoading(true);
+        if (shouldRefresh) setRefreshing(true);
+        if (pageNum > 0) setLoadingMore(true);
+
+        try {
+            console.log('[MyBookings] Loading bookings for student:', user.id, 'Page:', pageNum);
+            const data = await bookingsService.getBookingsForStudent(user.id, pageNum);
+
+            if (shouldRefresh || pageNum === 0) {
+                setBookings(data);
+                setPage(0);
+                setHasMore(data.length === 20); // Assuming page size is 20
+            } else {
+                setBookings(prev => [...prev, ...data]);
+                setHasMore(data.length === 20);
+            }
+        } catch (error: any) {
+            console.error('[MyBookings] Load Error:', error);
+            const errorMessage = error.message || error.details || error.hint || 'Unknown connectivity issue';
+            Alert.alert(
+                'Load Error',
+                `Unable to fetch your bookings. \n\nError: ${errorMessage}`,
+                [{ text: 'Retry', onPress: () => loadBookings(pageNum, shouldRefresh) }, { text: 'OK', style: 'cancel' }]
+            );
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+            setLoadingMore(false);
+        }
+    }, [user?.id]);
+
+    const handleRefresh = useCallback(() => {
+        loadBookings(0, true);
+    }, [loadBookings]);
+
+    const handleLoadMore = useCallback(() => {
+        if (!loadingMore && hasMore && !loading && !refreshing) {
+            const nextPage = page + 1;
+            setPage(nextPage);
+            loadBookings(nextPage);
+        }
+    }, [loadingMore, hasMore, loading, refreshing, page, loadBookings]);
 
     useEffect(() => {
-        loadBookings();
+        loadBookings(0);
 
         if (!user?.id) return;
 
-        const subscription = bookingsService.subscribeToBookings(user.id, 'student', (updatedBooking) => {
-            setBookings(prev => {
-                const index = prev.findIndex(b => b.id === updatedBooking.id);
-                if (index !== -1) {
-                    const newBookings = [...prev];
-                    const oldStatus = newBookings[index].status;
-                    newBookings[index] = updatedBooking;
+        console.log('[MyBookings] Setting up subscription for student:', user.id);
 
-                    // Notify if status changed
-                    if (oldStatus !== updatedBooking.status) {
-                        notificationService.scheduleLocalNotification(
-                            `Booking Update: ${updatedBooking.listingTitle || 'Property'}`,
-                            `Your booking request is now ${updatedBooking.status.toUpperCase()}.`
-                        );
+        const subscription = bookingsService.subscribeToBookings(user.id, 'student', (updatedBooking) => {
+            try {
+                console.log('[MyBookings] Received booking update:', updatedBooking.id, updatedBooking.status);
+
+                setBookings(prev => {
+                    const index = prev.findIndex(b => b.id === updatedBooking.id);
+                    if (index !== -1) {
+                        const newBookings = [...prev];
+                        const oldStatus = newBookings[index].status;
+                        newBookings[index] = updatedBooking;
+
+                        // Notify if status changed
+                        if (oldStatus !== updatedBooking.status) {
+                            notificationService.scheduleLocalNotification(
+                                `Booking Update: ${updatedBooking.listingTitle || 'Property'}`,
+                                `Your booking request is now ${updatedBooking.status.toUpperCase()}.`
+                            );
+                        }
+                        return newBookings;
                     }
-                    return newBookings;
-                }
-                return [updatedBooking, ...prev];
-            });
+                    return [updatedBooking, ...prev];
+                });
+
+                // Also invalidate cache
+                bookingsService.invalidateCache(user.id, 'student');
+            } catch (error) {
+                console.error('[MyBookings] Error handling booking update:', error);
+            }
         });
 
         return () => {
+            console.log('[MyBookings] Cleaning up subscription');
             subscription.unsubscribe();
         };
-    }, []);
-
-    const loadBookings = async () => {
-        if (!user?.id) return;
-        setLoading(true);
-        try {
-            const data = await bookingsService.getBookingsForStudent(user.id);
-            setBookings(data);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    }, [user?.id, loadBookings]);
 
     const handleMarkAsPaid = async (bookingId: string) => {
         Alert.alert(
@@ -89,9 +148,10 @@ export const MyBookingsScreen = () => {
                                 "Payment Notified",
                                 "The owner has been notified of your payment. They will verify and confirm shortly."
                             );
-                            loadBookings();
-                        } catch (error) {
-                            Alert.alert('Error', 'Failed to update status');
+                            // Local update for instant feedback
+                            setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: 'paid' } : b));
+                        } catch (error: any) {
+                            Alert.alert('Update Failed', error.message || 'Failed to update status. Please try again.');
                         }
                     }
                 }
@@ -109,7 +169,8 @@ export const MyBookingsScreen = () => {
         }
     };
 
-    const renderBookingItem = ({ item }: { item: Booking }) => {
+    // Memoized Booking Item
+    const BookingItem = React.memo(({ item }: { item: Booking }) => {
         const status = getStatusStyle(item.status);
         const isApproved = item.status === 'approved';
 
@@ -135,7 +196,7 @@ export const MyBookingsScreen = () => {
                         <Calendar size={16} color={colors.primary} />
                         <View style={styles.detailTextCol}>
                             <Text style={[styles.detailLabel, { color: colors.textLight }]}>Request Date</Text>
-                            <Text style={[styles.detailVal, { color: colors.text }]}>{new Date(item.createdAt).toLocaleDateString()}</Text>
+                            <Text style={[styles.detailVal, { color: colors.text }]}>{formatDateSafely(item.createdAt)}</Text>
                         </View>
                     </View>
                     <View style={styles.detailItem}>
@@ -164,7 +225,11 @@ export const MyBookingsScreen = () => {
                 )}
             </View>
         );
-    };
+    });
+
+    const renderBookingItem = useCallback(({ item }: { item: Booking }) => (
+        <BookingItem item={item} />
+    ), [colors, shadows]);
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -176,7 +241,7 @@ export const MyBookingsScreen = () => {
                 <View style={{ width: 44 }} />
             </View>
 
-            {loading ? (
+            {loading && !refreshing ? (
                 <View style={styles.centerContainer}>
                     <ActivityIndicator size="large" color={colors.primary} />
                 </View>
@@ -186,6 +251,22 @@ export const MyBookingsScreen = () => {
                     renderItem={renderBookingItem}
                     keyExtractor={(item) => item.id}
                     contentContainerStyle={styles.listContent}
+                    onRefresh={handleRefresh}
+                    refreshing={refreshing}
+                    onEndReached={handleLoadMore}
+                    onEndReachedThreshold={0.5}
+                    ListFooterComponent={() => (
+                        loadingMore ? (
+                            <View style={styles.footerLoader}>
+                                <ActivityIndicator size="small" color={colors.primary} />
+                            </View>
+                        ) : null
+                    )}
+                    // Performance Optimizations
+                    initialNumToRender={10}
+                    maxToRenderPerBatch={10}
+                    windowSize={5}
+                    removeClippedSubviews={true}
                     ListEmptyComponent={
                         <View style={styles.emptyContainer}>
                             <Clock size={64} color={colors.border} />
@@ -333,4 +414,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 40,
         lineHeight: 22,
     },
+    footerLoader: {
+        paddingVertical: 20,
+        alignItems: 'center',
+    }
 });

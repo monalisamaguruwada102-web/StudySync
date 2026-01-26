@@ -22,8 +22,10 @@ import { Plus, MapPin, Edit3, Trash2, Eye, Building2, MoreVertical, Zap, ShieldC
 import { Theme, Spacing, Typography, Shadows } from '../../theme/Theme';
 import { useTheme } from '../../context/ThemeContext';
 import { listingsService } from '../../services/listings.service';
+import { storageService } from '../../services/storage.service';
 import { useAuth } from '../../context/AuthContext';
 import { Listing } from '../../types';
+import * as ImagePicker from 'expo-image-picker';
 
 const { width } = Dimensions.get('window');
 
@@ -37,6 +39,8 @@ export const MyListingsScreen = () => {
     const [isVerifyModalVisible, setVerifyModalVisible] = React.useState(false);
     const [verifyingListingId, setVerifyingListingId] = React.useState<string | null>(null);
     const [isVerifying, setIsVerifying] = React.useState(false);
+    const [deedImage, setDeedImage] = React.useState<string | null>(null);
+    const [idImage, setIdImage] = React.useState<string | null>(null);
 
     const {
         data: listings = [],
@@ -69,32 +73,60 @@ export const MyListingsScreen = () => {
 
     const handleRequestVerification = (listingId: string) => {
         setVerifyingListingId(listingId);
+        setDeedImage(null);
+        setIdImage(null);
         setVerifyModalVisible(true);
+    };
+
+    const pickDocument = async (type: 'deed' | 'id') => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission Denied', 'We need access to your photos to upload verification documents.');
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.8,
+        });
+
+        if (!result.canceled) {
+            if (type === 'deed') setDeedImage(result.assets[0].uri);
+            else setIdImage(result.assets[0].uri);
+        }
     };
 
     const submitVerification = async () => {
         if (!verifyingListingId) return;
+        if (!deedImage || !idImage) {
+            Alert.alert('Incomplete', 'Please upload both property deeds and ID photo.');
+            return;
+        }
 
         setIsVerifying(true);
-        // Simulation: Delay for "uploading"
-        setTimeout(async () => {
-            try {
-                // In simulation, we just mark it as verified immediately or after a "review"
-                // For this demo, let's update it to verified
-                const listing = listings.find(l => l.id === verifyingListingId);
-                if (listing) {
-                    await listingsService.saveListing({ ...listing, isVerified: true });
-                    refetch();
-                    Alert.alert('Success', 'Verification request submitted! Your property is now being reviewed (Simulation: Verified immediately).');
-                }
-            } catch (error) {
-                Alert.alert('Error', 'Failed to submit verification');
-            } finally {
-                setIsVerifying(false);
-                setVerifyModalVisible(false);
-                setVerifyingListingId(null);
-            }
-        }, 2000);
+        try {
+            // 1. Upload documents
+            console.log('[MyListings] Uploading deeds...');
+            await storageService.uploadPropertyProof(verifyingListingId, deedImage);
+
+            console.log('[MyListings] Uploading ID...');
+            await storageService.uploadPropertyProof(verifyingListingId, idImage);
+
+            // 2. Update Listing Status
+            await listingsService.submitForVerification(verifyingListingId);
+
+            Alert.alert('Success', 'Verification documents submitted! Our team will review them shortly.');
+            refetch();
+            setVerifyModalVisible(false);
+            setVerifyingListingId(null);
+        } catch (error: any) {
+            console.error('[MyListings] Verification Error:', error);
+            Alert.alert('Upload Failed', error.message || 'An error occurred during upload.');
+        } finally {
+            setIsVerifying(false);
+        }
     };
 
     const renderListingItem = ({ item }: { item: Listing }) => (
@@ -249,14 +281,32 @@ export const MyListingsScreen = () => {
                                 Upload property documents to get the verified badge and build trust with students.
                             </Text>
 
-                            <TouchableOpacity style={[styles.uploadBox, { borderColor: colors.border, borderStyle: 'dashed' }]}>
-                                <FileText size={32} color={colors.textLight} />
-                                <Text style={[styles.uploadText, { color: colors.textLight }]}>Property Deeds / Council Papers</Text>
+                            <TouchableOpacity
+                                style={[styles.uploadBox, { borderColor: deedImage ? colors.secondary : colors.border, borderStyle: 'dashed' }]}
+                                onPress={() => pickDocument('deed')}
+                            >
+                                {deedImage ? (
+                                    <Image source={{ uri: deedImage }} style={styles.previewThumb} />
+                                ) : (
+                                    <>
+                                        <FileText size={32} color={colors.textLight} />
+                                        <Text style={[styles.uploadText, { color: colors.textLight }]}>Property Deeds / Council Papers</Text>
+                                    </>
+                                )}
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={[styles.uploadBox, { borderColor: colors.border, borderStyle: 'dashed' }]}>
-                                <Camera size={32} color={colors.textLight} />
-                                <Text style={[styles.uploadText, { color: colors.textLight }]}>Photo of ID / Passport</Text>
+                            <TouchableOpacity
+                                style={[styles.uploadBox, { borderColor: idImage ? colors.secondary : colors.border, borderStyle: 'dashed' }]}
+                                onPress={() => pickDocument('id')}
+                            >
+                                {idImage ? (
+                                    <Image source={{ uri: idImage }} style={styles.previewThumb} />
+                                ) : (
+                                    <>
+                                        <Camera size={32} color={colors.textLight} />
+                                        <Text style={[styles.uploadText, { color: colors.textLight }]}>Photo of ID / Passport</Text>
+                                    </>
+                                )}
                             </TouchableOpacity>
 
                             <View style={[styles.infoNote, { backgroundColor: colors.primary + '10' }]}>
@@ -503,5 +553,10 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 16,
         fontWeight: '800',
+    },
+    previewThumb: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 18,
     }
 });

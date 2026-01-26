@@ -4,7 +4,6 @@ import {
     Text,
     StyleSheet,
     TouchableOpacity,
-    Image,
     Dimensions,
     Platform,
     Share,
@@ -12,7 +11,10 @@ import {
     ScrollView,
     Modal,
     TextInput,
+    ActivityIndicator,
+    Clipboard,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import * as Linking from 'expo-linking';
@@ -38,26 +40,28 @@ import {
     Share2,
 } from 'lucide-react-native';
 
-import { Theme, Spacing } from '../../theme/Theme';
+import { Spacing } from '../../theme/Theme';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { analyticsService } from '../../services/analytics.service';
 import { bookmarksService } from '../../services/bookmarks.service';
 import { listingsService } from '../../services/listings.service';
 import { bookingsService } from '../../services/bookings.service';
+import { chatService } from '../../services/chat.service';
 import { notificationService } from '../../services/notifications.service';
 
 const { width } = Dimensions.get('window');
+
+const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800';
+const AVATAR_PLACEHOLDER = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100';
 
 export const ListingDetailsScreen = () => {
     const route = useRoute<any>();
     const navigation = useNavigation<any>();
     const [listing, setListing] = useState(route.params.listing);
     const { t } = useTranslation();
-    const { isDark } = useTheme();
+    const { colors, shadows, isDark } = useTheme();
     const { user } = useAuth();
-    const colors = isDark ? Theme.Dark.Colors : Theme.Light.Colors;
-    const shadows = isDark ? Theme.Dark.Shadows : Theme.Light.Shadows;
 
     const [isSaved, setIsSaved] = useState(false);
     const [viewCount, setViewCount] = useState(0);
@@ -69,6 +73,8 @@ export const ListingDetailsScreen = () => {
     const [submittingReview, setSubmittingReview] = useState(false);
     const [isBookingModalVisible, setBookingModalVisible] = useState(false);
     const [bookingLoading, setBookingLoading] = useState(false);
+    const [chatLoading, setChatLoading] = useState(false);
+    const [reviews, setReviews] = useState<any[]>([]);
 
     const SIMULATED_GALLERY = [
         'https://images.unsplash.com/photo-1522770179533-24471fcdba45',
@@ -82,8 +88,18 @@ export const ListingDetailsScreen = () => {
             analyticsService.trackView(listing.id, user?.id);
             checkBookmark();
             loadViewCount();
+            loadReviews();
         }
     }, [listing.id, user?.id]);
+
+    const loadReviews = async () => {
+        try {
+            const data = await listingsService.getReviews(listing.id);
+            setReviews(data);
+        } catch (error) {
+            console.error('[ListingDetails] Error loading reviews:', error);
+        }
+    };
 
     const loadViewCount = async () => {
         // Simulation: Get a "tracked" view count for this listing
@@ -97,11 +113,16 @@ export const ListingDetailsScreen = () => {
     };
 
     const handleChatWithOwner = async () => {
+        if (!user) {
+            Alert.alert('Sign In Required', 'Please sign in to chat with owners.');
+            return;
+        }
+
+        setChatLoading(true);
         try {
-            const { chatService } = await import('../../services/chat.service');
             const conversation = await chatService.getOrCreateConversation(
-                user?.id || 'student_1',
-                user?.name || 'Student',
+                user.id,
+                user.name || 'Student',
                 listing.ownerId,
                 listing.ownerName || 'Property Owner'
             );
@@ -109,33 +130,61 @@ export const ListingDetailsScreen = () => {
                 conversationId: conversation.id,
                 title: listing.ownerName || 'Property Owner'
             });
-        } catch (error) {
-            console.error('Failed to start conversation:', error);
+        } catch (error: any) {
+            console.error('[ListingDetails] Chat Error:', error);
+            const errorMessage = error.message || error.details || error.hint || 'Unknown error';
+            Alert.alert(
+                'Chat Error',
+                `Unable to start chat. \n\nError: ${errorMessage}\n\nPlease try again later.`
+            );
+        } finally {
+            setChatLoading(false);
         }
     };
 
     const handleWhatsAppChat = () => {
-        const phone = listing.ownerPhone || '0771234567';
+        const rawPhone = listing.ownerPhone || '0771234567';
+        // Sanitize phone number: remove spaces and non-digits
+        const phone = rawPhone.replace(/\D/g, '');
+        // Ensure Zimbabwe country code if missing (optional, but good for local context)
+        const formattedPhone = phone.startsWith('0') ? '263' + phone.substring(1) : phone;
+
         const message = `Hi, I'm interested in your property: ${listing.propertyName || listing.title}. Is it still available?`;
-        const url = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`;
+        const url = `whatsapp://send?phone=${formattedPhone}&text=${encodeURIComponent(message)}`;
 
         Linking.canOpenURL(url).then(supported => {
             if (supported) {
-                Linking.openURL(url);
+                return Linking.openURL(url);
             } else {
-                // Try universal link if app scheme fails
-                Linking.openURL(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`);
+                return Linking.openURL(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`);
             }
+        }).catch(() => {
+            Alert.alert('Error', 'Unable to open WhatsApp');
         });
     };
 
     const handleCallOwner = () => {
-        const phoneNumber = listing.ownerPhone || '0771234567'; // Fallback to mock if not provided
-        const url = `tel:${phoneNumber}`;
+        const rawPhone = listing.ownerPhone || '0771234567';
+        const phone = rawPhone.replace(/\D/g, '');
+        const url = `tel:${phone}`;
+
         Linking.canOpenURL(url)
             .then((supported) => {
                 if (!supported) {
-                    Alert.alert('Error', 'Calling is not supported on this device');
+                    Alert.alert(
+                        'Device Limit',
+                        `Calling is not supported on this device. Would you like to copy the number? \n\n${rawPhone}`,
+                        [
+                            { text: 'Cancel', style: 'cancel' },
+                            {
+                                text: 'Copy Number',
+                                onPress: () => {
+                                    Clipboard.setString(rawPhone);
+                                    Alert.alert('Success', 'Phone number copied to clipboard');
+                                }
+                            }
+                        ]
+                    );
                 } else {
                     return Linking.openURL(url);
                 }
@@ -151,6 +200,34 @@ export const ListingDetailsScreen = () => {
         } catch (error) {
             console.error(error);
         }
+    };
+
+    const handleShareWithParent = () => {
+        const securitySummary = listing.isVerified ? "✅ Verified Property" : "Verified status pending";
+        const safetyFeatures = listing.amenities?.filter((a: string) =>
+            ['Security', 'CCTV', 'Fenced', 'Gated', 'Safe'].some(s => a.includes(s))
+        ).join(', ') || 'Standard security';
+
+        const message = `Hi! I found this boarding house on Off Rez Connect:\n\n` +
+            `🏠 *${listing.propertyName || listing.title}*\n` +
+            `📍 Location: ${listing.location}\n` +
+            `💰 Price: $${listing.price}/mo\n` +
+            `🛡️ Safety: ${securitySummary}\n` +
+            `🔒 Features: ${safetyFeatures}\n\n` +
+            `What do you think?`;
+
+        const url = `whatsapp://send?text=${encodeURIComponent(message)}`;
+
+        Linking.canOpenURL(url).then(supported => {
+            if (supported) {
+                return Linking.openURL(url);
+            } else {
+                // Fallback to web link
+                return Linking.openURL(`https://wa.me/?text=${encodeURIComponent(message)}`);
+            }
+        }).catch(() => {
+            Alert.alert('Error', 'Unable to open WhatsApp');
+        });
     };
 
     const handleReport = () => {
@@ -179,6 +256,7 @@ export const ListingDetailsScreen = () => {
         setSubmittingReview(true);
         try {
             await listingsService.submitReview(listing.id, {
+                userId: user?.id,
                 userName: user?.name || 'Anonymous Student',
                 rating: rating,
                 comment: comment.trim(),
@@ -195,24 +273,53 @@ export const ListingDetailsScreen = () => {
             // Refetch listing to update UI
             const updated = await listingsService.getListingById(listing.id);
             if (updated) setListing(updated);
-        } catch (error) {
-            Alert.alert('Error', 'Failed to submit review');
+        } catch (error: any) {
+            console.error('[ListingDetails] Review Error:', error);
+            const errorMessage = error.message || error.details || error.hint || 'Unknown error';
+            Alert.alert(
+                'Review Failed',
+                `We couldn't submit your review. \n\nError: ${errorMessage}\n\nPlease check your internet connection and try again.`
+            );
         } finally {
             setSubmittingReview(false);
         }
     };
 
     const handleCreateBooking = async () => {
+        if (!user) {
+            Alert.alert(
+                'Sign In Required',
+                'Please sign in or create an account to book your stay.',
+                [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Sign In', onPress: () => navigation.navigate('Login') }
+                ]
+            );
+            setBookingModalVisible(false);
+            return;
+        }
+
         setBookingLoading(true);
         try {
-            await bookingsService.createBooking({
+            const booking = await bookingsService.createBooking({
                 listingId: listing.id,
-                studentId: user?.id || 'temp_student',
+                studentId: user.id,
                 ownerId: listing.ownerId,
                 totalPrice: listing.price,
                 listingTitle: listing.propertyName || listing.title,
-                studentName: user?.name || 'Anonymous Student',
+                studentName: user.name || 'Anonymous Student',
+                studentPhone: user.phone || '',
+                ownerPhone: listing.ownerPhone || '',
             });
+
+            if (booking.id.startsWith('queued_')) {
+                Alert.alert(
+                    'Offline: Booking Queued',
+                    'You are currently offline. Your booking request has been queued and will be sent automatically once you are back online.',
+                    [{ text: 'OK', onPress: () => navigation.navigate('MyBookings') }]
+                );
+                return;
+            }
 
             await notificationService.scheduleLocalNotification(
                 'Request Sent',
@@ -220,14 +327,60 @@ export const ListingDetailsScreen = () => {
             );
 
             setBookingModalVisible(false);
+
+            // WhatsApp Manual Payment Flow
+            const rawPhone = listing.ownerPhone || '0771234567';
+            const phone = rawPhone.replace(/\D/g, '');
+            const formattedPhone = phone.startsWith('0') ? '263' + phone.substring(1) : phone;
+
+            const paymentInstructions = (listing.ecocashNumber)
+                ? `\n\n💳 *Payment Details:*\nEcocash: ${listing.ecocashNumber}\nAccount: ${listing.ownerName || 'Property Owner'}`
+                : '';
+
+            const message = `Hi! I just sent a booking request via Off Rez Connect.\n\n` +
+                `🏠 *Property:* ${listing.propertyName || listing.title}\n` +
+                `💰 *Price:* $${listing.price}\n` +
+                `🔖 *Reference:* ${booking.id.substring(0, 8).toUpperCase()}` +
+                paymentInstructions +
+                `\n\nI'm ready to complete the payment. Please let me know the next steps.`;
+
+            const whatsappUrl = `whatsapp://send?phone=${formattedPhone}&text=${encodeURIComponent(message)}`;
+
             Alert.alert(
-                'Request Sent!',
-                'The owner has been notified. You can track your request status in the Bookings tab.',
-                [{ text: 'OK', onPress: () => navigation.navigate('MyBookings') }]
+                'Booking Request Sent!',
+                'Your request has been recorded. To secure your room faster, we will now open WhatsApp so you can send the payment confirmation to the owner.',
+                [
+                    {
+                        text: 'Continue to WhatsApp',
+                        onPress: () => {
+                            Linking.canOpenURL(whatsappUrl).then(supported => {
+                                if (supported) {
+                                    Linking.openURL(whatsappUrl).catch(() => {
+                                        Linking.openURL(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`).catch(() => {
+                                            Alert.alert('Error', 'Unable to open WhatsApp or Browser.');
+                                        });
+                                    });
+                                } else {
+                                    Linking.openURL(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`).catch(() => {
+                                        Alert.alert('Error', 'Unable to open browser.');
+                                    });
+                                }
+                                navigation.navigate('MyBookings');
+                            }).catch(() => {
+                                Alert.alert('Error', 'Something went wrong while trying to open WhatsApp.');
+                                navigation.navigate('MyBookings');
+                            });
+                        }
+                    }
+                ]
             );
-        } catch (error) {
-            console.error(error);
-            Alert.alert('Error', 'Failed to send booking request');
+        } catch (error: any) {
+            console.error('[ListingDetails] Booking Error:', error);
+            const errorMessage = error.message || error.details || error.hint || 'Unknown error';
+            Alert.alert(
+                'Booking Failed',
+                `We couldn't send your request. \n\nError: ${errorMessage}\n\nPlease check your internet connection or try again later.`
+            );
         } finally {
             setBookingLoading(false);
         }
@@ -239,9 +392,13 @@ export const ListingDetailsScreen = () => {
                 {/* Image Header */}
                 <View style={styles.imageContainer}>
                     <Image
-                        source={{ uri: listing.images[0] }}
+                        source={{ uri: listing.images[0] || PLACEHOLDER_IMAGE }}
                         style={styles.image}
-                        fadeDuration={500}
+                        contentFit="cover"
+                        cachePolicy="disk"
+                        transition={500}
+                        placeholder={require('../../../assets/icon_fixed.png')}
+                        onError={(e) => console.log(`ListingDetails main image error (${listing.id}):`, e)}
                     />
 
                     <SafeAreaView style={styles.headerOverlay}>
@@ -250,7 +407,14 @@ export const ListingDetailsScreen = () => {
                                 <ArrowLeft size={24} color={colors.text} />
                             </TouchableOpacity>
                             <View style={styles.headerRight}>
-                                <TouchableOpacity style={[styles.roundBtn, { backgroundColor: colors.surface + 'E6' }]} onPress={handleShare}>
+                                <TouchableOpacity
+                                    style={[styles.roundBtn, { backgroundColor: colors.surface + 'E6' }]}
+                                    onPress={handleShareWithParent}
+                                    activeOpacity={0.7}
+                                >
+                                    <Shield size={20} color={colors.primary} />
+                                </TouchableOpacity>
+                                <TouchableOpacity style={[styles.roundBtn, { backgroundColor: colors.surface + 'E6', marginLeft: 12 }]} onPress={handleShare}>
                                     <Share2 size={20} color={colors.text} />
                                 </TouchableOpacity>
                                 <TouchableOpacity style={[styles.roundBtn, { backgroundColor: colors.surface + 'E6', marginLeft: 12 }]} onPress={handleReport}>
@@ -293,9 +457,9 @@ export const ListingDetailsScreen = () => {
                                 <Text style={[styles.viewText, { color: colors.primary }]}>{viewCount} Total Views</Text>
                             </View>
                         </View>
-                        <View style={styles.priceContainer}>
+                        <View style={styles.listingPriceContainer}>
                             <Text style={[styles.priceText, { color: colors.primary }]}>${listing.price}</Text>
-                            <Text style={[styles.priceUnit, { color: colors.textLight }]}>{t('listing.priceUnit')}</Text>
+                            <Text style={[styles.priceUnit, { color: colors.textLight }]}>per semester</Text>
                         </View>
                     </View>
 
@@ -349,7 +513,7 @@ export const ListingDetailsScreen = () => {
                                     {listing.rating?.toFixed(1) || '0.0'}
                                 </Text>
                                 <Text style={[styles.reviewCount, { color: colors.textLight }]}>
-                                    ({listing.reviews?.length || 0})
+                                    ({reviews.length})
                                 </Text>
                             </View>
                         </View>
@@ -380,11 +544,11 @@ export const ListingDetailsScreen = () => {
                             </View>
                         )}
 
-                        {listing.reviews && listing.reviews.length > 0 ? (
-                            listing.reviews.map((review: any) => (
+                        {reviews && reviews.length > 0 ? (
+                            reviews.map((review: any) => (
                                 <View key={review.id} style={[styles.reviewItem, { borderBottomColor: colors.border }]}>
                                     <View style={styles.reviewHeader}>
-                                        <Text style={[styles.reviewerName, { color: colors.text }]}>{review.userName}</Text>
+                                        <Text style={[styles.reviewerName, { color: colors.text }]}>{review.user_name || review.userName}</Text>
                                         <View style={styles.starsRow}>
                                             {[1, 2, 3, 4, 5].map((s) => (
                                                 <Star
@@ -428,8 +592,12 @@ export const ListingDetailsScreen = () => {
                         <Text style={[styles.sectionTitle, { color: colors.text }]}>Hosted by</Text>
                         <View style={[styles.ownerCard, { backgroundColor: isDark ? colors.background : '#f8fafc' }]}>
                             <Image
-                                source={{ uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100' }}
+                                source={{ uri: listing.ownerAvatar && listing.ownerAvatar.startsWith('http') ? listing.ownerAvatar : AVATAR_PLACEHOLDER }}
                                 style={styles.ownerAvatar}
+                                contentFit="cover"
+                                cachePolicy="disk"
+                                placeholder={require('../../../assets/icon_fixed.png')}
+                                onError={(e) => console.log(`ListingDetails owner avatar error (${listing.id}):`, e)}
                             />
                             <View style={{ flex: 1, marginLeft: 12 }}>
                                 <Text style={[styles.ownerName, { color: colors.text }]}>{listing.ownerName}</Text>
@@ -469,9 +637,19 @@ export const ListingDetailsScreen = () => {
                     <MessageCircle size={20} color={colors.primary} />
                     <Text style={[styles.chatBtnText, { color: colors.primary }]}>WhatsApp</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.chatBtn, { backgroundColor: colors.primary, marginLeft: 10 }, shadows.strong]} onPress={handleChatWithOwner}>
-                    <MessageCircle size={20} color={colors.white} />
-                    <Text style={styles.chatBtnText}>Chat</Text>
+                <TouchableOpacity
+                    style={[styles.chatBtn, { backgroundColor: colors.primary, marginLeft: 10 }, shadows.strong, chatLoading && { opacity: 0.8 }]}
+                    onPress={handleChatWithOwner}
+                    disabled={chatLoading}
+                >
+                    {chatLoading ? (
+                        <ActivityIndicator size="small" color={colors.white} />
+                    ) : (
+                        <>
+                            <MessageCircle size={20} color={colors.white} />
+                            <Text style={styles.chatBtnText}>Chat</Text>
+                        </>
+                    )}
                 </TouchableOpacity>
             </View>
 
@@ -602,48 +780,61 @@ export const ListingDetailsScreen = () => {
             >
                 <View style={styles.modalOverlay}>
                     <View style={[styles.confirmModalContent, { backgroundColor: colors.surface }]}>
-                        <View style={styles.confirmHeader}>
-                            <View style={[styles.confirmIconBox, { backgroundColor: colors.primary + '20' }]}>
-                                <ShieldCheck size={32} color={colors.primary} />
+                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+                            <View style={styles.confirmHeader}>
+                                <View style={[styles.confirmIconBox, { backgroundColor: colors.primary + '20' }]}>
+                                    <ShieldCheck size={32} color={colors.primary} />
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={[styles.confirmTitle, { color: colors.text }]}>Secure Your Stay</Text>
+                                    <Text style={[styles.confirmSub, { color: colors.textLight }]}>
+                                        Requesting to book: {listing.propertyName || listing.title}
+                                    </Text>
+                                </View>
                             </View>
-                            <Text style={[styles.confirmTitle, { color: colors.text }]}>Secure Your Stay</Text>
-                            <Text style={[styles.confirmSub, { color: colors.textLight }]}>
-                                You are requesting to book a spot at {listing.propertyName || listing.title}.
-                            </Text>
-                        </View>
 
-                        <View style={[styles.confirmDetailBox, { backgroundColor: isDark ? colors.background : '#F8FAFC' }]}>
-                            <View style={styles.confirmDetailRow}>
-                                <Text style={[styles.confirmDetailLabel, { color: colors.textLight }]}>Price per session</Text>
-                                <Text style={[styles.confirmDetailVal, { color: colors.text }]}>${listing.price}</Text>
-                            </View>
-                            <View style={[styles.miniDivider, { backgroundColor: colors.border }]} />
-                            <View style={styles.confirmDetailRow}>
-                                <Text style={[styles.confirmDetailLabel, { color: colors.textLight }]}>Service Fee</Text>
-                                <Text style={[styles.confirmDetailVal, { color: colors.success }]}>FREE</Text>
-                            </View>
-                            <View style={[styles.miniDivider, { backgroundColor: colors.border }]} />
-                            <View style={styles.confirmDetailRow}>
-                                <Text style={[styles.confirmDetailLabel, { color: colors.text, fontWeight: '800' }]}>Total to Pay</Text>
-                                <Text style={[styles.confirmDetailVal, { color: colors.primary, fontWeight: '900', fontSize: 20 }]}>${listing.price}</Text>
-                            </View>
-                        </View>
+                            {/* Manual Payment Instructions */}
+                            <View style={[styles.paymentInstructionCard, { backgroundColor: isDark ? colors.background : '#F8FAFC' }]}>
+                                <Text style={[styles.paymentInstructionTitle, { color: colors.text }]}>Manual Payment Instructions</Text>
 
-                        <View style={styles.confirmActions}>
-                            <TouchableOpacity
-                                style={[styles.cancelBtn, { borderColor: colors.border }]}
-                                onPress={() => setBookingModalVisible(false)}
-                            >
-                                <Text style={[styles.cancelBtnText, { color: colors.textLight }]}>Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[styles.confirmBtn, { backgroundColor: colors.primary }]}
-                                onPress={handleCreateBooking}
-                                disabled={bookingLoading}
-                            >
-                                <Text style={styles.confirmBtnText}>{bookingLoading ? 'Sending...' : 'Confirm Request'}</Text>
-                            </TouchableOpacity>
-                        </View>
+                                <View style={styles.instructionDetailRow}>
+                                    <Text style={[styles.instDetailLabel, { color: colors.textLight }]}>EcoCash Number</Text>
+                                    <Text style={[styles.instDetailVal, { color: colors.primary }]}>{listing.ecocashNumber || '0789 932 832'}</Text>
+                                </View>
+                                <View style={styles.instructionDetailRow}>
+                                    <Text style={[styles.instDetailLabel, { color: colors.textLight }]}>Account Name</Text>
+                                    <Text style={[styles.instDetailVal, { color: colors.text }]}>{listing.ownerName || 'Property Owner'}</Text>
+                                </View>
+                                <View style={styles.instructionDetailRow}>
+                                    <Text style={[styles.instDetailLabel, { color: colors.textLight }]}>Amount to Pay</Text>
+                                    <Text style={[styles.instDetailVal, { color: colors.text, fontWeight: '800' }]}>${listing.price}</Text>
+                                </View>
+
+                                <View style={[styles.instructionNote, { backgroundColor: colors.primary + '10' }]}>
+                                    <Text style={[styles.instructionNoteText, { color: colors.textLight }]}>
+                                        1. Pay ${listing.price} to the EcoCash number above.{"\n"}
+                                        2. Click "Confirm & Pay" below to send request.{"\n"}
+                                        3. Send proof via WhatsApp for instant approval.
+                                    </Text>
+                                </View>
+                            </View>
+
+                            <View style={styles.confirmActions}>
+                                <TouchableOpacity
+                                    style={[styles.cancelBtn, { borderColor: colors.border }]}
+                                    onPress={() => setBookingModalVisible(false)}
+                                >
+                                    <Text style={[styles.cancelBtnText, { color: colors.textLight }]}>Cancel</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[styles.confirmBtn, { backgroundColor: colors.primary }]}
+                                    onPress={handleCreateBooking}
+                                    disabled={bookingLoading}
+                                >
+                                    <Text style={styles.confirmBtnText}>{bookingLoading ? 'Processing...' : 'Confirm & Pay'}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </ScrollView>
                     </View>
                 </View>
             </Modal>
@@ -676,6 +867,100 @@ const styles = StyleSheet.create({
     },
     headerRight: {
         flexDirection: 'row',
+    },
+    checkIcon: {
+        width: 14,
+        height: 14,
+        borderRadius: 7,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 6
+    },
+    submitBar: {
+        padding: 16,
+        paddingBottom: Platform.OS === 'ios' ? 34 : 16,
+        borderTopWidth: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: '#fff',
+    },
+    totalLabel: {
+        fontSize: 12,
+        marginBottom: 4,
+    },
+    totalAmount: {
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    confirmModalContent: {
+        padding: 24,
+        borderRadius: 16,
+        width: '90%',
+        maxWidth: 400,
+    },
+    confirmHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    confirmIconBox: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 16,
+    },
+    confirmTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 4,
+    },
+    confirmSub: {
+        fontSize: 14,
+        opacity: 0.7,
+    },
+    confirmDetailBox: {
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 24,
+    },
+    confirmDetailRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    confirmDetailLabel: {
+        fontSize: 14,
+        opacity: 0.7,
+    },
+    confirmDetailVal: {
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    miniDivider: {
+        height: 1,
+        marginVertical: 12,
+        opacity: 0.1,
+        backgroundColor: '#000',
+    },
+    confirmActions: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    cancelBtn: {
+        flex: 1,
+        paddingVertical: 14,
+        borderRadius: 12,
+        borderWidth: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    cancelBtnText: {
+        fontSize: 16,
+        fontWeight: '600',
     },
     roundBtn: {
         width: 44,
@@ -731,7 +1016,7 @@ const styles = StyleSheet.create({
     distanceText: {
         fontSize: 14,
     },
-    priceContainer: {
+    listingPriceContainer: {
         alignItems: 'flex-end',
     },
     priceText: {
@@ -888,22 +1173,22 @@ const styles = StyleSheet.create({
         borderTopWidth: 1,
     },
     payBtn: {
-        flex: 1,
+        flex: 1.2,
         height: 56,
         borderRadius: 18,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 12,
+        marginRight: 8,
     },
     payBtnText: {
         color: 'white',
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: '800',
-        marginLeft: 8,
+        marginLeft: 6,
     },
     chatBtn: {
-        flex: 0.5,
+        flex: 0.9,
         height: 56,
         borderRadius: 18,
         flexDirection: 'row',
@@ -912,9 +1197,42 @@ const styles = StyleSheet.create({
     },
     chatBtnText: {
         color: 'white',
+        fontSize: 13,
+        fontWeight: '800',
+        marginLeft: 4,
+    },
+    paymentInstructionCard: {
+        padding: 16,
+        borderRadius: 16,
+        marginBottom: 20,
+    },
+    paymentInstructionTitle: {
         fontSize: 16,
         fontWeight: '800',
-        marginLeft: 8,
+        marginBottom: 12,
+    },
+    instructionDetailRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    instDetailLabel: {
+        fontSize: 13,
+        fontWeight: '500',
+    },
+    instDetailVal: {
+        fontSize: 14,
+        fontWeight: '700',
+    },
+    instructionNote: {
+        padding: 12,
+        borderRadius: 12,
+        marginTop: 12,
+    },
+    instructionNoteText: {
+        fontSize: 11,
+        lineHeight: 16,
     },
     propertyNameRow: {
         flexDirection: 'row',
@@ -1051,5 +1369,17 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    confirmBtn: {
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    confirmBtnText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 16,
     },
 });

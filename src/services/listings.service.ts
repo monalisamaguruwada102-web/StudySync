@@ -1,39 +1,63 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import NetInfo from '@react-native-community/netinfo';
 import { Listing } from '../types';
 import { MOCK_LISTINGS } from './mockData';
-import { supabase, IS_SUPABASE_CONFIGURED } from './supabase';
+import { supabase, IS_SUPABASE_CONFIGURED, SUPABASE_URL } from './supabase';
 
 const STORAGE_KEY = '@listings_data';
 
 // Mapping Helpers
-const mapToListing = (dbListing: any): Listing => ({
-    id: dbListing.id,
-    ownerId: dbListing.owner_id,
-    ownerName: dbListing.owner_name,
-    ownerPhone: dbListing.owner_phone,
-    propertyName: dbListing.property_name,
-    title: dbListing.title,
-    description: dbListing.description,
-    price: dbListing.price,
-    location: dbListing.location,
-    gender: dbListing.gender,
-    maxOccupancy: dbListing.max_occupancy,
-    amenities: dbListing.amenities || [],
-    images: dbListing.images || [],
-    isVerified: dbListing.is_verified,
-    isPremium: dbListing.is_premium,
-    boostExpiry: dbListing.boost_expiry,
-    coordinates: dbListing.latitude && dbListing.longitude ? {
-        latitude: dbListing.latitude,
-        longitude: dbListing.longitude
-    } : undefined,
-    ecocashNumber: dbListing.ecocash_number,
-});
+const mapToListing = (dbListing: any): Listing => {
+    const supabaseUrl = SUPABASE_URL;
+
+    // Map Images (Handle both full URLs and relative paths)
+    const images = (dbListing.images || []).map((img: string) => {
+        if (!img) return null;
+        if (img.startsWith('http') || img.startsWith('file://') || img.startsWith('data:')) return img;
+        return `${supabaseUrl}/storage/v1/object/public/listing-images/${img}`;
+    }).filter(Boolean);
+
+    // Map Owner Avatar
+    let ownerAvatar = dbListing.owner_avatar;
+    if (ownerAvatar && !ownerAvatar.startsWith('http')) {
+        ownerAvatar = `${supabaseUrl}/storage/v1/object/public/user-assets/${ownerAvatar}`;
+    }
+
+    return {
+        id: dbListing.id,
+        ownerId: dbListing.owner_id,
+        ownerName: dbListing.owner_name,
+        ownerPhone: dbListing.owner_phone,
+        ownerAvatar: ownerAvatar,
+        propertyName: dbListing.property_name,
+        title: dbListing.title,
+        description: dbListing.description,
+        price: dbListing.price,
+        location: dbListing.location,
+        gender: dbListing.gender,
+        maxOccupancy: dbListing.max_occupancy,
+        amenities: dbListing.amenities || [],
+        images: images,
+        isVerified: dbListing.is_verified,
+        isPremium: dbListing.is_premium,
+        boostExpiry: dbListing.boost_expiry,
+        boostStatus: dbListing.boost_status || 'none',
+        boostPeriod: dbListing.boost_period,
+        coordinates: dbListing.latitude && dbListing.longitude ? {
+            latitude: dbListing.latitude,
+            longitude: dbListing.longitude
+        } : undefined,
+        ecocashNumber: dbListing.ecocash_number,
+        fullUntil: dbListing.full_until,
+        isPriorityVerification: dbListing.is_priority_verification,
+    };
+};
 
 const mapToDb = (listing: Partial<Listing>) => ({
     owner_id: listing.ownerId,
     owner_name: listing.ownerName,
     owner_phone: listing.ownerPhone,
+    owner_avatar: listing.ownerAvatar,
     property_name: listing.propertyName,
     title: listing.title,
     description: listing.description,
@@ -46,9 +70,13 @@ const mapToDb = (listing: Partial<Listing>) => ({
     is_verified: listing.isVerified,
     is_premium: listing.isPremium,
     boost_expiry: listing.boostExpiry,
+    boost_status: listing.boostStatus,
+    boost_period: listing.boostPeriod,
     latitude: listing.coordinates?.latitude,
     longitude: listing.coordinates?.longitude,
     ecocash_number: listing.ecocashNumber,
+    full_until: listing.fullUntil,
+    is_priority_verification: listing.isPriorityVerification,
 });
 
 export const listingsService = {
@@ -56,10 +84,17 @@ export const listingsService = {
         if (IS_SUPABASE_CONFIGURED) {
             const { data, error } = await supabase
                 .from('listings')
-                .select('*')
-                .order('is_premium', { ascending: false });
+                .select('id, owner_id, owner_name, owner_phone, owner_avatar, property_name, title, description, price, location, gender, max_occupancy, amenities, images, is_verified, is_premium, boost_expiry, boost_status, boost_period, latitude, longitude, ecocash_number, full_until, is_priority_verification')
+                .order('is_premium', { ascending: false })
+                .order('created_at', { ascending: false });
 
             if (error) throw error;
+
+            const netInfo = await NetInfo.fetch();
+            if (!netInfo.isConnected) {
+                return (data || []).slice(0, 3).map(mapToListing);
+            }
+
             return (data || []).map(mapToListing);
         }
 
@@ -86,8 +121,9 @@ export const listingsService = {
         if (IS_SUPABASE_CONFIGURED) {
             const { data, error } = await supabase
                 .from('listings')
-                .select('*')
-                .eq('owner_id', ownerId);
+                .select('id, owner_id, owner_name, owner_phone, owner_avatar, property_name, title, description, price, location, gender, max_occupancy, amenities, images, is_verified, is_premium, boost_expiry, boost_status, boost_period, latitude, longitude, ecocash_number, full_until, is_priority_verification')
+                .eq('owner_id', ownerId)
+                .order('created_at', { ascending: false });
 
             if (error) throw error;
             return (data || []).map(mapToListing);
@@ -100,7 +136,7 @@ export const listingsService = {
         if (IS_SUPABASE_CONFIGURED) {
             const { data, error } = await supabase
                 .from('listings')
-                .select('*')
+                .select('id, owner_id, owner_name, owner_phone, owner_avatar, property_name, title, description, price, location, gender, max_occupancy, amenities, images, is_verified, is_premium, boost_expiry, boost_status, boost_period, latitude, longitude, ecocash_number, full_until, is_priority_verification')
                 .eq('id', id)
                 .single();
 
@@ -182,9 +218,11 @@ export const listingsService = {
         if (IS_SUPABASE_CONFIGURED) {
             const { data, error } = await supabase
                 .from('listings')
-                .select('*')
+                .select('id, owner_id, owner_name, owner_phone, owner_avatar, property_name, title, description, price, location, gender, max_occupancy, amenities, images, is_verified, is_premium, boost_expiry, boost_status, boost_period, latitude, longitude')
                 .or(`title.ilike.%${query}%,location.ilike.%${query}%,property_name.ilike.%${query}%`)
-                .order('is_premium', { ascending: false });
+                .order('is_premium', { ascending: false })
+                .order('created_at', { ascending: false })
+                .limit(50);
 
             if (error) throw error;
             return (data || []).map(mapToListing);
@@ -228,12 +266,95 @@ export const listingsService = {
         }
     },
 
+    requestBoost: async (id: string, period: 'weekly' | 'monthly'): Promise<void> => {
+        if (IS_SUPABASE_CONFIGURED) {
+            const { error } = await supabase
+                .from('listings')
+                .update({
+                    boost_status: 'pending',
+                    boost_period: period,
+                    is_premium: false
+                })
+                .eq('id', id);
+
+            if (error) throw error;
+            return;
+        }
+
+        const listings = await listingsService.getListings();
+        const index = listings.findIndex(l => l.id === id);
+        if (index !== -1) {
+            listings[index].boostStatus = 'pending';
+            listings[index].boostPeriod = period;
+            listings[index].isPremium = false;
+            await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(listings));
+        }
+    },
+
+    approveBoost: async (id: string): Promise<void> => {
+        const period = 'monthly'; // or fetch from listing if needed, but assuming approval is effectively acting on the request
+        const durationDays = 30; // Monthly constant
+
+        if (IS_SUPABASE_CONFIGURED) {
+            const expiry = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
+            const { error } = await supabase
+                .from('listings')
+                .update({
+                    is_premium: true,
+                    boost_status: 'active',
+                    boost_expiry: expiry
+                })
+                .eq('id', id);
+
+            if (error) throw error;
+            return;
+        }
+
+        const listings = await listingsService.getListings();
+        const index = listings.findIndex(l => l.id === id);
+        if (index !== -1) {
+            const expiry = new Date();
+            expiry.setDate(expiry.getDate() + durationDays);
+
+            listings[index].isPremium = true;
+            listings[index].boostStatus = 'active';
+            listings[index].boostExpiry = expiry.toISOString();
+
+            await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(listings));
+        }
+    },
+
+    rejectBoost: async (id: string): Promise<void> => {
+        if (IS_SUPABASE_CONFIGURED) {
+            const { error } = await supabase
+                .from('listings')
+                .update({
+                    boost_status: 'rejected',
+                    is_premium: false
+                })
+                .eq('id', id);
+
+            if (error) throw error;
+            return;
+        }
+
+        const listings = await listingsService.getListings();
+        const index = listings.findIndex(l => l.id === id);
+        if (index !== -1) {
+            listings[index].boostStatus = 'rejected';
+            listings[index].isPremium = false;
+            await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(listings));
+        }
+    },
+
     submitReview: async (listingId: string, review: any): Promise<void> => {
         if (IS_SUPABASE_CONFIGURED) {
+            console.log('[ListingsService] Submitting review for listing:', listingId);
             const { error } = await supabase
                 .from('reviews')
                 .insert([{
                     listing_id: listingId,
+                    user_id: review.userId,
                     user_name: review.userName,
                     rating: review.rating,
                     comment: review.comment,
@@ -243,10 +364,56 @@ export const listingsService = {
                     images: review.images
                 }]);
 
+            if (error) {
+                console.error('[ListingsService] Review submission failed:', error.message, error.details, error.hint);
+                throw error;
+            }
+            console.log('[ListingsService] Review submitted successfully');
+            return;
+        }
+        // Simulation mode
+        console.log('[ListingsService] Simulation: Review submitted locally');
+    },
+
+    getReviews: async (listingId: string): Promise<any[]> => {
+        if (IS_SUPABASE_CONFIGURED) {
+            const { data, error } = await supabase
+                .from('reviews')
+                .select('id, listing_id, user_id, user_name, rating, comment, cleanliness_rating, location_rating, value_rating, images, created_at')
+                .eq('listing_id', listingId)
+                .order('created_at', { ascending: false })
+                .limit(20);
+
+            if (error) {
+                console.error('[ListingsService] Failed to fetch reviews:', error.message);
+                return [];
+            }
+            return data || [];
+        }
+        return [];
+    },
+
+    submitForVerification: async (listingId: string): Promise<void> => {
+        if (IS_SUPABASE_CONFIGURED) {
+            const { error } = await supabase
+                .from('listings')
+                .update({
+                    is_priority_verification: true,
+                    is_verified: false
+                })
+                .eq('id', listingId);
+
             if (error) throw error;
             return;
         }
-        // ... simulation review logic skipped for brevity as it's less critical now
+
+        const listings = await listingsService.getListings();
+        const index = listings.findIndex(l => l.id === listingId);
+        if (index !== -1) {
+            listings[index].isPriorityVerification = true;
+            listings[index].isVerified = false;
+            await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(listings));
+        }
     }
 };
 

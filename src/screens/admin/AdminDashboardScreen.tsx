@@ -9,21 +9,20 @@ import {
     Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ChevronLeft, ShieldCheck, XCircle, CheckCircle, Users as UsersIcon, Home } from 'lucide-react-native';
+import { ChevronLeft, ShieldCheck, XCircle, CheckCircle, Users as UsersIcon, Home, Zap } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { Theme, Spacing, Typography, Shadows } from '../../theme/Theme';
+import { Spacing } from '../../theme/Theme';
 import { useTheme } from '../../context/ThemeContext';
 import { listingsService } from '../../services/listings.service';
+import { supabase } from '../../services/supabase';
 import { Listing } from '../../types';
 
 export const AdminDashboardScreen = () => {
     const navigation = useNavigation<any>();
-    const { isDark } = useTheme();
-    const colors = isDark ? Theme.Dark.Colors : Theme.Light.Colors;
-    const shadows = isDark ? Theme.Dark.Shadows : Theme.Light.Shadows;
-    const [activeTab, setActiveTab] = React.useState<'properties' | 'users'>('properties');
+    const { colors, shadows } = useTheme();
+    const [activeTab, setActiveTab] = React.useState<'properties' | 'users' | 'boosts'>('properties');
     const queryClient = useQueryClient();
 
     const { data: pendingListings = [], isLoading: loadingListings, refetch: refetchListings } = useQuery({
@@ -42,9 +41,18 @@ export const AdminDashboardScreen = () => {
         },
     });
 
+    const { data: pendingBoosts = [], isLoading: loadingBoosts, refetch: refetchBoosts } = useQuery({
+        queryKey: ['admin-pending-boosts'],
+        queryFn: async () => {
+            const all = await listingsService.getListings();
+            return all.filter(l => l.boostStatus === 'pending');
+        },
+    });
+
     const refetch = () => {
         refetchListings();
         refetchUsers();
+        refetchBoosts();
     };
 
     const handleApproveProperty = async (listingId: string) => {
@@ -52,7 +60,11 @@ export const AdminDashboardScreen = () => {
             const listing = pendingListings.find(l => l.id === listingId);
             if (listing) {
                 await listingsService.saveListing({ ...listing, isVerified: true });
-                refetchListings();
+
+                // Refresh both admin view and public listings
+                await queryClient.invalidateQueries({ queryKey: ['admin-pending-listings'] });
+                await queryClient.invalidateQueries({ queryKey: ['listings'] });
+
                 Alert.alert('Success', 'Property verified successfully!');
             }
         } catch (error) {
@@ -68,6 +80,29 @@ export const AdminDashboardScreen = () => {
             Alert.alert('Success', 'User verified successfully!');
         } catch (error) {
             Alert.alert('Error', 'Failed to verify user');
+        }
+    };
+
+    const handleApproveBoost = async (listingId: string) => {
+        try {
+            await listingsService.approveBoost(listingId);
+
+            await queryClient.invalidateQueries({ queryKey: ['admin-pending-boosts'] });
+            await queryClient.invalidateQueries({ queryKey: ['listings'] });
+
+            Alert.alert('Success', 'Boost approved successfully!');
+        } catch (error) {
+            Alert.alert('Error', 'Failed to approve boost');
+        }
+    };
+
+    const handleRejectBoost = async (listingId: string) => {
+        try {
+            await listingsService.rejectBoost(listingId);
+            refetchBoosts();
+            Alert.alert('Rejected', 'Boost request rejected.');
+        } catch (error) {
+            Alert.alert('Error', 'Failed to reject boost');
         }
     };
 
@@ -126,7 +161,14 @@ export const AdminDashboardScreen = () => {
 
             {item.id_document_url ? (
                 <View style={styles.documentPreview}>
-                    <Image source={{ uri: `https://YOUR_PROJECT_REF.supabase.co/storage/v1/object/public/verifications/${item.id_document_url}` }} style={styles.idImage} />
+                    <Image
+                        source={{
+                            uri: item.id_document_url.startsWith('http')
+                                ? item.id_document_url
+                                : supabase.storage.from('verifications').getPublicUrl(item.id_document_url).data.publicUrl
+                        }}
+                        style={styles.idImage}
+                    />
                 </View>
             ) : (
                 <View style={[styles.noDoc, { backgroundColor: colors.background }]}>
@@ -145,6 +187,40 @@ export const AdminDashboardScreen = () => {
                 <TouchableOpacity
                     style={[styles.actionBtn, styles.approveBtn]}
                     onPress={() => handleApproveUser(item.id)}
+                >
+                    <CheckCircle size={20} color="#10b981" />
+                    <Text style={styles.approveText}>Approve</Text>
+                </TouchableOpacity>
+            </View>
+        </View>
+    );
+
+    const renderBoostItem = ({ item }: { item: Listing }) => (
+        <View style={[styles.card, { backgroundColor: colors.surface }, shadows.soft]}>
+            <View style={styles.cardHeader}>
+                <View style={styles.userInfo}>
+                    <Text style={[styles.userName, { color: colors.text }]}>{item.propertyName || item.title}</Text>
+                    <Text style={[styles.userRole, { color: colors.textLight }]}>Ow: {item.ownerName} • {item.boostPeriod === 'monthly' ? 'Monthly Boost' : 'Weekly Boost'}</Text>
+                </View>
+                <Zap size={20} color="#f59e0b" fill="#f59e0b" />
+            </View>
+
+            <View style={[styles.paymentInfo, { backgroundColor: colors.background, padding: 12, borderRadius: 12, marginBottom: 16 }]}>
+                <Text style={{ color: colors.text, fontWeight: '600' }}>Request: 30 Days Premium</Text>
+                <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 16, marginTop: 4 }}>$20.00 PAID</Text>
+            </View>
+
+            <View style={styles.actions}>
+                <TouchableOpacity
+                    style={[styles.actionBtn, styles.rejectBtn]}
+                    onPress={() => handleRejectBoost(item.id)}
+                >
+                    <XCircle size={20} color="#ef4444" />
+                    <Text style={styles.rejectText}>Reject</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.actionBtn, styles.approveBtn]}
+                    onPress={() => handleApproveBoost(item.id)}
                 >
                     <CheckCircle size={20} color="#10b981" />
                     <Text style={styles.approveText}>Approve</Text>
@@ -177,12 +253,19 @@ export const AdminDashboardScreen = () => {
                     <UsersIcon size={20} color={activeTab === 'users' ? colors.primary : colors.textLight} />
                     <Text style={[styles.tabText, { color: activeTab === 'users' ? colors.primary : colors.textLight }]}>Users ({pendingUsers.length})</Text>
                 </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.tab, activeTab === 'boosts' && { borderBottomColor: colors.primary, borderBottomWidth: 3 }]}
+                    onPress={() => setActiveTab('boosts')}
+                >
+                    <Zap size={20} color={activeTab === 'boosts' ? colors.primary : colors.textLight} />
+                    <Text style={[styles.tabText, { color: activeTab === 'boosts' ? colors.primary : colors.textLight }]}>Boosts ({pendingBoosts.length})</Text>
+                </TouchableOpacity>
             </View>
 
             <View style={styles.content}>
                 <FlatList
-                    data={(activeTab === 'properties' ? pendingListings : pendingUsers) as any[]}
-                    renderItem={activeTab === 'properties' ? (renderListingItem as any) : renderUserItem}
+                    data={(activeTab === 'properties' ? pendingListings : activeTab === 'users' ? pendingUsers : pendingBoosts) as any[]}
+                    renderItem={activeTab === 'properties' ? (renderListingItem as any) : activeTab === 'users' ? renderUserItem : (renderBoostItem as any)}
                     keyExtractor={(item) => item.id}
                     contentContainerStyle={styles.list}
                     ListEmptyComponent={
@@ -318,5 +401,8 @@ const styles = StyleSheet.create({
     emptyState: {
         alignItems: 'center',
         marginTop: 40,
+    },
+    paymentInfo: {
+        marginBottom: 16,
     }
 });
