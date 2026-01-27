@@ -15,13 +15,6 @@
   ],
   "modules": [
     {
-      "id": "mod1",
-      "name": "Database Management Systems",
-      "description": "SQL, NoSQL, and database design principles.",
-      "targetHours": 40,
-      "createdAt": "2026-01-26T22:25:00.000Z"
-    },
-    {
       "id": "mod2",
       "name": "Network Security",
       "description": "Cryptography, firewalls, and network protocols.",
@@ -77,14 +70,6 @@
       "dueDate": "2026-02-01",
       "status": "Completed",
       "createdAt": "2026-01-26T22:25:10.000Z"
-    },
-    {
-      "id": "task2",
-      "title": "Security Lab: Firewall Setup",
-      "moduleId": "mod2",
-      "dueDate": "2026-01-30",
-      "status": "Pending",
-      "createdAt": "2026-01-26T22:25:11.000Z"
     },
     {
       "id": "task3",
