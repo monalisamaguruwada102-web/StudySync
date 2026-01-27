@@ -188,7 +188,8 @@ app.post('/api/pomodoroSessions', authenticateToken, (req, res) => {
     res.json({ item, xpGain, ...result });
 });
 
-app.get('*', (req, res) => {
+// SPA Catch-all (Regex for Express 5 compatibility)
+app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
