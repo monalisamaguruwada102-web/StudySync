@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow the owner identified in the settings/owner document to read and write all data
+    match /{document=**} {
+      allow read, write: if request.auth != null && 
+        (get(/databases/$(database)/documents/settings/owner).data.uid == request.auth.uid || 
+         !exists(/databases/$(database)/documents/settings/owner));
+    }
+    
+    // Allow any authenticated user to check if they are the first user
+    match /settings/owner {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && (!exists(/databases/$(database)/documents/settings/owner));
+    }
+  }
+}
