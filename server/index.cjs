@@ -10,6 +10,7 @@ const app = express();
 
 // Serve uploads folder statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(express.static(path.join(__dirname, '../dist')));
 
 // Configure Multer for PDF uploads
 const storage = multer.diskStorage({
@@ -185,6 +186,10 @@ app.post('/api/pomodoroSessions', authenticateToken, (req, res) => {
     const xpGain = 50;
     const result = db.addXP(xpGain);
     res.json({ item, xpGain, ...result });
+});
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 app.listen(PORT, () => {
