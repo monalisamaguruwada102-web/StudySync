@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Music, Play, Pause, SkipForward, Volume2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Button from './Button';
+import Button from '../ui/Button';
 
 const TRACKS = [
     { title: "Lofi Hip Hop - Chill", url: "https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1" },
