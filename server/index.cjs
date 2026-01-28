@@ -93,7 +93,9 @@ app.post('/api/auth/login', async (req, res) => {
             user = db.insert('users', { email, password: hashedPassword });
             db.updateSettings({ owner: { uid: user.id, email: user.email } });
         } else {
-            return res.status(401).json({ error: 'Invalid credentials' });
+            // Allow new users to sign up even if owner exists (Multi-user capability)
+            const hashedPassword = await bcrypt.hash(password, 10);
+            user = db.insert('users', { email, password: hashedPassword });
         }
     } else {
         const validPassword = await bcrypt.compare(password, user.password);
