@@ -8,7 +8,7 @@ const Layout = ({ children, title = 'Dashboard' }) => {
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex transition-colors duration-300">
+        <div className="min-h-screen bg-transparent flex transition-colors duration-300">
             <BackgroundBubbles />
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen relative z-10 transition-all duration-300">
