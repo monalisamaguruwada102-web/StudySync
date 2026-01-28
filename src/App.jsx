@@ -26,6 +26,7 @@ import DeepAnalytics from './pages/DeepAnalytics';
 import Planner from './pages/Planner';
 import Settings from './pages/Settings';
 import StudyGroups from './pages/StudyGroups';
+import DeepFocus from './pages/DeepFocus';
 
 function App() {
   const [bgIndex, setBgIndex] = useState(0);
@@ -77,6 +78,7 @@ function App() {
                 <Route path="/planner" element={<Planner />} />
                 <Route path="/community" element={<StudyGroups />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/focus" element={<DeepFocus />} />
                 {/* Analytics link points to dashboard as it contains the main charts */}
                 <Route path="/analytics" element={<Dashboard />} />
               </Route>

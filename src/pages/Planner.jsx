@@ -16,7 +16,8 @@ import {
     CheckCircle2,
     AlertCircle,
     ArrowRight,
-    GraduationCap
+    GraduationCap,
+    BookOpen
 } from 'lucide-react';
 import {
     differenceInDays,
@@ -233,8 +234,5 @@ const Planner = () => {
         </Layout>
     );
 };
-
-// Helper import needed for missing icons
-import { BookOpen as BookOpenIcon } from 'lucide-react';
 
 export default Planner;

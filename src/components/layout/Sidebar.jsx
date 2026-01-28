@@ -19,7 +19,8 @@ import {
     Columns,
     Database,
     Activity,
-    Users // Added Users icon
+    Users,
+    Zap // Added for Deep Focus
 } from 'lucide-react';
 import { logout } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
@@ -36,7 +37,8 @@ const Sidebar = ({ isOpen, onClose }) => {
         { icon: History, label: 'Study Logs', path: '/logs' },
         { icon: Columns, label: 'Kanban', path: '/kanban' },
         { icon: Database, label: 'SQL Architect', path: '/sql' },
-        { icon: Activity, label: 'Deep Focus', path: '/deep-analytics' },
+        { icon: Activity, label: 'Deep Analytics', path: '/deep-analytics' },
+        { icon: Zap, label: 'Deep Focus', path: '/focus' },
         { icon: CalendarCheck, label: 'Auto Planner', path: '/planner' },
         { icon: FileText, label: 'Notes', path: '/notes' },
         { icon: Calculator, label: 'Grades', path: '/grades' },
