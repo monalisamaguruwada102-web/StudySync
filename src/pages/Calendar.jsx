@@ -50,13 +50,13 @@ const Calendar = () => {
 
     const renderHeader = () => {
         return (
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{format(currentMonth, 'MMMM yyyy')}</h1>
-                    <p className="text-slate-500 dark:text-slate-400">Schedule your study sessions and track progress.</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">Schedule your study sessions and track progress.</p>
                 </div>
-                <div className="flex items-center gap-4">
-                    <div className="flex bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
+                <div className="flex items-center gap-2 sm:gap-4 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+                    <div className="flex bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm shrink-0">
                         <button
                             onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
                             className="p-2 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
@@ -76,7 +76,7 @@ const Calendar = () => {
                             <ChevronRight size={20} className="text-slate-600 dark:text-slate-400" />
                         </button>
                     </div>
-                    <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2">
+                    <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 whitespace-nowrap shrink-0">
                         <Plus size={20} />
                         <span>Schedule</span>
                     </Button>
@@ -116,19 +116,30 @@ const Calendar = () => {
                 const dayTasks = tasks.filter(t => t.dueDate && isSameDay(parseISO(t.dueDate), cloneDay));
                 const dayEvents = events.filter(e => e.date && isSameDay(parseISO(e.date), cloneDay));
 
+                const hasContent = dayLogs.length > 0 || dayTasks.length > 0 || dayEvents.length > 0;
+
                 days.push(
                     <div
                         key={day}
-                        className={`min-h-[120px] p-2 border border-slate-50 dark:border-slate-800 transition-all cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 ${!isSameMonth(day, monthStart) ? 'bg-slate-50/50 dark:bg-slate-900/30 opacity-30 pointer-events-none' : ''
+                        className={`min-h-[80px] md:min-h-[120px] p-1 md:p-2 border border-slate-50 dark:border-slate-800 transition-all cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 ${!isSameMonth(day, monthStart) ? 'bg-slate-50/50 dark:bg-slate-900/30 opacity-30 pointer-events-none' : ''
                             } ${isSameDay(day, new Date()) ? 'bg-primary-50/30 dark:bg-primary-900/10' : ''}`}
                         onClick={() => setSelectedDate(cloneDay)}
                     >
-                        <div className="flex justify-between items-start mb-2">
-                            <span className={`text-sm font-bold ${isSameDay(day, new Date()) ? 'bg-primary-600 text-white w-6 h-6 rounded-full flex items-center justify-center' : 'text-slate-700 dark:text-slate-300'}`}>
+                        <div className="flex justify-between items-start mb-1 md:mb-2">
+                            <span className={`text-xs md:text-sm font-bold ${isSameDay(day, new Date()) ? 'bg-primary-600 text-white w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center' : 'text-slate-700 dark:text-slate-300'}`}>
                                 {formattedDate}
                             </span>
                         </div>
-                        <div className="space-y-1">
+
+                        {/* Mobile View: Dots for content */}
+                        <div className="flex gap-1 md:hidden flex-wrap">
+                            {dayLogs.map(log => <div key={log.id} className="w-1.5 h-1.5 rounded-full bg-green-500" />)}
+                            {dayTasks.map(task => <div key={task.id} className={`w-1.5 h-1.5 rounded-full ${task.status === 'Completed' ? 'bg-slate-400' : 'bg-orange-500'}`} />)}
+                            {dayEvents.map(event => <div key={event.id} className="w-1.5 h-1.5 rounded-full bg-primary-500" />)}
+                        </div>
+
+                        {/* Desktop View: Full Content */}
+                        <div className="hidden md:block space-y-1">
                             {dayLogs.map(log => (
                                 <div key={log.id} className="text-[10px] p-1 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded border border-green-200 dark:border-green-800 truncate" title={`Log: ${log.topic}`}>
                                     📚 {log.hours}h: {log.topic}

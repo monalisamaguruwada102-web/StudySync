@@ -5,13 +5,15 @@ import Header from './Header';
 import BackgroundBubbles from '../ui/BackgroundBubbles';
 
 const Layout = ({ children, title = 'Dashboard' }) => {
+    const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex transition-colors duration-300">
             <BackgroundBubbles />
-            <Sidebar />
-            <div className="flex-1 ml-64 flex flex-col min-h-screen relative z-10">
-                <Header title={title} />
-                <main className="p-8 flex-1 overflow-x-hidden">
+            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen relative z-10 transition-all duration-300">
+                <Header title={title} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+                <main className="p-4 lg:p-8 flex-1 overflow-x-hidden">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={window.location.pathname}

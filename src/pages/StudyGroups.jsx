@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Layout from '../components/layout/Layout';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import { Users, MessageSquare, Trophy, Star, Share2, Plus, Send } from 'lucide-react';
+import { Users, MessageSquare, Trophy, Star, Share2, Plus, Send, ChevronLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const StudyGroups = () => {
@@ -14,6 +14,8 @@ const StudyGroups = () => {
         { id: 2, user: 'Bob', text: 'Yes! I created a flashcard deck for Joins.', time: '10:32 AM' },
         { id: 3, user: 'You', text: 'That sounds great, can you share it?', time: '10:33 AM', isMe: true },
     ]);
+
+    const [selectedGroup, setSelectedGroup] = useState(null); // Add state for mobile master-detail
 
     const handleSendMessage = (e) => {
         e.preventDefault();
@@ -30,28 +32,31 @@ const StudyGroups = () => {
 
     return (
         <Layout title="Community & Groups">
-            <div className="flex gap-4 mb-6">
+            <div className="flex gap-4 mb-6 overflow-x-auto pb-2 sm:pb-0">
                 <Button
                     variant={activeTab === 'groups' ? 'primary' : 'ghost'}
                     onClick={() => setActiveTab('groups')}
-                    className="gap-2"
+                    className="gap-2 whitespace-nowrap"
                 >
                     <Users size={18} /> Groups
                 </Button>
                 <Button
                     variant={activeTab === 'leaderboard' ? 'primary' : 'ghost'}
                     onClick={() => setActiveTab('leaderboard')}
-                    className="gap-2"
+                    className="gap-2 whitespace-nowrap"
                 >
                     <Trophy size={18} /> Leaderboard
                 </Button>
             </div>
 
             {activeTab === 'groups' ? (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
-                    {/* Groups List */}
-                    <div className="lg:col-span-1 space-y-4 overflow-y-auto">
-                        <Card className="p-4 border-l-4 border-l-primary-500 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)] lg:h-[calc(100vh-140px)]">
+                    {/* Groups List - Hidden on mobile if group selected */}
+                    <div className={`lg:col-span-1 space-y-4 overflow-y-auto ${selectedGroup ? 'hidden lg:block' : 'block'}`}>
+                        <Card
+                            className={`p-4 border-l-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all ${selectedGroup?.id === 1 ? 'border-l-primary-500 bg-slate-50 dark:bg-slate-800/50' : 'border-l-transparent'}`}
+                            onClick={() => setSelectedGroup({ id: 1, name: 'Database Wizards' })}
+                        >
                             <div className="flex justify-between items-start mb-2">
                                 <h3 className="font-bold text-slate-800 dark:text-slate-100">Database Wizards</h3>
                                 <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Active</span>
@@ -62,7 +67,10 @@ const StudyGroups = () => {
                             </div>
                         </Card>
 
-                        <Card className="p-4 opacity-70 hover:opacity-100 cursor-pointer">
+                        <Card
+                            className={`p-4 opacity-70 hover:opacity-100 cursor-pointer transition-all ${selectedGroup?.id === 2 ? 'border-l-4 border-l-primary-500 bg-slate-50 dark:bg-slate-800/50 opacity-100' : ''}`}
+                            onClick={() => setSelectedGroup({ id: 2, name: 'React Developers' })}
+                        >
                             <div className="flex justify-between items-start mb-2">
                                 <h3 className="font-bold text-slate-800 dark:text-slate-100">React Developers</h3>
                                 <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">2h ago</span>
@@ -78,15 +86,21 @@ const StudyGroups = () => {
                         </Button>
                     </div>
 
-                    {/* Chat Area */}
-                    <Card className="lg:col-span-2 flex flex-col h-full overflow-hidden !p-0">
+                    {/* Chat Area - Hidden on mobile if NO group selected */}
+                    <Card className={`lg:col-span-2 flex-col h-full overflow-hidden !p-0 ${selectedGroup ? 'flex' : 'hidden lg:flex'}`}>
                         <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                                    DW
+                                <button
+                                    onClick={() => setSelectedGroup(null)}
+                                    className="lg:hidden p-1 -ml-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"
+                                >
+                                    <ChevronLeft size={24} />
+                                </button>
+                                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold shrink-0">
+                                    {selectedGroup ? selectedGroup.name.substring(0, 2).toUpperCase() : 'DW'}
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-slate-800 dark:text-slate-100">Database Wizards</h3>
+                                    <h3 className="font-bold text-slate-800 dark:text-slate-100">{selectedGroup ? selectedGroup.name : 'Select a Group'}</h3>
                                     <p className="text-xs text-slate-500">5 members online</p>
                                 </div>
                             </div>
@@ -99,9 +113,9 @@ const StudyGroups = () => {
                         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/30 dark:bg-black/10">
                             {chatHistory.map(msg => (
                                 <div key={msg.id} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[70%] rounded-2xl p-3 ${msg.isMe
-                                            ? 'bg-primary-600 text-white rounded-br-none'
-                                            : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-bl-none'
+                                    <div className={`max-w-[85%] sm:max-w-[70%] rounded-2xl p-3 ${msg.isMe
+                                        ? 'bg-primary-600 text-white rounded-br-none'
+                                        : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-bl-none'
                                         }`}>
                                         <p className="text-sm">{msg.text}</p>
                                         <div className={`text-[10px] mt-1 ${msg.isMe ? 'text-primary-100' : 'text-slate-400'}`}>
@@ -146,14 +160,14 @@ const StudyGroups = () => {
                                 <div
                                     key={player.rank}
                                     className={`flex items-center gap-4 p-4 rounded-xl border ${player.isMe
-                                            ? 'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800'
-                                            : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'
+                                        ? 'bg-primary-50 dark:bg-primary-900/10 border-primary-200 dark:border-primary-800'
+                                        : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'
                                         }`}
                                 >
                                     <div className={`w-8 h-8 flex items-center justify-center font-bold rounded-full ${player.rank === 1 ? 'bg-yellow-100 text-yellow-600' :
-                                            player.rank === 2 ? 'bg-slate-200 text-slate-600' :
-                                                player.rank === 3 ? 'bg-orange-100 text-orange-600' :
-                                                    'text-slate-400'
+                                        player.rank === 2 ? 'bg-slate-200 text-slate-600' :
+                                            player.rank === 3 ? 'bg-orange-100 text-orange-600' :
+                                                'text-slate-400'
                                         }`}>
                                         {player.rank}
                                     </div>
