@@ -73,12 +73,10 @@ const db = {
         return data.settings;
     },
 
-    addXP: (amount) => {
+    addXP: (userId, amount) => {
         const data = readDB();
-        const settings = db.getSettings();
-        if (!settings.owner) return null;
 
-        const user = data.users.find(u => u.id === settings.owner.uid);
+        const user = data.users.find(u => u.id === userId);
         if (!user) return null;
 
         user.xp = (user.xp || 0) + amount;

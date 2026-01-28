@@ -131,11 +131,15 @@ const collections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 'flashc
 
 collections.forEach(collection => {
     app.get(`/api/${collection}`, authenticateToken, (req, res) => {
-        res.json(db.get(collection));
+        const items = db.get(collection);
+        // Filter by userId to ensure data isolation
+        const userItems = items.filter(i => i.userId === req.user.id);
+        res.json(userItems);
     });
 
     app.post(`/api/${collection}`, authenticateToken, (req, res) => {
-        const item = db.insert(collection, req.body);
+        // Attach userId to new items
+        const item = db.insert(collection, { ...req.body, userId: req.user.id });
         res.json(item);
     });
 
@@ -154,9 +158,9 @@ collections.forEach(collection => {
 // --- GAMIFICATION OVERRIDES ---
 
 app.post('/api/studyLogs', authenticateToken, (req, res) => {
-    const item = db.insert('studyLogs', req.body);
+    const item = db.insert('studyLogs', { ...req.body, userId: req.user.id });
     const xpAmount = Math.round(parseFloat(req.body.hours || 0) * 100);
-    const result = db.addXP(xpAmount);
+    const result = db.addXP(req.user.id, xpAmount);
     res.json({ item, xpGain: xpAmount, ...result });
 });
 
@@ -169,7 +173,7 @@ app.put('/api/tasks/:id', authenticateToken, (req, res) => {
 
     if (oldTask && oldTask.status !== 'Completed' && req.body.status === 'Completed') {
         xpGain = 100;
-        gamification = db.addXP(xpGain);
+        gamification = db.addXP(req.user.id, xpGain);
     }
 
     res.json({ item, xpGain, ...gamification });
@@ -184,16 +188,16 @@ app.put('/api/flashcards/:id', authenticateToken, (req, res) => {
 
     if (oldCard && req.body.level > oldCard.level) {
         xpGain = 50;
-        gamification = db.addXP(xpGain);
+        gamification = db.addXP(req.user.id, xpGain);
     }
 
     res.json({ item, xpGain, ...gamification });
 });
 
 app.post('/api/pomodoroSessions', authenticateToken, (req, res) => {
-    const item = db.insert('pomodoroSessions', req.body);
+    const item = db.insert('pomodoroSessions', { ...req.body, userId: req.user.id });
     const xpGain = 50;
-    const result = db.addXP(xpGain);
+    const result = db.addXP(req.user.id, xpGain);
     res.json({ item, xpGain, ...result });
 });
 
