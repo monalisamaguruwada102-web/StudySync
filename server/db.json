@@ -5,6 +5,12 @@
       "password": "$2b$10$l03GqpkdfeZx1yv31CUq4eDSmUL.6pANJMiZqERFGNCvu1bHCOY0u",
       "id": "1769561085648",
       "createdAt": "2026-01-28T00:44:45.648Z"
+    },
+    {
+      "email": "monalisamaguruwada@gmail.com",
+      "password": "$2b$10$1A8q/9vTzMc5sfmVdn8hzuVZk41Ict4CV06Ipztb9IaL1YZWR8W0S",
+      "id": "1769561085649",
+      "createdAt": "2026-01-28T00:45:00.000Z"
     }
   ],
   "modules": [

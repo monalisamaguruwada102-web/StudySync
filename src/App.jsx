@@ -19,6 +19,7 @@ import SQLVisualizer from './pages/SQLVisualizer';
 import DeepAnalytics from './pages/DeepAnalytics';
 import Planner from './pages/Planner';
 import Settings from './pages/Settings';
+import StudyGroups from './pages/StudyGroups';
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
               <Route path="/sql" element={<SQLVisualizer />} />
               <Route path="/deep-analytics" element={<DeepAnalytics />} />
               <Route path="/planner" element={<Planner />} />
+              <Route path="/community" element={<StudyGroups />} />
               <Route path="/settings" element={<Settings />} />
               {/* Analytics link points to dashboard as it contains the main charts */}
               <Route path="/analytics" element={<Dashboard />} />

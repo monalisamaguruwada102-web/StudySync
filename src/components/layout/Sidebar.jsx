@@ -18,16 +18,20 @@ import {
     Star,
     Columns,
     Database,
-    Activity
+    Activity,
+    Users // Added Users icon
 } from 'lucide-react';
 import { logout } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
 import PomodoroTimer from '../PomodoroTimer';
 
+import MusicPlayer from './MusicPlayer';
+
 const Sidebar = () => {
     const { user } = useAuth();
     const navItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+        { icon: Users, label: 'Community', path: '/community' },
         { icon: BookOpen, label: 'Modules', path: '/modules' },
         { icon: History, label: 'Study Logs', path: '/logs' },
         { icon: Columns, label: 'Kanban', path: '/kanban' },
@@ -102,6 +106,7 @@ const Sidebar = () => {
                 ))}
             </nav>
 
+            <MusicPlayer />
             <PomodoroTimer />
 
             <div className="p-4 border-t border-slate-100 dark:border-slate-800">
@@ -113,7 +118,7 @@ const Sidebar = () => {
                     <span className="font-medium">Logout</span>
                 </button>
             </div>
-        </aside>
+        </aside >
     );
 };
 
