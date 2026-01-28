@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import ConnectionStatus from './components/ConnectionStatus';
 
 // Assets
 import bg1 from './assets/images/login-bg-1.png';
@@ -57,6 +58,7 @@ function App() {
 
           {/* App Content */}
           <div className="relative z-10 min-h-screen">
+            <ConnectionStatus />
             <Routes>
               <Route path="/login" element={<Login />} />
 

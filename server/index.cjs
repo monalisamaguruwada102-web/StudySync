@@ -44,6 +44,11 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// --- HEALTH CHECK ---
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // --- UPLOAD ROUTE ---
 app.post('/api/upload', (req, res) => {
     upload.single('file')(req, res, (err) => {
