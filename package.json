@@ -10,7 +10,8 @@
     "build": "vite build",
     "start": "node server/index.cjs",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "backup:db": "node server/backup.cjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
