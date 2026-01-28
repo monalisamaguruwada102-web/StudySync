@@ -118,8 +118,8 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
     const user = db.find('users', u => u.id === req.user.id);
     if (!user) return res.sendStatus(404);
 
-    const settings = db.getSettings();
-    const isAuthorized = settings.owner && settings.owner.uid === req.user.id;
+    // Since we whitelist at login, any authenticated user is authorized
+    const isAuthorized = true;
 
     const { password: _, ...userWithoutPassword } = user;
     res.json({ user: userWithoutPassword, authorized: isAuthorized });
