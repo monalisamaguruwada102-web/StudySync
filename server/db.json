@@ -1,7 +1,59 @@
 {
-  "users": [],
-  "modules": [],
-  "studyLogs": [],
+  "users": [
+    {
+      "email": "joshuamujakari15@gmail.com",
+      "password": "$2b$10$l03GqpkdfeZx1yv31CUq4eDSmUL.6pANJMiZqERFGNCvu1bHCOY0u",
+      "id": "1769561085648",
+      "createdAt": "2026-01-28T00:44:45.648Z"
+    }
+  ],
+  "modules": [
+    {
+      "name": "DATABASE ADMIN",
+      "description": "HARD AND INCLUDE PRACTICAL",
+      "targetHours": 800,
+      "id": "1769560786039",
+      "createdAt": "2026-01-28T00:39:46.040Z"
+    },
+    {
+      "name": "NETWORK ADMIN",
+      "description": "HARD",
+      "targetHours": 700,
+      "id": "1769560812850",
+      "createdAt": "2026-01-28T00:40:12.852Z"
+    },
+    {
+      "name": "OOP",
+      "description": "HARDEST AND PRACTICALS ",
+      "targetHours": 1000,
+      "id": "1769560879409",
+      "createdAt": "2026-01-28T00:41:19.409Z"
+    },
+    {
+      "name": "SOFTWARE ENGINEERING",
+      "description": "SIMPLE",
+      "targetHours": 400,
+      "id": "1769560924908",
+      "createdAt": "2026-01-28T00:42:04.908Z"
+    },
+    {
+      "name": "HARDWARE ADMIN",
+      "description": "MODERATE ",
+      "targetHours": 450,
+      "id": "1769560958856",
+      "createdAt": "2026-01-28T00:42:38.856Z"
+    }
+  ],
+  "studyLogs": [
+    {
+      "date": "2026-01-27",
+      "moduleId": "1769560879409",
+      "topic": "BASICS",
+      "hours": 0.25,
+      "id": "1769561040592",
+      "createdAt": "2026-01-28T00:44:00.592Z"
+    }
+  ],
   "tasks": [],
   "notes": [],
   "grades": [],
@@ -10,6 +62,9 @@
   "calendarEvents": [],
   "pomodoroSessions": [],
   "settings": {
-    "owner": null
+    "owner": {
+      "uid": "1769561085648",
+      "email": "joshuamujakari15@gmail.com"
+    }
   }
 }

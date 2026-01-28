@@ -8,6 +8,8 @@ import { useFirestore } from '../hooks/useFirestore';
 import { noteService, moduleService } from '../services/firestoreService';
 import { Plus, StickyNote, Trash2, Book, ExternalLink, FileText, Code, Play } from 'lucide-react';
 
+import api from '../services/api';
+
 const Notes = () => {
     const { data: notes, loading, refresh } = useFirestore(noteService.getAll);
     const { data: modules } = useFirestore(moduleService.getAll);
@@ -41,22 +43,13 @@ const Notes = () => {
                 const uploadData = new FormData();
                 uploadData.append('file', selectedFile);
 
-                const getBaseUrl = () => {
-                    const url = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-                    return url.replace('/api', '');
-                };
-
-                const response = await fetch(`${getBaseUrl()}/api/upload`, {
-                    method: 'POST',
-                    body: uploadData,
+                const response = await api.post('/upload', uploadData, {
                     headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
+                        'Content-Type': 'multipart/form-data',
+                    },
                 });
 
-                if (!response.ok) throw new Error('Upload failed');
-                const result = await response.json();
-                pdfPath = result.filePath;
+                pdfPath = response.data.filePath;
             }
 
             await noteService.add({ ...formData, pdfPath });
@@ -165,7 +158,7 @@ const Notes = () => {
 
                         {note.pdfPath && (
                             <a
-                                href={`${(import.meta.env.VITE_API_URL || 'http://localhost:3001').replace('/api', '')}${note.pdfPath}`}
+                                href={note.pdfPath}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="mt-2 flex items-center gap-2 text-blue-600 text-xs font-bold bg-blue-50 dark:bg-blue-900/20 p-2 rounded-lg hover:bg-blue-100 transition-colors"
