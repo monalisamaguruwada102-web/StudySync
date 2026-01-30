@@ -4,7 +4,7 @@ import { login } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
-import { GraduationCap, Lock, ArrowRight, User, X } from 'lucide-react';
+import { GraduationCap, Lock, ArrowRight, User, X, Monitor, Smartphone, Download, HelpCircle } from 'lucide-react';
 
 const Login = () => {
     const [selectedUser, setSelectedUser] = useState(null);
@@ -132,6 +132,50 @@ const Login = () => {
                         </form>
                     )}
                 </Card>
+
+                {/* Get the App Section */}
+                <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-6 bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 text-white group hover:bg-white/15 transition-all">
+                        <div className="flex items-start gap-4 mb-4">
+                            <div className="p-3 bg-indigo-500 rounded-2xl shadow-lg shadow-indigo-500/30">
+                                <Monitor size={24} />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-lg leading-tight">Desktop App</h4>
+                                <p className="text-xs text-slate-300 uppercase tracking-widest font-black mt-1">Windows (.exe)</p>
+                            </div>
+                        </div>
+                        <p className="text-sm text-slate-300 mb-4 leading-relaxed">
+                            Run StudySync as a native app with offline support and faster performance.
+                        </p>
+                        <a
+                            href="/StudySync-Setup.exe" // Placeholder or actual link if hosted
+                            className="inline-flex items-center gap-2 text-sm font-bold bg-white text-indigo-600 px-4 py-2 rounded-xl hover:bg-indigo-50 transition-colors"
+                        >
+                            <Download size={16} />
+                            Download for Windows
+                        </a>
+                    </div>
+
+                    <div className="p-6 bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 text-white group hover:bg-white/15 transition-all">
+                        <div className="flex items-start gap-4 mb-4">
+                            <div className="p-3 bg-rose-500 rounded-2xl shadow-lg shadow-rose-500/30">
+                                <Smartphone size={24} />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-lg leading-tight">Mobile App</h4>
+                                <p className="text-xs text-slate-300 uppercase tracking-widest font-black mt-1">PWA Sync</p>
+                            </div>
+                        </div>
+                        <p className="text-sm text-slate-300 mb-4 leading-relaxed">
+                            Install on iOS or Android instantly via browser for real-time study tracking.
+                        </p>
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
+                            <HelpCircle size={14} />
+                            Tap "Add to Home Screen"
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
