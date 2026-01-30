@@ -45,6 +45,10 @@ const migrate = async () => {
             // Map keys if necessary (e.g. moduleId to module_id)
             const mappedItems = items.map(item => {
                 const newItem = { ...item };
+                if (newItem.topic) {
+                    newItem.activity = newItem.topic;
+                    delete newItem.topic;
+                }
                 if (newItem.moduleId) {
                     newItem.module_id = newItem.moduleId;
                     delete newItem.moduleId;
@@ -80,6 +84,14 @@ const migrate = async () => {
                 if (newItem.completedAt) {
                     newItem.completed_at = newItem.completedAt;
                     delete newItem.completedAt;
+                }
+                if (newItem.createdAt) {
+                    newItem.created_at = newItem.createdAt;
+                    delete newItem.createdAt;
+                }
+                if (newItem.updatedAt) {
+                    newItem.updated_at = newItem.updatedAt;
+                    delete newItem.updatedAt;
                 }
                 return newItem;
             });

@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS pomodoro_sessions (
 );
 
 -- Enable Row Level Security (RLS)
--- For now, we allow all authenticated users (basic setup)
+-- For now, we allow all operations for easy initial sync
 ALTER TABLE modules ENABLE ROW LEVEL SECURITY;
 ALTER TABLE study_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
@@ -104,5 +104,13 @@ ALTER TABLE flashcards ENABLE ROW LEVEL SECURITY;
 ALTER TABLE calendar_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pomodoro_sessions ENABLE ROW LEVEL SECURITY;
 
--- Note: In a production app, you would add policies to check auth.uid()
--- Example: CREATE POLICY "Users can only see their own modules" ON modules FOR ALL USING (true);
+-- Create Permissive Policies (One for each table)
+CREATE POLICY "Allow all for anon" ON modules FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all for anon" ON study_logs FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all for anon" ON tasks FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all for anon" ON notes FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all for anon" ON grades FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all for anon" ON flashcard_decks FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all for anon" ON flashcards FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all for anon" ON calendar_events FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all for anon" ON pomodoro_sessions FOR ALL USING (true) WITH CHECK (true);
