@@ -36,7 +36,7 @@ const ConnectionStatus = () => {
                 <div className="flex-1">
                     <h3 className="font-semibold text-red-200">Backend Disconnected</h3>
                     <p className="text-sm text-red-100/80 mt-1">
-                        Cannot reach the server. Changes may not be saved.
+                        Server is offline. Showing cached data - changes will sync when connection is restored.
                     </p>
                     <button
                         onClick={checkConnection}

@@ -2,6 +2,12 @@ const fs = require('fs');
 const path = require('path');
 
 const DB_PATH = path.join(__dirname, 'db.json');
+const BACKUP_DIR = path.join(__dirname, 'backups');
+
+// Ensure backup directory exists
+if (!fs.existsSync(BACKUP_DIR)) {
+    fs.mkdirSync(BACKUP_DIR, { recursive: true });
+}
 
 const initialState = {
     users: [],
@@ -19,17 +25,96 @@ const initialState = {
     }
 };
 
+// Write queue to prevent concurrent write conflicts
+let writeQueue = Promise.resolve();
+let lastBackupTime = 0;
+const BACKUP_INTERVAL = 5 * 60 * 1000; // 5 minutes
+
 const readDB = () => {
-    if (!fs.existsSync(DB_PATH)) {
-        fs.writeFileSync(DB_PATH, JSON.stringify(initialState, null, 2));
+    try {
+        if (!fs.existsSync(DB_PATH)) {
+            console.log('📝 Initializing new database...');
+            fs.writeFileSync(DB_PATH, JSON.stringify(initialState, null, 2));
+            return initialState;
+        }
+        const data = fs.readFileSync(DB_PATH, 'utf8');
+        return JSON.parse(data);
+    } catch (error) {
+        console.error('❌ Error reading database:', error.message);
+        // Try to restore from latest backup
+        const backups = getBackupFiles();
+        if (backups.length > 0) {
+            console.log('🔄 Attempting to restore from latest backup...');
+            const latestBackup = path.join(BACKUP_DIR, backups[0]);
+            const backupData = fs.readFileSync(latestBackup, 'utf8');
+            return JSON.parse(backupData);
+        }
         return initialState;
     }
-    const data = fs.readFileSync(DB_PATH, 'utf8');
-    return JSON.parse(data);
 };
 
 const writeDB = (data) => {
-    fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
+    // Queue writes to prevent conflicts
+    writeQueue = writeQueue.then(() => {
+        return new Promise((resolve, reject) => {
+            try {
+                // Write to temporary file first
+                const tempPath = DB_PATH + '.tmp';
+                fs.writeFileSync(tempPath, JSON.stringify(data, null, 2));
+
+                // Atomic rename
+                fs.renameSync(tempPath, DB_PATH);
+
+                // Create periodic backups
+                const now = Date.now();
+                if (now - lastBackupTime > BACKUP_INTERVAL) {
+                    createBackup();
+                    lastBackupTime = now;
+                }
+
+                resolve();
+            } catch (error) {
+                console.error('❌ Error writing database:', error.message);
+                reject(error);
+            }
+        });
+    });
+    return writeQueue;
+};
+
+const getBackupFiles = () => {
+    if (!fs.existsSync(BACKUP_DIR)) return [];
+    return fs.readdirSync(BACKUP_DIR)
+        .filter(f => f.startsWith('db-backup-') && f.endsWith('.json'))
+        .sort()
+        .reverse();
+};
+
+const createBackup = () => {
+    try {
+        if (!fs.existsSync(DB_PATH)) return null;
+
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const backupPath = path.join(BACKUP_DIR, `db-backup-${timestamp}.json`);
+
+        fs.copyFileSync(DB_PATH, backupPath);
+        console.log(`✅ Backup created: ${backupPath}`);
+
+        // Clean up old backups (keep only last 10)
+        const backups = getBackupFiles();
+        if (backups.length > 10) {
+            const toDelete = backups.slice(10);
+            toDelete.forEach(file => {
+                fs.unlinkSync(path.join(BACKUP_DIR, file));
+                console.log(`🗑️ Deleted old backup: ${file}`);
+            });
+        }
+
+        return backupPath;
+    } catch (error) {
+        console.error('❌ Error creating backup:', error.message);
+        return null;
+    }
 };
 
 const db = {
@@ -96,7 +181,10 @@ const db = {
 
         writeDB(data);
         return { user, levelUp };
-    }
+    },
+
+    // Export backup function for graceful shutdown
+    createBackup
 };
 
 module.exports = db;
