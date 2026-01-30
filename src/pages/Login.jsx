@@ -149,7 +149,7 @@ const Login = () => {
                             Run StudySync as a native app with offline support and faster performance.
                         </p>
                         <a
-                            href="https://github.com/monalisamaguruwada102-web/StudySync/releases/latest/download/StudySync.Setup.0.0.0.exe"
+                            href="https://github.com/monalisamaguruwada102-web/StudySync/releases/latest"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 text-sm font-bold bg-white text-indigo-600 px-4 py-2 rounded-xl hover:bg-indigo-50 transition-colors"
