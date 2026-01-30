@@ -7,7 +7,7 @@ function createWindow() {
         width: 1280,
         height: 800,
         title: "StudySync Desktop",
-        icon: path.join(__dirname, '../public/logo.svg'), // Fallback to svg
+        icon: path.join(__dirname, '../public/icon.png'),
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,

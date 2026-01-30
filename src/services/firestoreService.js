@@ -26,18 +26,18 @@ const mapFromSupabase = (item) => {
 const mapToSupabase = (item) => {
     if (!item) return item;
     const newItem = { ...item };
-    if (newItem.moduleId) { newItem.module_id = newItem.moduleId; delete newItem.moduleId; }
-    if (newItem.deckId) { newItem.deck_id = newItem.deckId; delete newItem.deckId; }
-    if (newItem.targetHours) { newItem.target_hours = newItem.targetHours; delete newItem.targetHours; }
-    if (newItem.resourceLink) { newItem.resource_link = newItem.resourceLink; delete newItem.resourceLink; }
-    if (newItem.pdfPath) { newItem.pdf_path = newItem.pdfPath; delete newItem.pdfPath; }
-    if (newItem.dueDate) { newItem.due_date = newItem.dueDate; delete newItem.dueDate; }
-    if (newItem.startTime) { newItem.start_time = newItem.startTime; delete newItem.startTime; }
-    if (newItem.endTime) { newItem.end_time = newItem.endTime; delete newItem.endTime; }
-    if (newItem.completedAt) { newItem.completed_at = newItem.completedAt; delete newItem.completedAt; }
-    if (newItem.createdAt) { newItem.created_at = newItem.createdAt; delete newItem.createdAt; }
-    if (newItem.updatedAt) { newItem.updated_at = newItem.updatedAt; delete newItem.updated_at; }
-    if (newItem.topic) { newItem.activity = newItem.topic; delete newItem.topic; }
+    if ('moduleId' in newItem) { newItem.module_id = newItem.moduleId; delete newItem.moduleId; }
+    if ('deckId' in newItem) { newItem.deck_id = newItem.deckId; delete newItem.deckId; }
+    if ('targetHours' in newItem) { newItem.target_hours = newItem.targetHours; delete newItem.targetHours; }
+    if ('resourceLink' in newItem) { newItem.resource_link = newItem.resourceLink; delete newItem.resourceLink; }
+    if ('pdfPath' in newItem) { newItem.pdf_path = newItem.pdfPath; delete newItem.pdfPath; }
+    if ('dueDate' in newItem) { newItem.due_date = newItem.dueDate; delete newItem.dueDate; }
+    if ('startTime' in newItem) { newItem.start_time = newItem.startTime; delete newItem.startTime; }
+    if ('endTime' in newItem) { newItem.end_time = newItem.endTime; delete newItem.endTime; }
+    if ('completedAt' in newItem) { newItem.completed_at = newItem.completedAt; delete newItem.completedAt; }
+    if ('createdAt' in newItem) { newItem.created_at = newItem.createdAt; delete newItem.createdAt; }
+    if ('updatedAt' in newItem) { newItem.updated_at = newItem.updatedAt; delete newItem.updated_at; }
+    if ('topic' in newItem) { newItem.activity = newItem.topic; delete newItem.topic; }
     return newItem;
 };
 
