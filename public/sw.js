@@ -32,36 +32,36 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-    // Only intercept http/https requests
-    if (!event.request.url.startsWith('http')) return;
+    const url = new URL(event.request.url);
+
+    // 1. Bypass Service Worker for assets folder (Vite hashed files)
+    // This prevents "Corrupted Content" and out-of-sync hash errors
+    if (url.pathname.startsWith('/assets/')) {
+        return;
+    }
+
+    // 2. Only handle safe GET requests
+    if (event.request.method !== 'GET' || !url.protocol.startsWith('http')) {
+        return;
+    }
 
     event.respondWith(
-        caches.match(event.request)
-            .then((cachedResponse) => {
-                if (cachedResponse) {
-                    return cachedResponse;
+        caches.match(event.request).then((cachedResponse) => {
+            // Return cached response if found
+            if (cachedResponse) {
+                return cachedResponse;
+            }
+
+            // Otherwise fetch from network
+            return fetch(event.request).catch((err) => {
+                console.error('Network fetch failed:', err);
+                // Return a basic fallback for navigation requests
+                if (event.request.mode === 'navigate') {
+                    return caches.match('/');
                 }
-
-                return fetch(event.request).then((networkResponse) => {
-                    // Check if we received a valid response
-                    if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-                        return networkResponse;
-                    }
-
-                    // Optional: Cache new assets on the fly
-                    return networkResponse;
-                });
-            })
-            .catch((err) => {
-                console.error('SW fetch failed:', err);
-                // Return original fetch as last resort (without recursion)
-                return fetch(event.request).catch(() => {
-                    // If everything fails, return actual 404
-                    return new Response('Network error occurred', {
-                        status: 408,
-                        statusText: 'Network error occurred'
-                    });
-                });
-            })
+                return null;
+            });
+        })
     );
 });
+
