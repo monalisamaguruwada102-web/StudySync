@@ -38,7 +38,18 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "monalisamaguruwada102-web",
+        "repo": "StudySync"
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/monalisamaguruwada102-web/StudySync.git"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.93.3",
