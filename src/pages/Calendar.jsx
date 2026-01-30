@@ -47,11 +47,16 @@ const Calendar = () => {
     const [isSyncing, setIsSyncing] = useState(false);
 
     const fetchExternalEvents = async () => {
-        const url = localStorage.getItem('calendar_sync_url');
-        if (!url) return;
-
-        setIsSyncing(true);
         try {
+            // Try to get URL from API settings first
+            const settingsRes = await axios.get('http://localhost:3001/api/user/settings', {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            const url = settingsRes.data.calendar_sync_url;
+
+            if (!url) return;
+
+            setIsSyncing(true);
             const response = await axios.post('http://localhost:3001/api/sync/calendar', { url }, {
                 headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
             });

@@ -28,8 +28,33 @@ const Settings = () => {
     const [importStatus, setImportStatus] = useState(null); // 'success', 'error', 'pending'
     const [errorMessage, setErrorMessage] = useState('');
     const [activeTab, setActiveTab] = useState('general'); // 'general', 'appearance', 'integrations', 'system'
-    const [calendarUrl, setCalendarUrl] = useState(localStorage.getItem('calendar_sync_url') || '');
-    const [notionToken, setNotionToken] = useState(localStorage.getItem('notion_api_token') || '');
+    const [calendarUrl, setCalendarUrl] = useState('');
+    const [notionToken, setNotionToken] = useState('');
+
+    React.useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const response = await axios.get('http://localhost:3001/api/user/settings', {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                });
+                setCalendarUrl(response.data.calendar_sync_url || '');
+                setNotionToken(response.data.notion_api_token || '');
+            } catch (err) {
+                console.error('Failed to fetch user settings:', err);
+            }
+        };
+        fetchSettings();
+    }, []);
+
+    const saveUserSetting = async (key, value) => {
+        try {
+            await axios.post('http://localhost:3001/api/user/settings', { [key]: value }, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+        } catch (err) {
+            console.error('Failed to save user setting:', err);
+        }
+    };
 
     const isCloudConfigured = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -194,8 +219,9 @@ const Settings = () => {
                                                     placeholder="Paste Public iCal URL (e.g. from Google Settings)"
                                                     value={calendarUrl}
                                                     onChange={(e) => {
-                                                        setCalendarUrl(e.target.value);
-                                                        localStorage.setItem('calendar_sync_url', e.target.value);
+                                                        const val = e.target.value;
+                                                        setCalendarUrl(val);
+                                                        saveUserSetting('calendar_sync_url', val);
                                                     }}
                                                     className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-primary-500/20"
                                                 />
@@ -227,8 +253,9 @@ const Settings = () => {
                                                     placeholder="Enter Notion API Token"
                                                     value={notionToken}
                                                     onChange={(e) => {
-                                                        setNotionToken(e.target.value);
-                                                        localStorage.setItem('notion_api_token', e.target.value);
+                                                        const val = e.target.value;
+                                                        setNotionToken(val);
+                                                        saveUserSetting('notion_api_token', val);
                                                     }}
                                                     className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-primary-500/20"
                                                 />

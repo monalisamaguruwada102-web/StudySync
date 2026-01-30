@@ -23,7 +23,16 @@ const Tasks = () => {
     const [isImporting, setIsImporting] = useState(false);
 
     const handleNotionImport = async () => {
-        const token = localStorage.getItem('notion_api_token');
+        let token = null;
+        try {
+            const res = await axios.get('http://localhost:3001/api/user/settings', {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            token = res.data.notion_api_token;
+        } catch (e) {
+            console.error("Failed to fetch Notion token from cloud");
+        }
+
         if (!token) {
             alert('Please configure your Notion API Token in Settings > Integrations first.');
             return;

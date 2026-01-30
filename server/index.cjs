@@ -11,6 +11,10 @@ const axios = require('axios');
 
 const app = express();
 
+// --- VERSIONING (For Auto-Push Updates) ---
+const SYSTEM_VERSION = "1.2.0";
+app.get('/api/version', (req, res) => res.json({ version: SYSTEM_VERSION }));
+
 // Serve uploads folder statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, '../dist')));
@@ -126,11 +130,24 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
     const user = db.find('users', u => u.id === req.user.id);
     if (!user) return res.sendStatus(404);
 
-    // Since we whitelist at login, any authenticated user is authorized
     const isAuthorized = true;
 
     const { password: _, ...userWithoutPassword } = user;
     res.json({ user: userWithoutPassword, authorized: isAuthorized });
+});
+
+// --- PER-USER SETTINGS ---
+app.get('/api/user/settings', authenticateToken, (req, res) => {
+    const user = db.find('users', u => u.id === req.user.id);
+    res.json(user.settings || {});
+});
+
+app.post('/api/user/settings', authenticateToken, (req, res) => {
+    const user = db.find('users', u => u.id === req.user.id);
+    const updatedUser = db.update('users', user.id, {
+        settings: { ...(user.settings || {}), ...req.body }
+    });
+    res.json(updatedUser.settings);
 });
 
 // --- CRUD ROUTES ---
@@ -209,42 +226,66 @@ app.post('/api/pomodoroSessions', authenticateToken, (req, res) => {
     res.json({ item, xpGain, ...result });
 });
 
-// --- Data Preservation Endpoints ---
+// --- Data Preservation Endpoints (USER SCOPED) ---
 
-// Export database
+// Export user-specific database
 app.get('/api/admin/export', authenticateToken, (req, res) => {
-    // Check if user is the white-listed main user (extra security)
-    if (req.user.email !== 'joshuamujakari15@gmail.com' && req.user.email !== 'monalisamaguruwada@gmail.com') {
-        return res.status(403).json({ error: 'Unauthorized' });
+    const allData = db.getRawData();
+    const userData = {
+        version: "1.0.0",
+        exportDate: new Date().toISOString(),
+        user: { email: req.user.email },
+        data: {}
+    };
+
+    // Filter every collection by userId
+    const collections = ['modules', 'studyLogs', 'tasks', 'notes', 'flashcardDecks', 'flashcards', 'calendarEvents', 'pomodoroSessions'];
+    collections.forEach(col => {
+        userData.data[col] = (allData[col] || []).filter(item => item.userId === req.user.id);
+    });
+
+    const fileName = `studysync-export-${req.user.id}.json`;
+    const filePath = path.join(__dirname, 'uploads', 'temp', fileName);
+
+    if (!fs.existsSync(path.join(__dirname, 'uploads', 'temp'))) {
+        fs.mkdirSync(path.join(__dirname, 'uploads', 'temp'), { recursive: true });
     }
 
-    res.download(db.DB_PATH, 'studysync-backup.json');
+    fs.writeFileSync(filePath, JSON.stringify(userData, null, 2));
+    res.download(filePath, 'my-study-backup.json', () => {
+        fs.unlinkSync(filePath); // Cleanup after download
+    });
 });
 
-// Import database
-const jsonUpload = multer({ dest: 'server/uploads/temp/' });
+// Import user-specific database
 app.post('/api/admin/import', authenticateToken, jsonUpload.single('file'), async (req, res) => {
-    if (req.user.email !== 'joshuamujakari15@gmail.com' && req.user.email !== 'monalisamaguruwada@gmail.com') {
-        return res.status(403).json({ error: 'Unauthorized' });
-    }
-
-    if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
-    }
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
     try {
         const fileContent = fs.readFileSync(req.file.path, 'utf8');
-        const jsonData = JSON.parse(fileContent);
+        const imported = JSON.parse(fileContent);
 
-        await db.restore(jsonData);
+        if (!imported.data) throw new Error('Invalid export format');
 
-        // Cleanup temp file
+        const allData = db.getRawData();
+        const collections = ['modules', 'studyLogs', 'tasks', 'notes', 'flashcardDecks', 'flashcards', 'calendarEvents', 'pomodoroSessions'];
+
+        collections.forEach(col => {
+            if (imported.data[col]) {
+                // Remove existing user items to avoid duplicates on fresh import
+                allData[col] = allData[col].filter(item => item.userId !== req.user.id);
+                // Add new items with the current user's ID to be safe
+                const itemsToImport = imported.data[col].map(item => ({ ...item, userId: req.user.id }));
+                allData[col].push(...itemsToImport);
+            }
+        });
+
+        await db.restore(allData);
         fs.unlinkSync(req.file.path);
-
-        res.json({ message: 'Database restored successfully' });
+        res.json({ message: 'Your study data has been restored successfully!' });
     } catch (error) {
         console.error('Import error:', error);
-        res.status(500).json({ error: 'Failed to restore database: ' + error.message });
+        res.status(500).json({ error: 'Failed to restore your data: ' + error.message });
     }
 });
 
