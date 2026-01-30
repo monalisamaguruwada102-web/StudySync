@@ -41,13 +41,29 @@ const mapToSupabase = (item) => {
     return newItem;
 };
 
+const getUserId = () => {
+    try {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) return null;
+        const user = JSON.parse(userStr);
+        return user?.id || null;
+    } catch (e) {
+        return null;
+    }
+};
+
 const createCollectionService = (collectionName) => {
     return {
         add: async (data) => {
             if (USE_SUPABASE) {
+                const userId = getUserId();
+                if (!userId) throw new Error("User not authenticated");
+
+                const payload = { ...mapToSupabase(data), user_id: userId };
+
                 const { data: result, error } = await supabase
                     .from(collectionName)
-                    .insert([mapToSupabase(data)])
+                    .insert([payload])
                     .select()
                     .single();
 
@@ -55,17 +71,19 @@ const createCollectionService = (collectionName) => {
                 dataCache.remove(collectionName);
                 return mapFromSupabase(result);
             } else {
-                // Fallback to local API logic (handled by rest of implementation if needed)
-                // For now, we'll focus on Supabase implementation
                 throw new Error('Supabase not configured for cloud persistence');
             }
         },
         update: async (id, data) => {
             if (USE_SUPABASE) {
+                const userId = getUserId();
+                if (!userId) throw new Error("User not authenticated");
+
                 const { data: result, error } = await supabase
                     .from(collectionName)
                     .update(mapToSupabase(data))
                     .eq('id', id)
+                    .eq('user_id', userId) // Ensure ownership
                     .select()
                     .single();
 
@@ -76,10 +94,14 @@ const createCollectionService = (collectionName) => {
         },
         delete: async (id) => {
             if (USE_SUPABASE) {
+                const userId = getUserId();
+                if (!userId) throw new Error("User not authenticated");
+
                 const { error } = await supabase
                     .from(collectionName)
                     .delete()
-                    .eq('id', id);
+                    .eq('id', id)
+                    .eq('user_id', userId); // Ensure ownership
 
                 if (error) throw error;
                 dataCache.remove(collectionName);
@@ -88,9 +110,16 @@ const createCollectionService = (collectionName) => {
         getAll: async (callback) => {
             if (USE_SUPABASE) {
                 try {
+                    const userId = getUserId();
+                    if (!userId) {
+                        callback([]);
+                        return () => { };
+                    }
+
                     const { data, error } = await supabase
                         .from(collectionName)
-                        .select('*');
+                        .select('*')
+                        .eq('user_id', userId);
 
                     if (error) throw error;
 
@@ -98,16 +127,32 @@ const createCollectionService = (collectionName) => {
                     dataCache.set(collectionName, mappedData);
                     callback(mappedData);
 
+                    // Keep a copy of the data for local updates
+                    let currentData = [...mappedData];
+
                     // Setup real-time subscription for "snapshot" feel
                     const channel = supabase
-                        .channel(`public:${collectionName}`)
-                        .on('postgres_changes', { event: '*', schema: 'public', table: collectionName }, (payload) => {
-                            console.log('Change received!', payload);
-                            // Simple way: re-fetch everything on change for now
-                            // Optimization: update state locally
-                            supabase.from(collectionName).select('*').then(({ data: refreshData }) => {
-                                callback((refreshData || []).map(mapFromSupabase));
-                            });
+                        .channel(`public:${collectionName}:${userId}`)
+                        .on('postgres_changes', {
+                            event: '*',
+                            schema: 'public',
+                            table: collectionName,
+                            filter: `user_id=eq.${userId}`
+                        }, (payload) => {
+                            const { eventType, new: newRecord, old: oldRecord } = payload;
+
+                            if (eventType === 'INSERT') {
+                                const mapped = mapFromSupabase(newRecord);
+                                currentData = [...currentData, mapped];
+                            } else if (eventType === 'UPDATE') {
+                                const mapped = mapFromSupabase(newRecord);
+                                currentData = currentData.map(item => item.id == mapped.id ? mapped : item);
+                            } else if (eventType === 'DELETE') {
+                                currentData = currentData.filter(item => item.id != oldRecord.id);
+                            }
+
+                            dataCache.set(collectionName, currentData);
+                            callback(currentData);
                         })
                         .subscribe();
 
@@ -128,25 +173,36 @@ const createCollectionService = (collectionName) => {
         getByField: async (fieldName, value, callback) => {
             if (USE_SUPABASE) {
                 try {
+                    const userId = getUserId();
+                    if (!userId) {
+                        callback([]);
+                        return () => { };
+                    }
+
                     const { data, error } = await supabase
                         .from(collectionName)
                         .select('*')
-                        .eq(fieldName, value);
+                        .eq(fieldName, value)
+                        .eq('user_id', userId);
 
                     if (error) throw error;
                     callback(data);
 
                     const channel = supabase
-                        .channel(`field:${collectionName}:${value}`)
+                        .channel(`field:${collectionName}:${value}:${userId}`)
                         .on('postgres_changes', {
                             event: '*',
                             schema: 'public',
                             table: collectionName,
-                            filter: `${fieldName}=eq.${value}`
+                            filter: `${fieldName}=eq.${value}` // We can't easily chain filters in realtime subscription config safely without multiple params, relying on manual re-fetch
                         }, () => {
-                            supabase.from(collectionName).select('*').eq(fieldName, value).then(({ data: refreshData }) => {
-                                callback((refreshData || []).map(mapFromSupabase));
-                            });
+                            supabase.from(collectionName)
+                                .select('*')
+                                .eq(fieldName, value)
+                                .eq('user_id', userId)
+                                .then(({ data: refreshData }) => {
+                                    callback((refreshData || []).map(mapFromSupabase));
+                                });
                         })
                         .subscribe();
 
@@ -173,9 +229,12 @@ export const pomodoroService = createCollectionService("pomodoro_sessions");
 
 export const getAnalyticsData = async () => {
     if (USE_SUPABASE) {
+        const userId = getUserId();
+        if (!userId) return { logs: [], modules: [] };
+
         const [logsRes, modulesRes] = await Promise.all([
-            supabase.from('study_logs').select('*'),
-            supabase.from('modules').select('*')
+            supabase.from('study_logs').select('*').eq('user_id', userId),
+            supabase.from('modules').select('*').eq('user_id', userId)
         ]);
 
         return {
