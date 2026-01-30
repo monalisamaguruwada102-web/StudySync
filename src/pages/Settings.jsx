@@ -13,7 +13,10 @@ import {
     Save,
     Moon,
     Sun,
-    Palette
+    Palette,
+    Cloud,
+    ExternalLink,
+    CheckCircle2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
@@ -24,6 +27,8 @@ const Settings = () => {
     const [isImporting, setIsImporting] = useState(false);
     const [importStatus, setImportStatus] = useState(null); // 'success', 'error', 'pending'
     const [errorMessage, setErrorMessage] = useState('');
+
+    const isCloudConfigured = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
 
     const handleExport = async () => {
         setIsExporting(true);
@@ -202,25 +207,49 @@ const Settings = () => {
                     </div>
                 </Card>
 
-                {/* Cloud Migration Roadmap Card */}
-                <Card className="border border-slate-200 dark:border-slate-800 opacity-60">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-xl">
-                            <RefreshCcw size={20} />
+                {/* Cloud Migration Configuration Card */}
+                <Card className={`border-2 ${isCloudConfigured ? 'border-green-500/20 bg-green-500/5' : 'border-amber-500/20 bg-amber-500/5'} backdrop-blur-sm overflow-hidden`}>
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className={`p-3 rounded-2xl ${isCloudConfigured ? 'bg-green-500 text-white' : 'bg-amber-500 text-white shadow-lg shadow-amber-500/30'}`}>
+                            <Cloud size={24} />
                         </div>
                         <div>
-                            <h3 className="font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">Cloud Sync Roadmap</h3>
-                            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Coming Soon: Automatic Real-time Database</p>
+                            <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-wider">Cloud Sync Status</h3>
+                            <p className={`text-xs font-bold uppercase tracking-widest ${isCloudConfigured ? 'text-green-600' : 'text-amber-600'}`}>
+                                {isCloudConfigured ? 'CONNECTED TO SUPABASE' : 'CONFIGURATION REQUIRED'}
+                            </p>
                         </div>
                     </div>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
-                        We are currently building an automated cloud sync feature using <span className="font-bold text-slate-700 dark:text-slate-300">Supabase</span>.
-                        Once active, your data will sync instantly across all your devices and will be immune to local updates.
-                    </p>
-                    <div className="flex gap-2">
-                        <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-400 rounded-full border border-slate-200 dark:border-slate-700">VERSION 2.1 REQUIRED</span>
-                        <span className="px-3 py-1 bg-primary-500/10 text-[10px] font-bold text-primary-500 rounded-full border border-primary-500/20">PREMIUM ONLY</span>
-                    </div>
+
+                    {!isCloudConfigured ? (
+                        <div className="space-y-4">
+                            <p className="text-sm text-slate-600 dark:text-slate-400">
+                                To enable permanent cloud persistence and multi-device sync, you must configure your Supabase credentials.
+                            </p>
+                            <div className="p-4 bg-white/50 dark:bg-slate-900/50 rounded-2xl border border-amber-200 dark:border-amber-900/30 space-y-3">
+                                <h4 className="text-xs font-black text-amber-700 dark:text-amber-400 uppercase tracking-widest flex items-center gap-2">
+                                    <AlertTriangle size={14} />
+                                    Setup Instructions
+                                </h4>
+                                <ol className="text-xs text-slate-500 dark:text-slate-400 space-y-2 list-decimal ml-4 font-medium">
+                                    <li>Create a project at <a href="https://supabase.com" target="_blank" rel="noreferrer" className="text-primary-500 underline font-bold">supabase.com</a></li>
+                                    <li>Go to <span className="text-slate-700 dark:text-slate-200 font-bold">SQL Editor</span> and run the script in <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">server/supabase_schema.sql</span></li>
+                                    <li>Add your <span className="text-slate-700 dark:text-slate-200 font-bold">URL</span> and <span className="text-slate-700 dark:text-slate-200 font-bold">Anon Key</span> to your <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">.env</span> file.</li>
+                                    <li>Run <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">node server/migrate.cjs</span> to sync your current data!</li>
+                                </ol>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3 p-4 bg-green-500/10 border border-green-500/20 rounded-2xl text-green-600 dark:text-green-400">
+                                <CheckCircle2 size={20} />
+                                <span className="text-sm font-bold">Your data is now permanently synchronized with the cloud.</span>
+                            </div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 px-1">
+                                Changes you make are instantly backed up to Supabase. You no longer need to worry about local data loss during application updates.
+                            </p>
+                        </div>
+                    )}
                 </Card>
             </div>
         </Layout>
