@@ -1,26 +1,33 @@
-# How to Install StudySync
+# Installation Guide
 
-Because this is a private application and not signed by a Certificate Authority (which costs money), Windows may flag it as "Unknown". This is normal.
+## 1. Quick Install
+1.  Navigate to the `dist_electron` folder on your desktop.
+2.  Double-click `StudySync Setup 0.0.0.exe`.
+3.  The app will install automatically and launch.
 
-## Steps to Install
+## 2. "Windows protected your PC" Warning
+Since this app is built locally and not digitally signed (which costs money), Windows SmartScreen might flag it. This is normal for internal apps.
 
-1.  **Locate the Installer**:
-    - Look for the file named `StudySync Setup 0.0.0.exe` (version number may vary).
-    - It is located in the `dist_electron` folder.
+**To bypass:**
+1.  Click **"More info"**.
+2.  Click **"Run anyway"**.
 
-2.  **Run the Installer**:
-    - Double-click the `.exe` file.
+## 3. Accessing from Other Devices (Network Install)
+You can download the installer from other devices (like your phone or another laptop) connected to the same Wi-Fi.
 
-3.  **Bypass Blue Screen (SmartScreen)**:
-    - If you see a blue window saying **"Windows protected your PC"**:
-        1.  Click the underlined text **"More info"**.
-        2.  Click the button **"Run anyway"**.
+1.  **Start the Server**:
+    Ensure your app is running on your main computer (`npm run dev` or `npm start`).
 
-4.  **Finish Installation**:
-    - Follow the prompts to install the app.
-    - It will automatically create a shortcut on your Desktop.
+2.  **Find Your IP Address**:
+    - Open Command Prompt.
+    - Type `ipconfig` and press Enter.
+    - Look for `IPv4 Address` (e.g., `192.168.1.15`).
 
-## Troubleshooting
+3.  **Open in Browser**:
+    On your other device, open Chrome/Safari and go to:
+    `http://YOUR_IP_ADDRESS:5173/login` (for Dev mode)
+    or
+    `http://YOUR_IP_ADDRESS:3001/login` (for Production mode)
 
-- **Antivirus**: If your antivirus blocks it, you may need to "Allow" the file or disable the antivirus temporarily during installation.
-- **Unblock File**: Right-click the `.exe` -> Properties -> Check **"Unblock"** at the bottom (if visible) -> Apply -> OK.
+4.  **Download**:
+    Use the "Download for Desktop" button on the login screen. It will download the `.exe` directly from your main computer.

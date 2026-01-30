@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "main": "electron/main.js",
   "scripts": {
-    "dev:frontend": "vite",
+    "dev:frontend": "vite --host",
     "dev:backend": "node server/index.cjs",
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
