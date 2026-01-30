@@ -18,7 +18,8 @@ import {
     Zap,
     Trophy,
     Flame,
-    Target
+    Target,
+    Brain
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import {
