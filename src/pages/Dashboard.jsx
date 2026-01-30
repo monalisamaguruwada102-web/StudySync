@@ -1,16 +1,23 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import Layout from '../components/layout/Layout';
 import Card from '../components/ui/Card';
 import { useFirestore } from '../hooks/useFirestore';
 import { moduleService, studyLogService, taskService } from '../services/firestoreService';
 import { useAnalytics } from '../hooks/useAnalytics';
 import Heatmap from '../components/analytics/Heatmap';
+import { useAuth } from '../context/AuthContext';
+import { getLeague } from '../utils/gamification';
+import AnimatedBadge from '../components/ui/AnimatedBadge';
 import {
     Clock,
     Layers,
     Calendar,
     TrendingUp,
-    Award
+    Award,
+    Zap,
+    Trophy,
+    Flame,
+    Target
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import {
@@ -26,6 +33,7 @@ import {
     LineElement,
 } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
+import { motion } from 'framer-motion';
 
 ChartJS.register(
     CategoryScale,
@@ -41,11 +49,13 @@ ChartJS.register(
 
 const Dashboard = () => {
     const { isDarkMode } = useTheme();
+    const { user } = useAuth();
     const { data: modules } = useFirestore(moduleService.getAll);
     const { data: logs } = useFirestore(studyLogService.getAll);
     const { data: tasks } = useFirestore(taskService.getAll);
 
     const stats = useAnalytics(logs, modules, tasks);
+    const league = useMemo(() => getLeague(user?.level || 1), [user?.level]);
 
     const barData = {
         labels: stats.weeklyTrend.map(d => d.day),
@@ -79,6 +89,51 @@ const Dashboard = () => {
 
     return (
         <Layout title="Dashboard">
+            {/* Elite League Banner */}
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`mb-8 p-6 rounded-3xl border flex flex-col md:flex-row items-center justify-between gap-6 backdrop-blur-xl ${league.bg} ${league.border} ${league.glow || ''}`}
+            >
+                <div className="flex items-center gap-6 text-center md:text-left">
+                    <div className={`p-5 rounded-2xl bg-white/5 border border-white/10 ${league.color}`}>
+                        <Trophy size={40} className="drop-shadow-[0_0_10px_currentColor]" />
+                    </div>
+                    <div>
+                        <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
+                            <span className={`text-xs font-black uppercase tracking-[0.3em] ${league.color}`}>{league.name} League</span>
+                            <span className="px-2 py-0.5 rounded-full bg-white/10 text-[10px] font-bold text-white/60">Ranked</span>
+                        </div>
+                        <h2 className="text-3xl font-black text-white">Level {user?.level || 1} Elite</h2>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-12">
+                    <div className="text-center">
+                        <span className="block text-2xl font-black text-white">{user?.xp || 0}</span>
+                        <span className="text-[10px] uppercase font-bold text-white/40 tracking-widest">Current XP</span>
+                    </div>
+                    <div className="text-center">
+                        <span className="block text-2xl font-black text-white">Top 5%</span>
+                        <span className="text-[10px] uppercase font-bold text-white/40 tracking-widest">Global Rank</span>
+                    </div>
+                    <div className="h-12 w-[1px] bg-white/10 hidden md:block" />
+                    <div className="flex flex-col gap-2 min-w-[150px]">
+                        <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                            <span className="text-white/40">Progress to Lvl {(user?.level || 1) + 1}</span>
+                            <span className="text-white">65%</span>
+                        </div>
+                        <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                            <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: '65%' }}
+                                className={`h-full ${league.color.replace('text', 'bg')}`}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <StatCard
                     icon={<Clock className="text-blue-500" />}
@@ -106,9 +161,23 @@ const Dashboard = () => {
                 />
             </div>
 
-            <Card title="Study Intensity (Last 365 Days)" className="mb-6">
-                <Heatmap logs={logs} />
-            </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                {/* Visual Data Map Placeholder (Heatmap) */}
+                <Card title="Study Intensity (Last 365 Days)" className="lg:col-span-2">
+                    <Heatmap logs={logs} />
+                </Card>
+
+                {/* Achievement Badges */}
+                <div className="space-y-6">
+                    <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-500 ml-2">Recent Badges</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                        <AnimatedBadge name="Early Bird" icon={Zap} color="primary" />
+                        <AnimatedBadge name="Persistence" icon={Flame} color="purple" />
+                        <AnimatedBadge name="Scholar" icon={Target} color="gold" />
+                        <AnimatedBadge name="Focus King" icon={Award} color="green" />
+                    </div>
+                </div>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card title="Weekly Study Trend" className="lg:col-span-2">
@@ -206,20 +275,23 @@ const Dashboard = () => {
 };
 
 const StatCard = ({ icon, label, value, trend }) => (
-    <Card className="hover:shadow-md transition-shadow">
-        <div className="flex items-start justify-between">
-            <div>
-                <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">{label}</p>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{value}</h3>
+    <Card className="hover:shadow-md transition-shadow group relative overflow-hidden">
+        <div className="relative z-10">
+            <div className="flex items-start justify-between">
+                <div>
+                    <p className="text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">{label}</p>
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-slate-100">{value}</h3>
+                </div>
+                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl group-hover:bg-primary-500 group-hover:text-white transition-colors duration-300">
+                    {React.cloneElement(icon, { size: 18 })}
+                </div>
             </div>
-            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
-                {icon}
+            <div className="mt-4 flex items-center gap-2 text-[10px] font-bold">
+                <TrendingUp size={12} className="text-green-500" />
+                <span className="text-slate-500 dark:text-slate-400 tracking-wider uppercase">{trend}</span>
             </div>
         </div>
-        <div className="mt-4 flex items-center gap-2 text-xs">
-            <TrendingUp size={14} className="text-green-500" />
-            <span className="text-slate-500 dark:text-slate-400">{trend}</span>
-        </div>
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-primary-500/10 transition-colors" />
     </Card>
 );
 
