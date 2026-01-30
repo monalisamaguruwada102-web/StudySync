@@ -34,7 +34,6 @@ const Notes = () => {
     // Sandbox State
     const [isSandboxOpen, setIsSandboxOpen] = useState(false);
     const [sandboxCode, setSandboxCode] = useState('');
-    const [sandboxCode, setSandboxCode] = useState('');
     const [summarizingId, setSummarizingId] = useState(null);
     const [viewingPdf, setViewingPdf] = useState(null);
 
