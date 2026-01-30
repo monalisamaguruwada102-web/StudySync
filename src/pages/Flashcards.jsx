@@ -57,6 +57,7 @@ const Flashcards = () => {
         // In a real app, nextReview would be used.
         setStudyCards([...deckCards].sort((a, b) => a.level - b.level));
         setCurrentIndex(0);
+        setSelectedDeck(deck);
         setIsStudyMode(true);
         setIsFlipped(false);
     };

@@ -34,7 +34,9 @@ const Notes = () => {
     // Sandbox State
     const [isSandboxOpen, setIsSandboxOpen] = useState(false);
     const [sandboxCode, setSandboxCode] = useState('');
+    const [sandboxCode, setSandboxCode] = useState('');
     const [summarizingId, setSummarizingId] = useState(null);
+    const [viewingPdf, setViewingPdf] = useState(null);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -187,15 +189,13 @@ const Notes = () => {
                         )}
 
                         {note.pdfPath && (
-                            <a
-                                href={note.pdfPath}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="mt-2 flex items-center gap-2 text-blue-600 text-xs font-bold bg-blue-50 dark:bg-blue-900/20 p-2 rounded-lg hover:bg-blue-100 transition-colors"
+                            <button
+                                onClick={() => setViewingPdf(note.pdfPath)}
+                                className="mt-2 w-full flex items-center justify-center gap-2 text-blue-600 text-xs font-bold bg-blue-50 dark:bg-blue-900/20 p-2 rounded-lg hover:bg-blue-100 transition-colors"
                             >
                                 <FileText size={14} />
                                 <span>View PDF Document</span>
-                            </a>
+                            </button>
                         )}
                     </Card>
                 ))}
@@ -333,6 +333,21 @@ const Notes = () => {
                             ></iframe>
                         </div>
                     </div>
+                </div>
+            </Modal>
+            {/* PDF Viewer Modal */}
+            <Modal
+                isOpen={!!viewingPdf}
+                onClose={() => setViewingPdf(null)}
+                title="Document Viewer"
+                size="xl"
+            >
+                <div className="w-full h-[80vh] bg-slate-100 dark:bg-slate-900 rounded-xl overflow-hidden">
+                    <iframe
+                        src={viewingPdf}
+                        className="w-full h-full"
+                        title="PDF Viewer"
+                    />
                 </div>
             </Modal>
         </Layout>
