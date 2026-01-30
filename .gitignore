@@ -16,6 +16,7 @@ server/uploads/*
 !server/uploads/.gitkeep
 server/db.json
 server/backups/
+dist_electron
 
 # Editor directories and files
 .vscode/*

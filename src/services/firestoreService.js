@@ -1,7 +1,45 @@
 import { supabase } from "./supabase";
 import { dataCache } from "../utils/dataCache";
 
-const USE_SUPABASE = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://pocuggehxeuheqzgixsx.supabase.co';
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvY3VnZ2VoeGV1aGVxemdpeHN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3MDU1MzQsImV4cCI6MjA4NTI4MTUzNH0.QjIFMzJ4xf3PNnUbMSUMg8mIyPLis7yI_PuPNZT5CMg';
+const USE_SUPABASE = !!(SUPABASE_URL && SUPABASE_KEY);
+
+const mapFromSupabase = (item) => {
+    if (!item) return item;
+    const newItem = { ...item };
+    if (newItem.module_id) { newItem.moduleId = newItem.module_id; delete newItem.module_id; }
+    if (newItem.deck_id) { newItem.deckId = newItem.deck_id; delete newItem.deck_id; }
+    if (newItem.target_hours) { newItem.targetHours = newItem.target_hours; delete newItem.target_hours; }
+    if (newItem.resource_link) { newItem.resourceLink = newItem.resource_link; delete newItem.resource_link; }
+    if (newItem.pdf_path) { newItem.pdfPath = newItem.pdf_path; delete newItem.pdf_path; }
+    if (newItem.due_date) { newItem.dueDate = newItem.due_date; delete newItem.due_date; }
+    if (newItem.start_time) { newItem.startTime = newItem.start_time; delete newItem.start_time; }
+    if (newItem.end_time) { newItem.endTime = newItem.end_time; delete newItem.end_time; }
+    if (newItem.completed_at) { newItem.completedAt = newItem.completed_at; delete newItem.completed_at; }
+    if (newItem.created_at) { newItem.createdAt = newItem.created_at; delete newItem.created_at; }
+    if (newItem.updated_at) { newItem.updatedAt = newItem.updated_at; delete newItem.updated_at; }
+    if (newItem.activity) { newItem.topic = newItem.activity; delete newItem.activity; }
+    return newItem;
+};
+
+const mapToSupabase = (item) => {
+    if (!item) return item;
+    const newItem = { ...item };
+    if (newItem.moduleId) { newItem.module_id = newItem.moduleId; delete newItem.moduleId; }
+    if (newItem.deckId) { newItem.deck_id = newItem.deckId; delete newItem.deckId; }
+    if (newItem.targetHours) { newItem.target_hours = newItem.targetHours; delete newItem.targetHours; }
+    if (newItem.resourceLink) { newItem.resource_link = newItem.resourceLink; delete newItem.resourceLink; }
+    if (newItem.pdfPath) { newItem.pdf_path = newItem.pdfPath; delete newItem.pdfPath; }
+    if (newItem.dueDate) { newItem.due_date = newItem.dueDate; delete newItem.dueDate; }
+    if (newItem.startTime) { newItem.start_time = newItem.startTime; delete newItem.startTime; }
+    if (newItem.endTime) { newItem.end_time = newItem.endTime; delete newItem.endTime; }
+    if (newItem.completedAt) { newItem.completed_at = newItem.completedAt; delete newItem.completedAt; }
+    if (newItem.createdAt) { newItem.created_at = newItem.createdAt; delete newItem.createdAt; }
+    if (newItem.updatedAt) { newItem.updated_at = newItem.updatedAt; delete newItem.updated_at; }
+    if (newItem.topic) { newItem.activity = newItem.topic; delete newItem.topic; }
+    return newItem;
+};
 
 const createCollectionService = (collectionName) => {
     return {
@@ -9,13 +47,13 @@ const createCollectionService = (collectionName) => {
             if (USE_SUPABASE) {
                 const { data: result, error } = await supabase
                     .from(collectionName)
-                    .insert([data])
+                    .insert([mapToSupabase(data)])
                     .select()
                     .single();
 
                 if (error) throw error;
                 dataCache.remove(collectionName);
-                return result;
+                return mapFromSupabase(result);
             } else {
                 // Fallback to local API logic (handled by rest of implementation if needed)
                 // For now, we'll focus on Supabase implementation
@@ -26,14 +64,14 @@ const createCollectionService = (collectionName) => {
             if (USE_SUPABASE) {
                 const { data: result, error } = await supabase
                     .from(collectionName)
-                    .update(data)
+                    .update(mapToSupabase(data))
                     .eq('id', id)
                     .select()
                     .single();
 
                 if (error) throw error;
                 dataCache.remove(collectionName);
-                return result;
+                return mapFromSupabase(result);
             }
         },
         delete: async (id) => {
@@ -56,8 +94,9 @@ const createCollectionService = (collectionName) => {
 
                     if (error) throw error;
 
-                    dataCache.set(collectionName, data);
-                    callback(data);
+                    const mappedData = data.map(mapFromSupabase);
+                    dataCache.set(collectionName, mappedData);
+                    callback(mappedData);
 
                     // Setup real-time subscription for "snapshot" feel
                     const channel = supabase
@@ -67,7 +106,7 @@ const createCollectionService = (collectionName) => {
                             // Simple way: re-fetch everything on change for now
                             // Optimization: update state locally
                             supabase.from(collectionName).select('*').then(({ data: refreshData }) => {
-                                callback(refreshData);
+                                callback((refreshData || []).map(mapFromSupabase));
                             });
                         })
                         .subscribe();
@@ -106,7 +145,7 @@ const createCollectionService = (collectionName) => {
                             filter: `${fieldName}=eq.${value}`
                         }, () => {
                             supabase.from(collectionName).select('*').eq(fieldName, value).then(({ data: refreshData }) => {
-                                callback(refreshData);
+                                callback((refreshData || []).map(mapFromSupabase));
                             });
                         })
                         .subscribe();
@@ -140,8 +179,8 @@ export const getAnalyticsData = async () => {
         ]);
 
         return {
-            logs: logsRes.data || [],
-            modules: modulesRes.data || []
+            logs: (logsRes.data || []).map(mapFromSupabase),
+            modules: (modulesRes.data || []).map(mapFromSupabase)
         };
     }
     return { logs: [], modules: [] };

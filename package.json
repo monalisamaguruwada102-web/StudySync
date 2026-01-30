@@ -2,16 +2,33 @@
   "name": "study-monitor",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
+  "main": "electron/main.js",
   "scripts": {
     "dev:frontend": "vite",
     "dev:backend": "node server/index.cjs",
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "vite build && electron-packager . StudySync --platform=win32 --arch=x64 --out=dist_electron --overwrite",
     "build": "vite build",
     "start": "node server/index.cjs",
     "lint": "eslint .",
     "preview": "vite preview",
     "backup": "node server/backup.cjs"
+  },
+  "build": {
+    "appId": "com.studysync.desktop",
+    "productName": "StudySync",
+    "directories": {
+      "output": "dist_electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "portable"
+    }
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.93.3",
@@ -42,10 +59,14 @@
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react-swc": "^4.2.2",
+    "electron": "^40.1.0",
+    "electron-builder": "^26.4.0",
+    "electron-packager": "^17.1.2",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
-    "vite": "^7.2.4"
+    "vite": "^7.2.4",
+    "wait-on": "^9.0.3"
   }
 }
