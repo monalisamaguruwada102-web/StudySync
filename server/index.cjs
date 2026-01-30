@@ -41,6 +41,17 @@ const upload = multer({
     }
 });
 
+const jsonUpload = multer({
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype === 'application/json' || path.extname(file.originalname).toLowerCase() === '.json') {
+            cb(null, true);
+        } else {
+            cb(new Error('Only JSON files are allowed'), false);
+        }
+    }
+});
+
 const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'study-secret-key';
 
