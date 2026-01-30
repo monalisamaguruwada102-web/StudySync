@@ -37,13 +37,31 @@ self.addEventListener('fetch', (event) => {
 
     event.respondWith(
         caches.match(event.request)
-            .then((response) => {
-                return response || fetch(event.request);
+            .then((cachedResponse) => {
+                if (cachedResponse) {
+                    return cachedResponse;
+                }
+
+                return fetch(event.request).then((networkResponse) => {
+                    // Check if we received a valid response
+                    if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+                        return networkResponse;
+                    }
+
+                    // Optional: Cache new assets on the fly
+                    return networkResponse;
+                });
             })
-            .catch(() => {
-                // If both cache and network fail, or something else goes wrong
-                // return nothing and let the browser try to handle it
-                return fetch(event.request);
+            .catch((err) => {
+                console.error('SW fetch failed:', err);
+                // Return original fetch as last resort (without recursion)
+                return fetch(event.request).catch(() => {
+                    // If everything fails, return actual 404
+                    return new Response('Network error occurred', {
+                        status: 408,
+                        statusText: 'Network error occurred'
+                    });
+                });
             })
     );
 });

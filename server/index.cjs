@@ -246,9 +246,18 @@ app.post('/api/admin/import', authenticateToken, jsonUpload.single('file'), asyn
     }
 });
 
-// SPA Catch-all (Regex for Express 5 compatibility)
-app.get(/.*/, (req, res) => {
+// SPA Catch-all (Ignore assets and API)
+app.get(/.*/, (req, res, next) => {
+    // If request is for an asset or API, skip to 404
+    if (req.url.startsWith('/api/') || req.url.includes('.') || req.url.startsWith('/assets/')) {
+        return next();
+    }
     res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
+
+// Final 404 handler
+app.use((req, res) => {
+    res.status(404).send('Not Found');
 });
 
 const server = app.listen(PORT, () => {
