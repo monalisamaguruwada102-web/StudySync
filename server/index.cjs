@@ -6,6 +6,8 @@ const path = require('path');
 const fs = require('fs');
 const db = require('./database.cjs');
 const multer = require('multer');
+const ical = require('node-ical');
+const axios = require('axios');
 
 const app = express();
 
@@ -243,6 +245,90 @@ app.post('/api/admin/import', authenticateToken, jsonUpload.single('file'), asyn
     } catch (error) {
         console.error('Import error:', error);
         res.status(500).json({ error: 'Failed to restore database: ' + error.message });
+    }
+});
+
+// --- SYNC ROUTES ---
+
+// Google Calendar iCal Sync
+app.post('/api/sync/calendar', authenticateToken, async (req, res) => {
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ error: 'Calendar URL is required' });
+
+    try {
+        const events = await ical.fromURL(url);
+        const formattedEvents = [];
+
+        for (const k in events) {
+            if (events.hasOwnProperty(k)) {
+                const ev = events[k];
+                if (ev.type === 'VEVENT') {
+                    formattedEvents.push({
+                        id: `external-${ev.uid || k}`,
+                        title: ev.summary || 'Untitled Event',
+                        start: ev.start,
+                        end: ev.end,
+                        description: ev.description || '',
+                        location: ev.location || '',
+                        isExternal: true,
+                        source: 'Google Calendar'
+                    });
+                }
+            }
+        }
+
+        res.json(formattedEvents);
+    } catch (error) {
+        console.error('Calendar sync error:', error);
+        res.status(500).json({ error: 'Failed to sync calendar: ' + error.message });
+    }
+});
+
+// Notion Task Import
+app.post('/api/sync/notion-tasks', authenticateToken, async (req, res) => {
+    const { token, databaseId } = req.body;
+    if (!token) return res.status(400).json({ error: 'Notion token is required' });
+
+    try {
+        // Fetch tasks from Notion (using Search or Query Database)
+        // For simplicity, we search for 'Pages' which are often used as tasks
+        const response = await axios.post('https://api.notion.com/v1/search', {
+            filter: { property: 'object', value: 'page' },
+            sort: { direction: 'descending', timestamp: 'last_edited_time' }
+        }, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Notion-Version': '2022-06-28',
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const tasks = response.data.results.map(page => {
+            const titleProperty = Object.values(page.properties).find(p => p.type === 'title');
+            const title = titleProperty ? titleProperty.title[0]?.plain_text : 'Untitled Notion Task';
+
+            return {
+                title: title,
+                status: 'In Progress',
+                priority: 'Medium',
+                deadline: page.last_edited_time,
+                description: `Imported from Notion: ${page.url}`,
+                userId: req.user.id,
+                source: 'Notion'
+            };
+        });
+
+        // Insert into database
+        const importedTasks = [];
+        for (const task of tasks) {
+            const saved = db.insert('tasks', task);
+            importedTasks.push(saved);
+        }
+
+        res.json({ message: `Successfully imported ${importedTasks.length} tasks`, tasks: importedTasks });
+    } catch (error) {
+        console.error('Notion sync error:', error.response?.data || error.message);
+        res.status(500).json({ error: 'Failed to import from Notion: ' + (error.response?.data?.message || error.message) });
     }
 });
 

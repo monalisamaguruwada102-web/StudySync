@@ -43,7 +43,15 @@ const DeepFocus = () => {
     const [activeSound, setActiveSound] = useState(null);
     const [activeTheme, setActiveTheme] = useState('starfield');
     const [isGhostMode, setIsGhostMode] = useState(false);
+    const [isMusicEnabled, setIsMusicEnabled] = useState(true);
+    const [activePlaylist, setActivePlaylist] = useState('lofi');
     const audioRef = useRef(null);
+
+    const playlistUrls = {
+        lofi: "https://open.spotify.com/embed/playlist/37i9dQZF1DWWQRv9oySqS4?utm_source=generator&theme=0",
+        beats: "https://open.spotify.com/embed/playlist/37i9dQZF1DX8UOn96Z99yS?utm_source=generator&theme=0",
+        ambient: "https://open.spotify.com/embed/playlist/37i9dQZF1DWWvH96YI77Y6?utm_source=generator&theme=0"
+    };
 
     const pendingTasks = tasks.filter(t => t.status !== 'Completed');
 
@@ -242,7 +250,51 @@ const DeepFocus = () => {
                             <button onClick={toggleFullscreen} className="p-2 hover:bg-white/10 rounded-full transition-colors">
                                 <Maximize size={16} />
                             </button>
+                            <button
+                                onClick={() => setIsMusicEnabled(!isMusicEnabled)}
+                                className={`p-2 rounded-full transition-all ${isMusicEnabled ? 'bg-green-500 text-white' : 'text-slate-400 hover:text-white'}`}
+                                title="Toggle Study Music"
+                            >
+                                <Music size={16} />
+                            </button>
                         </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Spotify Player Float (Hidden in Ghost Mode) */}
+            <AnimatePresence>
+                {isMusicEnabled && !isGhostMode && (
+                    <motion.div
+                        initial={{ opacity: 0, x: -50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -50 }}
+                        className="fixed bottom-6 left-6 z-50 w-80 overflow-hidden rounded-3xl border border-white/10 shadow-2xl backdrop-blur-2xl bg-black/40"
+                    >
+                        <div className="p-3 border-b border-white/5 flex items-center justify-between">
+                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Study Stream</span>
+                            <div className="flex gap-1">
+                                {Object.keys(playlistUrls).map(p => (
+                                    <button
+                                        key={p}
+                                        onClick={() => setActivePlaylist(p)}
+                                        className={`px-2 py-1 rounded-lg text-[9px] font-bold uppercase transition-all ${activePlaylist === p ? 'bg-primary-500 text-white' : 'bg-white/5 text-slate-500 hover:text-white'}`}
+                                    >
+                                        {p}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <iframe
+                            src={playlistUrls[activePlaylist]}
+                            width="100%"
+                            height="152"
+                            frameBorder="0"
+                            allowFullScreen=""
+                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                            loading="lazy"
+                            className="opacity-80 hover:opacity-100 transition-opacity"
+                        ></iframe>
                     </motion.div>
                 )}
             </AnimatePresence>

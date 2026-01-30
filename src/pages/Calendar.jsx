@@ -13,8 +13,12 @@ import {
     Plus,
     Clock,
     CheckSquare,
-    Target
+    Target,
+    Cloud,
+    RefreshCw,
+    ExternalLink
 } from 'lucide-react';
+import axios from 'axios';
 import {
     format,
     addMonths,
@@ -39,6 +43,29 @@ const Calendar = () => {
     const { data: logs } = useFirestore(studyLogService.getAll);
     const { data: tasks } = useFirestore(taskService.getAll);
     const { data: modules } = useFirestore(moduleService.getAll);
+    const [externalEvents, setExternalEvents] = useState([]);
+    const [isSyncing, setIsSyncing] = useState(false);
+
+    const fetchExternalEvents = async () => {
+        const url = localStorage.getItem('calendar_sync_url');
+        if (!url) return;
+
+        setIsSyncing(true);
+        try {
+            const response = await axios.post('http://localhost:3001/api/sync/calendar', { url }, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            setExternalEvents(response.data);
+        } catch (error) {
+            console.error('Failed to sync external calendar:', error);
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    React.useEffect(() => {
+        fetchExternalEvents();
+    }, []);
 
     const [eventForm, setEventForm] = useState({
         title: '',
@@ -76,6 +103,15 @@ const Calendar = () => {
                             <ChevronRight size={20} className="text-slate-600 dark:text-slate-400" />
                         </button>
                     </div>
+                    <Button
+                        variant="secondary"
+                        onClick={fetchExternalEvents}
+                        disabled={isSyncing}
+                        className="flex items-center gap-2 border-slate-200 dark:border-slate-800 shrink-0"
+                    >
+                        <RefreshCw size={18} className={isSyncing ? 'animate-spin' : ''} />
+                        <span className="hidden sm:inline">Sync Cloud</span>
+                    </Button>
                     <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 whitespace-nowrap shrink-0">
                         <Plus size={20} />
                         <span>Schedule</span>
@@ -115,8 +151,9 @@ const Calendar = () => {
                 const dayLogs = logs.filter(l => isSameDay(parseISO(l.date), cloneDay));
                 const dayTasks = tasks.filter(t => t.dueDate && isSameDay(parseISO(t.dueDate), cloneDay));
                 const dayEvents = events.filter(e => e.date && isSameDay(parseISO(e.date), cloneDay));
+                const dayExternal = externalEvents.filter(e => isSameDay(parseISO(e.start), cloneDay));
 
-                const hasContent = dayLogs.length > 0 || dayTasks.length > 0 || dayEvents.length > 0;
+                const hasContent = dayLogs.length > 0 || dayTasks.length > 0 || dayEvents.length > 0 || dayExternal.length > 0;
 
                 days.push(
                     <div
@@ -136,6 +173,7 @@ const Calendar = () => {
                             {dayLogs.map(log => <div key={log.id} className="w-1.5 h-1.5 rounded-full bg-green-500" />)}
                             {dayTasks.map(task => <div key={task.id} className={`w-1.5 h-1.5 rounded-full ${task.status === 'Completed' ? 'bg-slate-400' : 'bg-orange-500'}`} />)}
                             {dayEvents.map(event => <div key={event.id} className="w-1.5 h-1.5 rounded-full bg-primary-500" />)}
+                            {dayExternal.map(ext => <div key={ext.id} className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-sm" />)}
                         </div>
 
                         {/* Desktop View: Full Content */}
@@ -153,6 +191,11 @@ const Calendar = () => {
                             {dayEvents.map(event => (
                                 <div key={event.id} className="text-[10px] p-1 bg-primary-100 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 rounded border border-primary-200 dark:border-primary-800 truncate" title={`Event: ${event.title}`}>
                                     ⏰ {event.startTime}: {event.title}
+                                </div>
+                            ))}
+                            {dayExternal.map(ext => (
+                                <div key={ext.id} className="text-[10px] p-1 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 rounded border border-indigo-100 dark:border-indigo-900/50 truncate flex items-center gap-1 font-medium" title={`Cloud: ${ext.title}`}>
+                                    <Cloud size={10} className="shrink-0" /> {ext.title}
                                 </div>
                             ))}
                         </div>

@@ -6,8 +6,9 @@ import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
 import { useFirestore } from '../hooks/useFirestore';
 import { taskService, moduleService } from '../services/firestoreService';
-import { Plus, CheckCircle, Circle, AlertCircle, Trash2, Calendar, Book } from 'lucide-react';
+import { Plus, CheckCircle, Circle, AlertCircle, Trash2, Calendar, Book, Database, Loader2 } from 'lucide-react';
 import { isBefore, parseISO, startOfDay } from 'date-fns';
+import axios from 'axios';
 
 const Tasks = () => {
     const { data: tasks, loading, refresh } = useFirestore(taskService.getAll);
@@ -19,6 +20,29 @@ const Tasks = () => {
         dueDate: '',
         status: 'Pending'
     });
+    const [isImporting, setIsImporting] = useState(false);
+
+    const handleNotionImport = async () => {
+        const token = localStorage.getItem('notion_api_token');
+        if (!token) {
+            alert('Please configure your Notion API Token in Settings > Integrations first.');
+            return;
+        }
+
+        setIsImporting(true);
+        try {
+            await axios.post('http://localhost:3001/api/sync/notion-tasks', { token }, {
+                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+            });
+            await refresh();
+            alert('Notion tasks imported successfully!');
+        } catch (error) {
+            console.error('Notion import error:', error);
+            alert('Failed to import tasks from Notion.');
+        } finally {
+            setIsImporting(false);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -55,10 +79,21 @@ const Tasks = () => {
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Tasks & Assignments</h1>
                     <p className="text-slate-500 dark:text-slate-400">Stay on top of your deadlines and deliverables.</p>
                 </div>
-                <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2">
-                    <Plus size={20} />
-                    <span>New Task</span>
-                </Button>
+                <div className="flex gap-2">
+                    <Button
+                        variant="secondary"
+                        onClick={handleNotionImport}
+                        disabled={isImporting}
+                        className="flex items-center gap-2 border-slate-200 dark:border-slate-800"
+                    >
+                        {isImporting ? <Loader2 size={20} className="animate-spin" /> : <Database size={20} />}
+                        <span>Import from Notion</span>
+                    </Button>
+                    <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2">
+                        <Plus size={20} />
+                        <span>New Task</span>
+                    </Button>
+                </div>
             </div>
 
             <div className="space-y-4">
