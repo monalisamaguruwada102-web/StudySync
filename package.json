@@ -8,7 +8,8 @@
     "dev:backend": "node server/index.cjs",
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
     "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:build": "vite build && electron-packager . StudySync --platform=win32 --arch=x64 --out=dist_electron --overwrite",
+    "electron:build": "vite build && electron-builder",
+    "electron:installer": "vite build && electron-builder",
     "build": "vite build",
     "start": "node server/index.cjs",
     "lint": "eslint .",
@@ -27,7 +28,14 @@
       "package.json"
     ],
     "win": {
-      "target": "portable"
+      "target": "nsis",
+      "icon": "public/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
     }
   },
   "dependencies": {
