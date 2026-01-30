@@ -3,6 +3,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const path = require('path');
+const fs = require('fs');
 const db = require('./database.cjs');
 const multer = require('multer');
 
@@ -204,6 +205,45 @@ app.post('/api/pomodoroSessions', authenticateToken, (req, res) => {
     const xpGain = 50;
     const result = db.addXP(req.user.id, xpGain);
     res.json({ item, xpGain, ...result });
+});
+
+// --- Data Preservation Endpoints ---
+
+// Export database
+app.get('/api/admin/export', authenticateToken, (req, res) => {
+    // Check if user is the white-listed main user (extra security)
+    if (req.user.email !== 'joshuamujakari15@gmail.com' && req.user.email !== 'monalisamaguruwada@gmail.com') {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    res.download(db.DB_PATH, 'studysync-backup.json');
+});
+
+// Import database
+const jsonUpload = multer({ dest: 'server/uploads/temp/' });
+app.post('/api/admin/import', authenticateToken, jsonUpload.single('file'), async (req, res) => {
+    if (req.user.email !== 'joshuamujakari15@gmail.com' && req.user.email !== 'monalisamaguruwada@gmail.com') {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    try {
+        const fileContent = fs.readFileSync(req.file.path, 'utf8');
+        const jsonData = JSON.parse(fileContent);
+
+        await db.restore(jsonData);
+
+        // Cleanup temp file
+        fs.unlinkSync(req.file.path);
+
+        res.json({ message: 'Database restored successfully' });
+    } catch (error) {
+        console.error('Import error:', error);
+        res.status(500).json({ error: 'Failed to restore database: ' + error.message });
+    }
 });
 
 // SPA Catch-all (Regex for Express 5 compatibility)

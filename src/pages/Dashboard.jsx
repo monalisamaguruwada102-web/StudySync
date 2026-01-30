@@ -8,6 +8,7 @@ import Heatmap from '../components/analytics/Heatmap';
 import { useAuth } from '../context/AuthContext';
 import { getLeague } from '../utils/gamification';
 import AnimatedBadge from '../components/ui/AnimatedBadge';
+import KnowledgeGraph from '../components/analytics/KnowledgeGraph';
 import {
     Clock,
     Layers,
@@ -167,14 +168,26 @@ const Dashboard = () => {
                     <Heatmap logs={logs} />
                 </Card>
 
-                {/* Achievement Badges */}
+                {/* Achievement Badges & Knowledge Graph */}
                 <div className="space-y-6">
-                    <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-500 ml-2">Recent Badges</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                        <AnimatedBadge name="Early Bird" icon={Zap} color="primary" />
-                        <AnimatedBadge name="Persistence" icon={Flame} color="purple" />
-                        <AnimatedBadge name="Scholar" icon={Target} color="gold" />
-                        <AnimatedBadge name="Focus King" icon={Award} color="green" />
+                    <Card title="Knowledge Map" HeaderAction={<Brain size={18} className="text-primary-500" />}>
+                        <div className="py-2">
+                            <KnowledgeGraph modules={modules} logs={logs} />
+                            <div className="mt-4 flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                <span>Coverage</span>
+                                <span className="text-primary-500">{((modules.length * 100) / 10).toFixed(0)}%</span>
+                            </div>
+                        </div>
+                    </Card>
+
+                    <div className="space-y-4">
+                        <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-500 ml-2">Recent Badges</h3>
+                        <div className="grid grid-cols-2 gap-4">
+                            <AnimatedBadge name="Early Bird" icon={Zap} color="primary" />
+                            <AnimatedBadge name="Persistence" icon={Flame} color="purple" />
+                            <AnimatedBadge name="Scholar" icon={Target} color="gold" />
+                            <AnimatedBadge name="Focus King" icon={Award} color="green" />
+                        </div>
                     </div>
                 </div>
             </div>

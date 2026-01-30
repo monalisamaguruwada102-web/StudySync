@@ -1,188 +1,227 @@
 import React, { useState } from 'react';
 import Layout from '../components/layout/Layout';
 import Card from '../components/ui/Card';
-import Button from '../components/ui/Button';
-import { useFirestore } from '../hooks/useFirestore';
-import {
-    moduleService,
-    noteService,
-    flashcardService,
-    flashcardDeckService,
-    studyLogService,
-    taskService,
-    pomodoroService,
-    calendarService
-} from '../services/firestoreService';
+import api from '../services/api';
 import {
     Download,
     Upload,
-    Trash2,
+    ShieldCheck,
+    AlertTriangle,
+    RefreshCcw,
     Database,
-    Palette,
+    HardDrive,
+    Save,
     Moon,
     Sun,
-    Monitor,
-    RefreshCw
+    Palette
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 
 const Settings = () => {
     const { isDarkMode, toggleTheme } = useTheme();
-    const [importData, setImportData] = useState('');
+    const [isExporting, setIsExporting] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
+    const [importStatus, setImportStatus] = useState(null); // 'success', 'error', 'pending'
+    const [errorMessage, setErrorMessage] = useState('');
 
-    // Fetch all data for export
-    const { data: modules } = useFirestore(moduleService.getAll);
-    const { data: notes } = useFirestore(noteService.getAll);
-    const { data: decks } = useFirestore(flashcardDeckService.getAll);
-    const { data: cards } = useFirestore(flashcardService.getAll);
-    const { data: logs } = useFirestore(studyLogService.getAll);
-    const { data: tasks } = useFirestore(taskService.getAll);
-    const { data: pomodoros } = useFirestore(pomodoroService.getAll);
-    const { data: events } = useFirestore(calendarService.getAll);
-
-    const handleExport = () => {
-        const fullBackup = {
-            modules,
-            notes,
-            flashcardDecks: decks,
-            flashcards: cards,
-            studyLogs: logs,
-            tasks,
-            pomodoroSessions: pomodoros,
-            calendarEvents: events,
-            exportedAt: new Date().toISOString(),
-            version: '1.0.0'
-        };
-
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullBackup, null, 2));
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", `studysync_backup_${new Date().toISOString().split('T')[0]}.json`);
-        document.body.appendChild(downloadAnchorNode);
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
+    const handleExport = async () => {
+        setIsExporting(true);
+        try {
+            const response = await api.get('/admin/export', { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `StudySync-Backup-${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            console.error('Export failed:', error);
+            alert('Export failed. Please try again.');
+        } finally {
+            setIsExporting(false);
+        }
     };
 
-    const handleImport = async () => {
-        if (!importData) return;
+    const handleImport = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (!window.confirm('WARNING: This will overwrite your current database. Are you sure?')) {
+            event.target.value = null;
+            return;
+        }
+
+        setIsImporting(true);
+        setImportStatus('pending');
+        const formData = new FormData();
+        formData.append('file', file);
 
         try {
-            setIsImporting(true);
-            const parsed = JSON.parse(importData);
-
-            // This is a destructive operation in a real app, but here we'll just append/overwrite
-            // For simplicity in this demo, we'll confirm strictly.
-            if (!window.confirm("This will merge imported data into your current database. Continue?")) {
-                setIsImporting(false);
-                return;
-            }
-
-            // In a real implementation, we would batch these updates to the backend.
-            // For the local server, we could add a bulk import endpoint, but we'll verify via valid JSON.
-            alert("Data validation successful! In a production environment, this would now overwrite your database.");
-
-            // Simulating a refresh
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-
-        } catch (e) {
-            alert("Invalid JSON data. Please check your text.");
+            await api.post('/admin/import', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            setImportStatus('success');
+            setTimeout(() => window.location.reload(), 2000);
+        } catch (error) {
+            setImportStatus('error');
+            setErrorMessage(error.response?.data?.error || 'Import failed');
+            console.error('Import failed:', error);
         } finally {
             setIsImporting(false);
+            event.target.value = null;
         }
     };
 
     return (
-        <Layout title="System Settings">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Data Management */}
-                <div className="space-y-6">
-                    <Card title="Data Persistence" HeaderAction={<Database size={18} className="text-primary-500" />}>
-                        <div className="space-y-6">
-                            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
-                                <h4 className="font-bold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
-                                    <Download size={16} /> Export Data
-                                </h4>
-                                <p className="text-xs text-slate-500 mb-4">
-                                    Download a complete backup of your study logs, notes, and flashcards as a JSON file.
-                                </p>
-                                <Button onClick={handleExport} className="w-full">Download Backup</Button>
-                            </div>
-
-                            <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
-                                <h4 className="font-bold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
-                                    <Upload size={16} /> Import Data
-                                </h4>
-                                <p className="text-xs text-slate-500 mb-4">
-                                    Paste your backup JSON below to restore your progress.
-                                </p>
-                                <textarea
-                                    className="w-full text-xs font-mono p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl mb-3 h-32 outline-none focus:border-primary-500"
-                                    placeholder='Paste JSON here: { "modules": [], "logs": [] ... }'
-                                    value={importData}
-                                    onChange={(e) => setImportData(e.target.value)}
-                                />
-                                <Button variant="secondary" onClick={handleImport} className="w-full" disabled={isImporting}>
-                                    {isImporting ? 'Restoring...' : 'Restore Data'}
-                                </Button>
-                            </div>
-                        </div>
-                    </Card>
-
-                    <div className="p-4 border border-red-200 dark:border-red-900/30 bg-red-50 dark:bg-red-900/10 rounded-2xl">
-                        <h4 className="font-bold text-red-600 mb-2 flex items-center gap-2">
-                            <Trash2 size={16} /> Danger Zone
-                        </h4>
-                        <p className="text-xs text-red-500/80 mb-4">
-                            Irreversibly delete all your study data and reset the account to factory defaults.
-                        </p>
-                        <Button className="w-full !bg-red-600 hover:!bg-red-700 text-white border-none">
-                            Reset Account
-                        </Button>
-                    </div>
+        <Layout title="Settings & Security">
+            <div className="max-w-4xl mx-auto space-y-8">
+                {/* Header Section */}
+                <div className="flex flex-col gap-2 mb-4">
+                    <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-3">
+                        <Database className="text-primary-500" />
+                        System Administration
+                    </h2>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">
+                        Manage your local data, backups, and security settings to ensure your study progress is never lost.
+                    </p>
                 </div>
 
-                {/* Customization */}
-                <div className="space-y-6">
-                    <Card title="Appearance" HeaderAction={<Palette size={18} className="text-primary-500" />}>
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50">
-                                <div className="flex items-center gap-3">
-                                    {isDarkMode ? <Moon size={20} className="text-indigo-400" /> : <Sun size={20} className="text-orange-500" />}
-                                    <div>
-                                        <h5 className="text-sm font-bold text-slate-800 dark:text-slate-100">Theme Mode</h5>
-                                        <p className="text-xs text-slate-400">{isDarkMode ? 'Dark Mode' : 'Light Mode'}</p>
-                                    </div>
+                {/* Appearance Card */}
+                <Card title="Appearance" HeaderAction={<Palette size={18} className="text-primary-500" />}>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800/50">
+                            <div className="flex items-center gap-3">
+                                <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-orange-500/20 text-orange-500'}`}>
+                                    {isDarkMode ? <Moon size={20} /> : <Sun size={20} />}
                                 </div>
+                                <div>
+                                    <h5 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">Theme Mode</h5>
+                                    <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">{isDarkMode ? 'Dark Mode Active' : 'Light Mode Active'}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={toggleTheme}
+                                className={`relative w-14 h-7 rounded-full transition-all duration-300 ${isDarkMode ? 'bg-primary-600 shadow-[0_0_15px_rgba(99,102,241,0.4)]' : 'bg-slate-300'}`}
+                            >
+                                <div className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-300 ${isDarkMode ? 'translate-x-7' : ''}`} />
+                            </button>
+                        </div>
+                    </div>
+                </Card>
+
+                {/* Data Persistence Card */}
+                <Card className="border-2 border-primary-500/20 bg-primary-500/5 backdrop-blur-sm overflow-hidden relative">
+                    <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+                        <ShieldCheck size={120} />
+                    </div>
+
+                    <div className="p-2">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-3 bg-primary-500 text-white rounded-2xl shadow-lg shadow-primary-500/30">
+                                <HardDrive size={24} />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-wider">Emergency Data Tools</h3>
+                                <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Local Database Management</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                            {/* Export Section */}
+                            <div className="space-y-4">
+                                <h4 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                                    <Download size={18} className="text-primary-500" />
+                                    Export Database
+                                </h4>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                                    Download a complete snapshot of your StudySync database. Keep this file safe to restore your data on another device or after an update.
+                                </p>
                                 <button
-                                    onClick={toggleTheme}
-                                    className={`relative w-12 h-6 rounded-full transition-colors ${isDarkMode ? 'bg-primary-600' : 'bg-slate-300'}`}
+                                    onClick={handleExport}
+                                    disabled={isExporting}
+                                    className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-white dark:bg-slate-800 border-2 border-primary-500/20 hover:border-primary-500 text-primary-600 dark:text-primary-400 font-black rounded-2xl transition-all shadow-sm hover:shadow-primary-500/10 active:scale-95 disabled:opacity-50"
                                 >
-                                    <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${isDarkMode ? 'translate-x-6' : ''}`} />
+                                    {isExporting ? <RefreshCcw className="animate-spin" /> : <Save size={20} />}
+                                    {isExporting ? 'EXPORTING...' : 'DOWNLOAD BACKUP'}
                                 </button>
                             </div>
-                        </div>
-                    </Card>
 
-                    <Card title="About StudySync">
-                        <div className="text-center py-6">
-                            <Monitor size={48} className="mx-auto text-slate-200 dark:text-slate-700 mb-4" />
-                            <h3 className="font-bold text-slate-800 dark:text-slate-100">StudySync Pro</h3>
-                            <p className="text-xs text-slate-400 mb-4">Version 2.5.0 (Elite Edition)</p>
-                            <p className="text-xs text-slate-500 leading-relaxed max-w-xs mx-auto">
-                                Designed for IT students who want to master efficient learning.
-                                Built with React, Vite, Node.js, and a lot of caffeine.
-                            </p>
-                            <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-center gap-4">
-                                <a href="#" className="text-xs hover:text-primary-500 transition-colors dark:text-slate-400">Documentation</a>
-                                <a href="#" className="text-xs hover:text-primary-500 transition-colors dark:text-slate-400">Support</a>
-                                <a href="#" className="text-xs hover:text-primary-500 transition-colors dark:text-slate-400">License</a>
+                            {/* Import Section */}
+                            <div className="space-y-4">
+                                <h4 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                                    <Upload size={18} className="text-orange-500" />
+                                    Restore from File
+                                </h4>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                                    Upload a previously exported JSON backup to restore your workspace.
+                                    <span className="text-orange-500 font-bold"> This will overwrite all current data.</span>
+                                </p>
+                                <div className="relative">
+                                    <input
+                                        type="file"
+                                        accept=".json"
+                                        onChange={handleImport}
+                                        className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                                        disabled={isImporting}
+                                    />
+                                    <div className="flex items-center justify-center gap-3 px-6 py-4 bg-orange-500/10 border-2 border-orange-500/20 hover:border-orange-500 text-orange-600 dark:text-orange-400 font-black rounded-2xl transition-all shadow-sm active:scale-95">
+                                        {isImporting ? <RefreshCcw className="animate-spin" /> : <Upload size={20} />}
+                                        {isImporting ? 'IMPORTING...' : 'UPLOAD & RESTORE'}
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </Card>
-                </div>
+
+                        {/* Status Messages */}
+                        <AnimatePresence mode="wait">
+                            {importStatus === 'success' && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0 }}
+                                    className="p-4 bg-green-500/20 border border-green-500/30 text-green-600 dark:text-green-400 rounded-xl flex items-center gap-3 font-bold"
+                                >
+                                    <ShieldCheck size={20} />
+                                    Database restored! Reloading application...
+                                </motion.div>
+                            )}
+                            {importStatus === 'error' && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0 }}
+                                    className="p-4 bg-red-500/20 border border-red-500/30 text-red-600 dark:text-red-400 rounded-xl flex items-center gap-3 font-bold"
+                                >
+                                    <AlertTriangle size={20} />
+                                    {errorMessage}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                </Card>
+
+                {/* Cloud Migration Roadmap Card */}
+                <Card className="border border-slate-200 dark:border-slate-800 opacity-60">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-xl">
+                            <RefreshCcw size={20} />
+                        </div>
+                        <div>
+                            <h3 className="font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">Cloud Sync Roadmap</h3>
+                            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Coming Soon: Automatic Real-time Database</p>
+                        </div>
+                    </div>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                        We are currently building an automated cloud sync feature using <span className="font-bold text-slate-700 dark:text-slate-300">Supabase</span>.
+                        Once active, your data will sync instantly across all your devices and will be immune to local updates.
+                    </p>
+                    <div className="flex gap-2">
+                        <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-400 rounded-full border border-slate-200 dark:border-slate-700">VERSION 2.1 REQUIRED</span>
+                        <span className="px-3 py-1 bg-primary-500/10 text-[10px] font-bold text-primary-500 rounded-full border border-primary-500/20">PREMIUM ONLY</span>
+                    </div>
+                </Card>
             </div>
         </Layout>
     );

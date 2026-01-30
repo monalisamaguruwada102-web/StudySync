@@ -183,8 +183,35 @@ const db = {
         return { user, levelUp };
     },
 
+    // Raw data access for export
+    getRawData: () => readDB(),
+
+    // Restore database from uploaded JSON
+    restore: async (newData) => {
+        // Basic validation
+        if (!newData || typeof newData !== 'object') {
+            throw new Error('Invalid database format');
+        }
+
+        // Ensure all required collections exist
+        const keys = Object.keys(initialState);
+        for (const key of keys) {
+            if (!newData[key]) {
+                newData[key] = initialState[key];
+            }
+        }
+
+        // Create a backup of the current state before overwriting
+        createBackup();
+
+        // Write the new data
+        await writeDB(newData);
+        return true;
+    },
+
     // Export backup function for graceful shutdown
-    createBackup
+    createBackup,
+    DB_PATH
 };
 
 module.exports = db;

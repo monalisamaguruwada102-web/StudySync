@@ -6,7 +6,9 @@ import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
 import { useFirestore } from '../hooks/useFirestore';
 import { moduleService, studyLogService } from '../services/firestoreService';
-import { Plus, Edit2, Trash2, Target, BookOpen } from 'lucide-react';
+import { Plus, Edit2, Trash2, Target, BookOpen, Sparkles, Wand2, RefreshCcw } from 'lucide-react';
+import aiService from '../services/aiService';
+import { flashcardDeckService, flashcardService } from '../services/firestoreService';
 
 const Modules = () => {
     const { data: modules, loading, refresh } = useFirestore(moduleService.getAll);
@@ -14,6 +16,7 @@ const Modules = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentModule, setCurrentModule] = useState(null);
     const [formData, setFormData] = useState({ name: '', description: '', targetHours: '' });
+    const [isGenerating, setIsGenerating] = useState(null); // moduleId being processed
 
     const handleOpenModal = (mod = null) => {
         if (mod) {
@@ -43,6 +46,40 @@ const Modules = () => {
         if (window.confirm('Are you sure you want to delete this module? All associated data will be affected.')) {
             await moduleService.delete(id);
             await refresh();
+        }
+    };
+
+    const handleGenerateAI = async (mod) => {
+        setIsGenerating(mod.id);
+        try {
+            // 1. Generate cards via AI
+            const newCards = await aiService.generateFlashcards(mod.name, mod.description);
+
+            // 2. Find or create an "AI Generated" deck for this module
+            const decks = await flashcardDeckService.getAll((data) => { }); // Get all decks
+            // Note: getAll in this service implementation actually returns a fetcher/unsub, 
+            // but the mock here is a bit complex. For simplicity, we'll try to add a deck directly.
+
+            const deck = await flashcardDeckService.add({
+                name: `AI: ${mod.name}`,
+                moduleId: mod.id,
+                description: `Auto-generated flashcards for ${mod.name}`
+            });
+
+            // 3. Add cards to the deck
+            for (const card of newCards) {
+                await flashcardService.add({
+                    ...card,
+                    deckId: deck.id
+                });
+            }
+
+            alert(`✨ Successfully generated ${newCards.length} flashcards for ${mod.name}! Check your Flashcards page.`);
+        } catch (error) {
+            console.error('AI Generation failed:', error);
+            alert('AI generation failed. Please try again.');
+        } finally {
+            setIsGenerating(null);
         }
     };
 
@@ -79,6 +116,15 @@ const Modules = () => {
                                         <BookOpen size={24} />
                                     </div>
                                     <div className="flex gap-1">
+                                        <Button
+                                            variant="ghost"
+                                            onClick={() => handleGenerateAI(mod)}
+                                            className={`!p-2 ${isGenerating === mod.id ? 'text-primary-500 animate-pulse' : 'text-slate-400 hover:text-primary-500'}`}
+                                            disabled={isGenerating !== null}
+                                            title="Generate AI Flashcards"
+                                        >
+                                            {isGenerating === mod.id ? <RefreshCcw className="animate-spin" size={16} /> : <Wand2 size={16} />}
+                                        </Button>
                                         <Button variant="ghost" onClick={() => handleOpenModal(mod)} className="!p-2 text-slate-400 hover:text-primary-600">
                                             <Edit2 size={16} />
                                         </Button>

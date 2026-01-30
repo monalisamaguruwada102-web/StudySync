@@ -6,7 +6,8 @@ import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
 import { useFirestore } from '../hooks/useFirestore';
 import { noteService, moduleService } from '../services/firestoreService';
-import { Plus, StickyNote, Trash2, Book, ExternalLink, FileText, Code, Play } from 'lucide-react';
+import { Plus, StickyNote, Trash2, Book, ExternalLink, FileText, Code, Play, Sparkles, Wand2 } from 'lucide-react';
+import aiService from '../services/aiService';
 
 import api from '../services/api';
 
@@ -33,6 +34,7 @@ const Notes = () => {
     // Sandbox State
     const [isSandboxOpen, setIsSandboxOpen] = useState(false);
     const [sandboxCode, setSandboxCode] = useState('');
+    const [summarizingId, setSummarizingId] = useState(null);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -80,6 +82,23 @@ const Notes = () => {
         setIsSandboxOpen(true);
     };
 
+    const handleSummarize = async (note) => {
+        setSummarizingId(note.id);
+        try {
+            const summary = await aiService.summarize(note.content);
+            // Append summary to existing content or replace?
+            // For this premium feature, we'll append it with a marker
+            const newContent = note.content + "\n\n" + summary;
+            await noteService.update(note.id, { content: newContent });
+            await refresh();
+        } catch (error) {
+            console.error('AI Summarization failed:', error);
+            alert('AI Assistant is currently unavailable.');
+        } finally {
+            setSummarizingId(null);
+        }
+    };
+
     return (
         <Layout title="Notes & Resources">
             <div className="flex justify-between items-center mb-8">
@@ -101,9 +120,20 @@ const Notes = () => {
                                 <Book size={10} />
                                 <span>{getModuleName(note.moduleId)}</span>
                             </div>
-                            <Button variant="ghost" onClick={() => handleDelete(note.id)} className="!p-1.5 text-slate-400 hover:text-red-500">
-                                <Trash2 size={14} />
-                            </Button>
+                            <div className="flex items-center gap-1">
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => handleSummarize(note)}
+                                    className={`!p-1.5 ${summarizingId === note.id ? 'text-primary-500 animate-pulse' : 'text-slate-400 hover:text-primary-500'}`}
+                                    disabled={summarizingId !== null}
+                                    title="AI Summarize"
+                                >
+                                    <Wand2 size={14} />
+                                </Button>
+                                <Button variant="ghost" onClick={() => handleDelete(note.id)} className="!p-1.5 text-slate-400 hover:text-red-500">
+                                    <Trash2 size={14} />
+                                </Button>
+                            </div>
                         </div>
 
                         <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
