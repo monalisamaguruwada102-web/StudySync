@@ -3,11 +3,15 @@ const path = require('path');
 const isDev = !app.isPackaged;
 
 function createWindow() {
+    const iconPath = isDev
+        ? path.join(__dirname, '../public/icon.png')
+        : path.join(process.resourcesPath, 'icon.png');
+
     const mainWindow = new BrowserWindow({
         width: 1280,
         height: 800,
         title: "StudySync Desktop",
-        icon: path.join(__dirname, '../public/icon.png'),
+        icon: iconPath,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,

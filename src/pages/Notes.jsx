@@ -9,7 +9,7 @@ import { noteService, moduleService } from '../services/firestoreService';
 import { Plus, StickyNote, Trash2, Book, ExternalLink, FileText, Code, Play, Sparkles, Wand2 } from 'lucide-react';
 import aiService from '../services/aiService';
 
-import api from '../services/api';
+import api, { BASE_URL } from '../services/api';
 
 const Notes = () => {
     const { data: notes, loading, refresh } = useFirestore(noteService.getAll);
@@ -343,7 +343,7 @@ const Notes = () => {
             >
                 <div className="w-full h-full bg-slate-100 dark:bg-slate-900 overflow-hidden">
                     <iframe
-                        src={viewingPdf?.startsWith('http') ? viewingPdf : `http://localhost:3001${viewingPdf}`}
+                        src={viewingPdf?.startsWith('http') ? viewingPdf : `${BASE_URL}${viewingPdf}`}
                         className="w-full h-full"
                         title="PDF Viewer"
                     />

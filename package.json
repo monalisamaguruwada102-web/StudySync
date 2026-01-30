@@ -27,9 +27,15 @@
       "electron/**/*",
       "package.json"
     ],
+    "extraResources": [
+      {
+        "from": "build/icon.png",
+        "to": "icon.png"
+      }
+    ],
     "win": {
       "target": "nsis",
-      "icon": "public/icon.png",
+      "icon": "build/icon.png",
       "verifyUpdateCodeSignature": false,
       "signAndEditExecutable": false
     },
