@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import Button from './Button';
 
-const Modal = ({ isOpen, onClose, title, children, footer }) => {
+const Modal = ({ isOpen, onClose, title, children, footer, size }) => {
     return (
         <AnimatePresence>
             {isOpen && (
@@ -20,7 +20,7 @@ const Modal = ({ isOpen, onClose, title, children, footer }) => {
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
                         className={`relative bg-white dark:bg-slate-900 shadow-2xl overflow-hidden transition-colors duration-300
-                            ${props.size === 'full' ? 'w-full h-full rounded-none' : 'w-full max-w-lg rounded-2xl'}
+                            ${size === 'full' ? 'w-full h-full rounded-none' : 'w-full max-w-lg rounded-2xl'}
                         `}
                     >
                         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
