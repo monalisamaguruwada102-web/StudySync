@@ -67,6 +67,23 @@ app.get('/api/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// --- DOWNLOAD INSTALLER ---
+app.get('/api/download/installer', (req, res) => {
+    const distPath = path.join(__dirname, '../dist_electron');
+    if (!fs.existsSync(distPath)) return res.status(404).send('Installer not found');
+
+    const files = fs.readdirSync(distPath).filter(f => f.endsWith('.exe') && !f.includes('uninstaller'));
+    if (files.length === 0) return res.status(404).send('Installer not ready yet');
+
+    // Get the latest file
+    const latestFile = files.map(f => ({
+        name: f,
+        time: fs.statSync(path.join(distPath, f)).mtime.getTime()
+    })).sort((a, b) => b.time - a.time)[0];
+
+    res.download(path.join(distPath, latestFile.name), latestFile.name);
+});
+
 // --- UPLOAD ROUTE ---
 app.post('/api/upload', (req, res) => {
     upload.single('file')(req, res, (err) => {

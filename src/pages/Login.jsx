@@ -149,9 +149,7 @@ const Login = () => {
                             Run StudySync as a native app with offline support and faster performance.
                         </p>
                         <a
-                            href="https://drive.google.com/file/d/1GBmkXaIbVZCbVBq9GH6h5-wX_5Mjb_GA/view?usp=sharing"
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            href="/api/download/installer"
                             className="inline-flex items-center gap-2 text-sm font-bold bg-white text-indigo-600 px-4 py-2 rounded-xl hover:bg-indigo-50 transition-colors"
                         >
                             <Download size={16} />
