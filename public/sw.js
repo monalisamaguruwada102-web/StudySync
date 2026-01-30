@@ -1,67 +1,32 @@
-const CACHE_NAME = 'studysync-v2';
-const ASSETS = [
-    '/',
-    '/index.html',
-    '/manifest.json',
-    '/logo.svg',
-    '/favicon.ico'
-];
+/**
+ * StudySync EMERGENCY KILL SWITCH
+ * This script is designed to immediately deactivate and remove any existing service workers
+ * that are causing interception errors (NS_ERROR_CORRUPTED_CONTENT).
+ */
 
 self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(ASSETS);
-        })
-    );
+    // Force the new service worker to become the active service worker immediately
     self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
+    // Unregister all other service workers and clear all caches
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
-                cacheNames.map((cache) => {
-                    if (cache !== CACHE_NAME) {
-                        return caches.delete(cache);
-                    }
-                })
+                cacheNames.map((cacheName) => caches.delete(cacheName))
             );
-        })
-    );
-    self.clients.claim();
-});
-
-self.addEventListener('fetch', (event) => {
-    const url = new URL(event.request.url);
-
-    // 1. Bypass Service Worker for assets folder (Vite hashed files)
-    // This prevents "Corrupted Content" and out-of-sync hash errors
-    if (url.pathname.startsWith('/assets/')) {
-        return;
-    }
-
-    // 2. Only handle safe GET requests
-    if (event.request.method !== 'GET' || !url.protocol.startsWith('http')) {
-        return;
-    }
-
-    event.respondWith(
-        caches.match(event.request).then((cachedResponse) => {
-            // Return cached response if found
-            if (cachedResponse) {
-                return cachedResponse;
-            }
-
-            // Otherwise fetch from network
-            return fetch(event.request).catch((err) => {
-                console.error('Network fetch failed:', err);
-                // Return a basic fallback for navigation requests
-                if (event.request.mode === 'navigate') {
-                    return caches.match('/');
-                }
-                return null;
-            });
+        }).then(() => {
+            return self.registration.unregister();
+        }).then(() => {
+            return self.clients.matchAll();
+        }).then((clients) => {
+            // Force all clients to reload once to clear out the broken worker
+            clients.forEach(client => client.navigate(client.url));
         })
     );
 });
 
+// DO NOT intercept any fetch events.
+// This restores standard browser networking immediately.
+// self.addEventListener('fetch', (event) => { });
