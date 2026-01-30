@@ -339,11 +339,11 @@ const Notes = () => {
                 isOpen={!!viewingPdf}
                 onClose={() => setViewingPdf(null)}
                 title="Document Viewer"
-                size="xl"
+                size="full"
             >
-                <div className="w-full h-[80vh] bg-slate-100 dark:bg-slate-900 rounded-xl overflow-hidden">
+                <div className="w-full h-full bg-slate-100 dark:bg-slate-900 overflow-hidden">
                     <iframe
-                        src={viewingPdf}
+                        src={viewingPdf?.startsWith('http') ? viewingPdf : `http://localhost:3001${viewingPdf}`}
                         className="w-full h-full"
                         title="PDF Viewer"
                     />

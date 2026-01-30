@@ -19,7 +19,9 @@ const Modal = ({ isOpen, onClose, title, children, footer }) => {
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden transition-colors duration-300"
+                        className={`relative bg-white dark:bg-slate-900 shadow-2xl overflow-hidden transition-colors duration-300
+                            ${props.size === 'full' ? 'w-full h-full rounded-none' : 'w-full max-w-lg rounded-2xl'}
+                        `}
                     >
                         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                             <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{title}</h3>
