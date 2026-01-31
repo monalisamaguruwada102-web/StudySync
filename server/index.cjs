@@ -33,10 +33,10 @@ const storage = multer.diskStorage({
 const upload = multer({
     storage: storage,
     fileFilter: (req, file, cb) => {
-        if (file.mimetype === 'application/pdf') {
+        if (file.mimetype === 'application/pdf' || file.mimetype.startsWith('audio/')) {
             cb(null, true);
         } else {
-            cb(new Error('Only PDFs are allowed'), false);
+            cb(new Error('Only PDFs and Audio files are allowed'), false);
         }
     }
 });
