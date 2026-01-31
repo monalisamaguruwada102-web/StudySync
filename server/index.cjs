@@ -12,6 +12,9 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+if (!GEMINI_API_KEY) {
+    console.warn('⚠️ GEMINI_API_KEY is not set in environment variables.');
+}
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
 const app = express();
@@ -474,26 +477,29 @@ app.post('/api/ai/process', authenticateToken, async (req, res) => {
         let responseText = response.text();
 
         // Extract JSON for structured responses
-        if (['generateQuiz', 'generateFlashcards', 'generateStudyPlan'].includes(action)) {
-            if (responseText.includes('```json')) {
-                responseText = responseText.split('```json')[1].split('```')[0].trim();
-            } else if (responseText.includes('```')) {
-                responseText = responseText.split('```')[1].split('```')[0].trim();
-            }
-            try {
-                return res.json(JSON.parse(responseText));
-            } catch (pErr) {
-                console.error('JSON Parse error on AI response:', responseText);
-                throw new Error('AI returned invalid JSON');
-            }
+        try {
+            // Remove any markdown formatting if present
+            const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+            return res.json(JSON.parse(cleanJson));
+        } catch (pErr) {
+            console.error('JSON Parse error on AI response:', responseText);
+            return res.status(500).json({
+                error: 'AI returned invalid JSON format',
+                details: responseText.substring(0, 100) + '...'
+            });
         }
+    }
 
         res.json({ text: responseText });
 
-    } catch (error) {
-        console.error(`Gemini AI error (${action}):`, error);
-        res.status(500).json({ error: 'AI processing failed on the server.' });
-    }
+} catch (error) {
+    console.error(`Gemini AI error (${action}):`, error);
+    res.status(500).json({
+        error: 'AI processing failed on the server',
+        message: error.message,
+        action: action
+    });
+}
 });
 
 // SPA Catch-all (Ignore assets and API)
