@@ -72,7 +72,12 @@ app.use(express.json());
 
 // --- HEALTH CHECK ---
 app.get('/api/health', (req, res) => {
-    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+    res.status(200).json({
+        status: 'ok',
+        version: SYSTEM_VERSION,
+        ai_configured: !!genAI,
+        timestamp: new Date().toISOString()
+    });
 });
 
 // --- DOWNLOAD INSTALLER ---
@@ -414,7 +419,12 @@ app.post('/api/ai/process', authenticateToken, async (req, res) => {
     const { action, payload } = req.body;
 
     if (!genAI) {
-        return res.status(500).json({ error: 'Gemini API key is not configured on the server.' });
+        console.error('❌ AI Process failed: GEMINI_API_KEY is not defined on the server.');
+        return res.status(500).json({
+            error: 'Gemini API key is not configured on the server.',
+            suggestion: 'Please set the GEMINI_API_KEY environment variable in your hosting provider settings.',
+            version: SYSTEM_VERSION
+        });
     }
 
     try {
