@@ -477,29 +477,30 @@ app.post('/api/ai/process', authenticateToken, async (req, res) => {
         let responseText = response.text();
 
         // Extract JSON for structured responses
-        try {
-            // Remove any markdown formatting if present
-            const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-            return res.json(JSON.parse(cleanJson));
-        } catch (pErr) {
-            console.error('JSON Parse error on AI response:', responseText);
-            return res.status(500).json({
-                error: 'AI returned invalid JSON format',
-                details: responseText.substring(0, 100) + '...'
-            });
+        if (['generateQuiz', 'generateFlashcards', 'generateStudyPlan'].includes(action)) {
+            try {
+                // Remove any markdown formatting if present
+                const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+                return res.json(JSON.parse(cleanJson));
+            } catch (pErr) {
+                console.error('JSON Parse error on AI response:', responseText);
+                return res.status(500).json({
+                    error: 'AI returned invalid JSON format',
+                    details: responseText.substring(0, 100) + '...'
+                });
+            }
         }
-    }
 
         res.json({ text: responseText });
 
-} catch (error) {
-    console.error(`Gemini AI error (${action}):`, error);
-    res.status(500).json({
-        error: 'AI processing failed on the server',
-        message: error.message,
-        action: action
-    });
-}
+    } catch (error) {
+        console.error(`Gemini AI error (${action}):`, error);
+        res.status(500).json({
+            error: 'AI processing failed on the server',
+            message: error.message,
+            action: action
+        });
+    }
 });
 
 // SPA Catch-all (Ignore assets and API)
