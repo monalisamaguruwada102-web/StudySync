@@ -482,9 +482,11 @@ app.post('/api/ai/process', authenticateToken, async (req, res) => {
                 return res.status(400).json({ error: 'Invalid AI action' });
         }
 
+        console.log(`🤖 AI Action: ${action} - Generating content...`);
         const result = await model.generateContent(prompt);
         const response = await result.response;
         let responseText = response.text();
+        console.log(`✅ AI Response received (${responseText.length} chars)`);
 
         // Extract JSON for structured responses
         if (['generateQuiz', 'generateFlashcards', 'generateStudyPlan'].includes(action)) {
