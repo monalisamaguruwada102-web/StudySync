@@ -1,18 +1,19 @@
 /**
  * AI Service for StudySync
- * Integrated with Google Gemini AI for real-time summarization, quiz generation, and flashcard creation.
+ * Communicates with the backend proxy to perform AI operations.
+ * This keeps the API key secure on the server.
  */
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import axios from 'axios';
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-// Helper to get the model
-const getModel = () => {
-    if (!genAI) {
-        throw new Error("Gemini API key is not configured. Please add VITE_GEMINI_API_KEY to your .env file.");
-    }
-    return genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+// Helper to get auth headers
+const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+    };
 };
 
 export const aiService = {
@@ -21,18 +22,14 @@ export const aiService = {
      */
     summarize: async (text) => {
         try {
-            const model = getModel();
-            const prompt = `Summarize the following study note into a concise, well-formatted summary using Markdown. 
-            Highlight key concepts with bold text and use bullet points for takeaways.
-            
-            Content:
-            ${text}`;
+            const response = await axios.post(`${API_URL}/ai/process`, {
+                action: 'summarize',
+                payload: { text }
+            }, { headers: getAuthHeaders() });
 
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            return response.text();
+            return response.data.text;
         } catch (error) {
-            console.error("Gemini Summarization error:", error);
+            console.error("AI Summarization error:", error);
             throw error;
         }
     },
@@ -42,29 +39,14 @@ export const aiService = {
      */
     generateFlashcards: async (moduleName, text) => {
         try {
-            const model = getModel();
-            const prompt = `Generate a set of 5-8 flashcards from the following text related to the module "${moduleName}".
-            Return the result ONLY as a JSON array of objects with the following structure:
-            [{"question": "string", "answer": "string", "level": number}]
-            Level should be 1 for basic concepts and 2-3 for more complex ones.
-            
-            Text:
-            ${text}`;
+            const response = await axios.post(`${API_URL}/ai/process`, {
+                action: 'generateFlashcards',
+                payload: { moduleName, text }
+            }, { headers: getAuthHeaders() });
 
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            let responseText = response.text();
-
-            // Extract JSON if AI wrapped it in markdown code blocks
-            if (responseText.includes('```json')) {
-                responseText = responseText.split('```json')[1].split('```')[0].trim();
-            } else if (responseText.includes('```')) {
-                responseText = responseText.split('```')[1].split('```')[0].trim();
-            }
-
-            return JSON.parse(responseText);
+            return response.data;
         } catch (error) {
-            console.error("Gemini Flashcard generation error:", error);
+            console.error("AI Flashcard generation error:", error);
             throw error;
         }
     },
@@ -74,29 +56,14 @@ export const aiService = {
      */
     generateQuiz: async (content) => {
         try {
-            const model = getModel();
-            const prompt = `Generate a 5-question multiple choice quiz from the following study note content.
-            Return the result ONLY as a JSON array of objects with the following structure:
-            [{"id": number, "question": "string", "options": ["string", "string", "string", "string"], "correctIndex": number}]
-            Ensure questions are challenging but fair.
-            
-            Content:
-            ${content}`;
+            const response = await axios.post(`${API_URL}/ai/process`, {
+                action: 'generateQuiz',
+                payload: { content }
+            }, { headers: getAuthHeaders() });
 
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            let responseText = response.text();
-
-            // Extract JSON if AI wrapped it in markdown code blocks
-            if (responseText.includes('```json')) {
-                responseText = responseText.split('```json')[1].split('```')[0].trim();
-            } else if (responseText.includes('```')) {
-                responseText = responseText.split('```')[1].split('```')[0].trim();
-            }
-
-            return JSON.parse(responseText);
+            return response.data;
         } catch (error) {
-            console.error("Gemini Quiz generation error:", error);
+            console.error("AI Quiz generation error:", error);
             throw error;
         }
     },
@@ -106,37 +73,18 @@ export const aiService = {
      */
     generateStudyPlan: async (tasks, modules, cards) => {
         try {
-            const model = getModel();
-            const prompt = `Act as an expert study coach. Generate a personalized daily study plan for today.
-            
-            Current Data:
-            - Modules: ${JSON.stringify(modules.map(m => m.name))}
-            - Tasks/Exams: ${JSON.stringify(tasks.filter(t => t.status !== 'Completed').map(t => ({ title: t.title, dueDate: t.dueDate })))}
-            - Flashcards: ${cards.length} total across all decks.
-            
-            Instructions:
-            1. Prioritize upcoming exams (titles containing Exam, Quiz, Test).
-            2. Include time for active recall (flashcards).
-            3. Break sessions into manageable chunks (30m - 2h).
-            4. Return ONLY a JSON array of objects:
-               [{"type": "exam_prep" | "review" | "task", "title": "string", "duration": "string", "reason": "string"}]
-            
-            Make the plan realistic and evidence-based.`;
+            const response = await axios.post(`${API_URL}/ai/process`, {
+                action: 'generateStudyPlan',
+                payload: {
+                    tasks: tasks.filter(t => t.status !== 'Completed').map(t => ({ title: t.title, dueDate: t.dueDate })),
+                    modules: modules.map(m => m.name),
+                    cardCount: cards.length
+                }
+            }, { headers: getAuthHeaders() });
 
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            let responseText = response.text();
-
-            // Extract JSON if AI wrapped it in markdown code blocks
-            if (responseText.includes('```json')) {
-                responseText = responseText.split('```json')[1].split('```')[0].trim();
-            } else if (responseText.includes('```')) {
-                responseText = responseText.split('```')[1].split('```')[0].trim();
-            }
-
-            return JSON.parse(responseText);
+            return response.data;
         } catch (error) {
-            console.error("Gemini Study Plan error:", error);
+            console.error("AI Study Plan error:", error);
             throw error;
         }
     }

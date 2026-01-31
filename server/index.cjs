@@ -8,6 +8,11 @@ const db = require('./database.cjs');
 const multer = require('multer');
 const ical = require('node-ical');
 const axios = require('axios');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+require('dotenv').config();
+
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
 const app = express();
 
@@ -398,6 +403,96 @@ app.post('/api/sync/notion-tasks', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Notion sync error:', error.response?.data || error.message);
         res.status(500).json({ error: 'Failed to import from Notion: ' + (error.response?.data?.message || error.message) });
+    }
+});
+
+// --- AI PROCESSING (Google Gemini) ---
+app.post('/api/ai/process', authenticateToken, async (req, res) => {
+    const { action, payload } = req.body;
+
+    if (!genAI) {
+        return res.status(500).json({ error: 'Gemini API key is not configured on the server.' });
+    }
+
+    try {
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        let prompt = '';
+
+        switch (action) {
+            case 'summarize':
+                prompt = `Summarize the following study note into a concise, well-formatted summary using Markdown. 
+                Highlight key concepts with bold text and use bullet points for takeaways.
+                
+                Content:
+                ${payload.text}`;
+                break;
+
+            case 'generateQuiz':
+                prompt = `Generate a 5-question multiple choice quiz from the following study note content.
+                Return the result ONLY as a JSON array of objects with the following structure:
+                [{"id": number, "question": "string", "options": ["string", "string", "string", "string"], "correctIndex": number}]
+                Ensure questions are challenging but fair.
+                
+                Content:
+                ${payload.content}`;
+                break;
+
+            case 'generateFlashcards':
+                prompt = `Generate a set of 5-8 flashcards from the following text related to the module "${payload.moduleName}".
+                Return the result ONLY as a JSON array of objects with the following structure:
+                [{"question": "string", "answer": "string", "level": number}]
+                Level should be 1 for basic concepts and 2-3 for more complex ones.
+                
+                Text:
+                ${payload.text}`;
+                break;
+
+            case 'generateStudyPlan':
+                prompt = `Act as an expert study coach. Generate a personalized daily study plan for today.
+                
+                Current Data:
+                - Modules: ${JSON.stringify(payload.modules)}
+                - Tasks/Exams: ${JSON.stringify(payload.tasks)}
+                - Flashcards: ${payload.cardCount} total.
+                
+                Instructions:
+                1. Prioritize upcoming exams (titles containing Exam, Quiz, Test).
+                2. Include time for active recall (flashcards).
+                3. Break sessions into manageable chunks (30m - 2h).
+                4. Return ONLY a JSON array of objects:
+                   [{"type": "exam_prep" | "review" | "task", "title": "string", "duration": "string", "reason": "string"}]
+                
+                Make the plan realistic and evidence-based.`;
+                break;
+
+            default:
+                return res.status(400).json({ error: 'Invalid AI action' });
+        }
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        let responseText = response.text();
+
+        // Extract JSON for structured responses
+        if (['generateQuiz', 'generateFlashcards', 'generateStudyPlan'].includes(action)) {
+            if (responseText.includes('```json')) {
+                responseText = responseText.split('```json')[1].split('```')[0].trim();
+            } else if (responseText.includes('```')) {
+                responseText = responseText.split('```')[1].split('```')[0].trim();
+            }
+            try {
+                return res.json(JSON.parse(responseText));
+            } catch (pErr) {
+                console.error('JSON Parse error on AI response:', responseText);
+                throw new Error('AI returned invalid JSON');
+            }
+        }
+
+        res.json({ text: responseText });
+
+    } catch (error) {
+        console.error(`Gemini AI error (${action}):`, error);
+        res.status(500).json({ error: 'AI processing failed on the server.' });
     }
 });
 
