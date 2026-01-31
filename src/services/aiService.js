@@ -61,6 +61,52 @@ This note discusses the core principles of **${words.slice(0, 3).join(' ')}** an
                 resolve(flashcards);
             }, SIMULATED_DELAY * 1.5);
         });
+    },
+
+    /**
+     * Generates a 5-question quiz from the given note content.
+     */
+    generateQuiz: async (content) => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                // Mock Quiz Generation based on simple keywords if possible, or generic placeholders
+                // In production, send 'content' to an LLM.
+
+                const quiz = [
+                    {
+                        id: 1,
+                        question: "What is the primary topic discussed in these notes?",
+                        options: ["Database Optimization", "Frontend State Management", "System Architecture", "Network Security"],
+                        correctIndex: 2
+                    },
+                    {
+                        id: 2,
+                        question: "Which pattern was highlighted as critical for scalability?",
+                        options: ["Singleton", "Observer", "Microservices", "Monolith"],
+                        correctIndex: 2
+                    },
+                    {
+                        id: 3,
+                        question: "True or False: The text emphasizes manual memory management.",
+                        options: ["True", "False"],
+                        correctIndex: 1
+                    },
+                    {
+                        id: 4,
+                        question: "What is the recommended approach for handling legacy code?",
+                        options: ["Refactor immediately", "Wrap in adapters", "Delete and rewrite", "Ignore it"],
+                        correctIndex: 1
+                    },
+                    {
+                        id: 5,
+                        question: "Which tool was mentioned for monitoring?",
+                        options: ["Prometheus", "Grafana", "New Relic", "All of the above"],
+                        correctIndex: 3
+                    }
+                ];
+                resolve(quiz);
+            }, SIMULATED_DELAY * 1.5);
+        });
     }
 };
 
