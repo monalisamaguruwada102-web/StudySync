@@ -58,6 +58,7 @@
     "url": "https://github.com/monalisamaguruwada102-web/StudySync.git"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.93.3",
     "@tailwindcss/vite": "^4.1.18",
     "autoprefixer": "^10.4.23",

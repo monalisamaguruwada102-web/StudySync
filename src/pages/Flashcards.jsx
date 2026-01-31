@@ -6,7 +6,8 @@ import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
 import { useFirestore } from '../hooks/useFirestore';
 import { flashcardDeckService, flashcardService, moduleService } from '../services/firestoreService';
-import { Plus, Book, Brain, ChevronRight, ChevronLeft, RotateCcw, Check, X, Layers, Play } from 'lucide-react';
+import { Plus, Book, Brain, ChevronRight, ChevronLeft, RotateCcw, Check, X, Layers, Play, Sparkles } from 'lucide-react';
+import aiService from '../services/aiService';
 
 const Flashcards = () => {
     const { data: decks, refresh: refreshDecks } = useFirestore(flashcardDeckService.getAll);
@@ -25,6 +26,11 @@ const Flashcards = () => {
     const [studyCards, setStudyCards] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
+
+    // AI Generation state
+    const [isAIGenModalOpen, setIsAIGenModalOpen] = useState(false);
+    const [aiContext, setAiContext] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
 
     const handleCreateDeck = async (e) => {
         e.preventDefault();
@@ -81,6 +87,40 @@ const Flashcards = () => {
         } else {
             setIsStudyMode(false);
             alert('Study session complete!');
+        }
+    };
+
+    const handleAIGenerateCards = async () => {
+        if (!aiContext.trim()) {
+            alert('Please provide some context text for AI generation.');
+            return;
+        }
+
+        setIsGenerating(true);
+        try {
+            const moduleName = modules.find(m => m.id === selectedDeck.moduleId)?.name || 'General';
+            const generatedCards = await aiService.generateFlashcards(moduleName, aiContext);
+
+            // Add all generated cards to the current deck
+            for (const card of generatedCards) {
+                await flashcardService.add({
+                    front: card.question,
+                    back: card.answer,
+                    deckId: selectedDeck.id,
+                    level: card.level || 1,
+                    nextReview: new Date().toISOString()
+                });
+            }
+
+            await refreshCards();
+            setIsAIGenModalOpen(false);
+            setAiContext('');
+            alert(`Successfully generated ${generatedCards.length} cards!`);
+        } catch (error) {
+            console.error('AI Generation failed:', error);
+            alert('AI Service failed. Please check your API key.');
+        } finally {
+            setIsGenerating(false);
         }
     };
 
@@ -211,6 +251,14 @@ const Flashcards = () => {
                                     <Button
                                         variant="secondary"
                                         className="px-3"
+                                        title="AI Generate Cards"
+                                        onClick={() => { setSelectedDeck(deck); setIsAIGenModalOpen(true); }}
+                                    >
+                                        <Sparkles size={16} className="text-purple-500" />
+                                    </Button>
+                                    <Button
+                                        variant="secondary"
+                                        className="px-3"
                                         onClick={() => { setSelectedDeck(deck); setIsCardModalOpen(true); }}
                                     >
                                         <Plus size={16} />
@@ -289,6 +337,56 @@ const Flashcards = () => {
                         />
                     </div>
                 </form>
+            </Modal>
+
+            {/* AI Generation Modal */}
+            <Modal
+                isOpen={isAIGenModalOpen}
+                onClose={() => setIsAIGenModalOpen(false)}
+                title={`AI Flashcard Generator (Deck: ${selectedDeck?.name})`}
+                footer={
+                    <>
+                        <Button variant="secondary" onClick={() => setIsAIGenModalOpen(false)}>Cancel</Button>
+                        <Button
+                            variant="primary"
+                            onClick={handleAIGenerateCards}
+                            disabled={isGenerating || !aiContext.trim()}
+                            className="bg-gradient-to-r from-purple-600 to-primary-600 h-11"
+                        >
+                            {isGenerating ? (
+                                <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    <span>Generating...</span>
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <Sparkles size={18} />
+                                    <span>Generate with AI</span>
+                                </div>
+                            )}
+                        </Button>
+                    </>
+                }
+            >
+                <div className="space-y-4">
+                    <div className="p-4 bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-900/30 rounded-2xl flex gap-3">
+                        <Brain className="text-purple-500 shrink-0" size={20} />
+                        <p className="text-xs text-purple-700 dark:text-purple-300 leading-relaxed">
+                            Paste your study notes, a chapter summary, or technical documentation below.
+                            StudySync AI will convert it into a set of high-quality flashcards for your deck.
+                        </p>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Context Text</label>
+                        <textarea
+                            className="px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 dark:text-slate-100 min-h-[200px]"
+                            placeholder="Paste notes here..."
+                            value={aiContext}
+                            onChange={(e) => setAiContext(e.target.value)}
+                            disabled={isGenerating}
+                        />
+                    </div>
+                </div>
             </Modal>
         </Layout>
     );
