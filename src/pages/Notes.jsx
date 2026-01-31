@@ -9,8 +9,7 @@ import { useFirestore } from '../hooks/useFirestore';
 import { noteService, moduleService } from '../services/firestoreService';
 import { Plus, StickyNote, Trash2, Book, ExternalLink, FileText, Code, Play, Sparkles, Wand2, Mic, MicOff, BrainCircuit } from 'lucide-react';
 import aiService from '../services/aiService';
-
-import api, { BASE_URL } from '../services/api';
+import { supabase } from '../services/supabase';
 
 const Notes = () => {
     const { data: notes, loading, refresh } = useFirestore(noteService.getAll);
@@ -91,22 +90,32 @@ const Notes = () => {
             let pdfPath = '';
             let audioPath = '';
 
-            // Upload PDF if selected
+            // Upload PDF to Supabase Storage if selected
             if (selectedFile) {
-                const uploadData = new FormData();
-                uploadData.append('file', selectedFile);
-                const response = await api.post('/upload', uploadData, { headers: { 'Content-Type': 'multipart/form-data' } });
-                pdfPath = response.data.filePath;
+                const fileName = `pdf_${Date.now()}_${selectedFile.name}`;
+                const { data, error } = await supabase.storage
+                    .from('notes-files')
+                    .upload(fileName, selectedFile);
+
+                if (error) throw error;
+                const { data: { publicUrl } } = supabase.storage
+                    .from('notes-files')
+                    .getPublicUrl(fileName);
+                pdfPath = publicUrl;
             }
 
-            // Upload Audio if recorded
+            // Upload Audio to Supabase Storage if recorded
             if (audioBlob) {
-                const audioData = new FormData();
-                // Create a filename with timestamp
-                const filename = `voice_note_${Date.now()}.webm`;
-                audioData.append('file', audioBlob, filename);
-                const response = await api.post('/upload', audioData, { headers: { 'Content-Type': 'multipart/form-data' } });
-                audioPath = response.data.filePath;
+                const fileName = `voice_note_${Date.now()}.webm`;
+                const { data, error } = await supabase.storage
+                    .from('notes-files')
+                    .upload(fileName, audioBlob);
+
+                if (error) throw error;
+                const { data: { publicUrl } } = supabase.storage
+                    .from('notes-files')
+                    .getPublicUrl(fileName);
+                audioPath = publicUrl;
             }
 
             // Convert empty moduleId to null for database
@@ -279,7 +288,7 @@ const Notes = () => {
                                 </p>
                                 <audio
                                     controls
-                                    src={note.audioPath?.startsWith('http') ? note.audioPath : `${BASE_URL}${note.audioPath}`}
+                                    src={note.audioPath}
                                     className="w-full h-8"
                                 />
                             </div>
@@ -287,7 +296,7 @@ const Notes = () => {
 
                         {note.pdfPath && (
                             <a
-                                href={note.pdfPath?.startsWith('http') ? note.pdfPath : `${BASE_URL}${note.pdfPath}`}
+                                href={note.pdfPath}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="mt-2 w-full flex items-center justify-center gap-2 text-blue-600 text-xs font-bold bg-blue-50 dark:bg-blue-900/20 p-2 rounded-lg hover:bg-blue-100 transition-colors"
