@@ -31,11 +31,15 @@ const Notes = () => {
     const [selectedFile, setSelectedFile] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
-    const [audioBlob, setAudioBlob] = useState(null);
+    const [audioEpisodes, setAudioEpisodes] = useState([]);
+    const [currentEpisode, setCurrentEpisode] = useState(1);
     const [mediaRecorder, setMediaRecorder] = useState(null);
+    const [recordingChunks, setRecordingChunks] = useState([]);
+    const MAX_AUDIO_SIZE = 50 * 1024 * 1024; // 50MB
 
     const toggleRecording = async () => {
         if (isRecording) {
+            // Stop recording and save final episode
             mediaRecorder.stop();
             setIsRecording(false);
         } else {
@@ -51,23 +55,69 @@ const Notes = () => {
 
                 recorder.ondataavailable = (e) => {
                     chunks.push(e.data);
+                    const currentSize = chunks.reduce((acc, chunk) => acc + chunk.size, 0);
+
+                    // Check if we've hit 50MB limit
+                    if (currentSize >= MAX_AUDIO_SIZE) {
+                        console.log(`Episode ${currentEpisode} reached 50MB, auto-saving...`);
+
+                        // Stop current recording
+                        recorder.stop();
+
+                        // Upload current episode
+                        const blob = new Blob(chunks, { type: 'audio/webm' });
+                        uploadEpisode(blob, currentEpisode);
+
+                        // Clear chunks and increment episode
+                        chunks.length = 0;
+                        setCurrentEpisode(prev => prev + 1);
+
+                        // Restart recording for next episode
+                        setTimeout(() => {
+                            if (isRecording) {
+                                recorder.start();
+                            }
+                        }, 100);
+                    }
                 };
 
-                recorder.onstop = () => {
-                    const blob = new Blob(chunks, { type: 'audio/webm' });
-                    setAudioBlob(blob);
+                recorder.onstop = async () => {
+                    if (chunks.length > 0) {
+                        const blob = new Blob(chunks, { type: 'audio/webm' });
+                        await uploadEpisode(blob, currentEpisode);
+                    }
 
                     // Stop all tracks to release microphone
                     stream.getTracks().forEach(track => track.stop());
                 };
 
-                recorder.start();
+                // Request data every second to monitor size
+                recorder.start(1000);
                 setMediaRecorder(recorder);
                 setIsRecording(true);
             } catch (err) {
                 console.error('Error accessing microphone:', err);
                 alert('Could not access microphone. Please check permissions.');
             }
+        }
+    };
+
+    const uploadEpisode = async (blob, episodeNum) => {
+        try {
+            const fileName = `voice_note_ep${episodeNum}_${Date.now()}.webm`;
+            const { data, error } = await supabase.storage
+                .from('notes-files')
+                .upload(fileName, blob);
+
+            if (error) throw error;
+            const { data: { publicUrl } } = supabase.storage
+                .from('notes-files')
+                .getPublicUrl(fileName);
+
+            setAudioEpisodes(prev => [...prev, { episode: episodeNum, url: publicUrl }]);
+        } catch (error) {
+            console.error(`Error uploading episode ${episodeNum}:`, error);
+            alert(`Failed to upload episode ${episodeNum}`);
         }
     };
 
@@ -88,7 +138,6 @@ const Notes = () => {
         setUploading(true);
         try {
             let pdfPath = '';
-            let audioPath = '';
 
             // Upload PDF to Supabase Storage if selected
             if (selectedFile) {
@@ -104,33 +153,20 @@ const Notes = () => {
                 pdfPath = publicUrl;
             }
 
-            // Upload Audio to Supabase Storage if recorded
-            if (audioBlob) {
-                const fileName = `voice_note_${Date.now()}.webm`;
-                const { data, error } = await supabase.storage
-                    .from('notes-files')
-                    .upload(fileName, audioBlob);
-
-                if (error) throw error;
-                const { data: { publicUrl } } = supabase.storage
-                    .from('notes-files')
-                    .getPublicUrl(fileName);
-                audioPath = publicUrl;
-            }
-
             // Convert empty moduleId to null for database
             const noteData = {
                 ...formData,
                 moduleId: formData.moduleId || null,
                 pdfPath,
-                audioPath
+                audioEpisodes: audioEpisodes.length > 0 ? audioEpisodes : null
             };
             await noteService.add(noteData);
             await refresh();
             setIsModalOpen(false);
             setFormData({ title: '', moduleId: '', content: '', resourceLink: '', pdfPath: '' });
             setSelectedFile(null);
-            setAudioBlob(null);
+            setAudioEpisodes([]);
+            setCurrentEpisode(1);
         } catch (error) {
             alert('Error: ' + error.message);
         } finally {
@@ -281,7 +317,31 @@ const Notes = () => {
                             </a>
                         )}
 
-                        {note.audioPath && (
+                        {/* Display audio episodes if available */}
+                        {note.audioEpisodes && note.audioEpisodes.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                                    <Mic size={10} /> Voice Notes ({note.audioEpisodes.length} {note.audioEpisodes.length === 1 ? 'Episode' : 'Episodes'})
+                                </p>
+                                <div className="space-y-2">
+                                    {note.audioEpisodes.map((ep, idx) => (
+                                        <div key={idx} className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg">
+                                            <p className="text-[9px] text-slate-500 dark:text-slate-400 mb-1 font-medium">
+                                                Episode {ep.episode || idx + 1}
+                                            </p>
+                                            <audio
+                                                controls
+                                                src={ep.url}
+                                                className="w-full h-7"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Fallback for old single audioPath format */}
+                        {note.audioPath && !note.audioEpisodes && (
                             <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
                                     <Mic size={10} /> Voice Note
