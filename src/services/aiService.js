@@ -3,18 +3,7 @@
  * Communicates with the backend proxy to perform AI operations.
  * This keeps the API key secure on the server.
  */
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-
-// Helper to get auth headers
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    return {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-    };
-};
+import api from './api';
 
 export const aiService = {
     /**
@@ -22,10 +11,10 @@ export const aiService = {
      */
     summarize: async (text) => {
         try {
-            const response = await axios.post(`${API_URL}/ai/process`, {
+            const response = await api.post('/ai/process', {
                 action: 'summarize',
                 payload: { text }
-            }, { headers: getAuthHeaders() });
+            });
 
             return response.data.text;
         } catch (error) {
@@ -39,10 +28,10 @@ export const aiService = {
      */
     generateFlashcards: async (moduleName, text) => {
         try {
-            const response = await axios.post(`${API_URL}/ai/process`, {
+            const response = await api.post('/ai/process', {
                 action: 'generateFlashcards',
                 payload: { moduleName, text }
-            }, { headers: getAuthHeaders() });
+            });
 
             return response.data;
         } catch (error) {
@@ -56,10 +45,10 @@ export const aiService = {
      */
     generateQuiz: async (content) => {
         try {
-            const response = await axios.post(`${API_URL}/ai/process`, {
+            const response = await api.post('/ai/process', {
                 action: 'generateQuiz',
                 payload: { content }
-            }, { headers: getAuthHeaders() });
+            });
 
             return response.data;
         } catch (error) {
@@ -73,14 +62,14 @@ export const aiService = {
      */
     generateStudyPlan: async (tasks, modules, cards) => {
         try {
-            const response = await axios.post(`${API_URL}/ai/process`, {
+            const response = await api.post('/ai/process', {
                 action: 'generateStudyPlan',
                 payload: {
                     tasks: tasks.filter(t => t.status !== 'Completed').map(t => ({ title: t.title, dueDate: t.dueDate })),
                     modules: modules.map(m => m.name),
                     cardCount: cards.length
                 }
-            }, { headers: getAuthHeaders() });
+            });
 
             return response.data;
         } catch (error) {
