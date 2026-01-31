@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import Layout from '../components/layout/Layout';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import ComingSoonBadge from '../components/ui/ComingSoonBadge';
 import { useFirestore } from '../hooks/useFirestore';
 import {
     taskService,
@@ -30,6 +31,7 @@ import {
 } from 'date-fns';
 import aiService from '../services/aiService';
 import { Sparkles, RefreshCw } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const Planner = () => {
     const { data: tasks } = useFirestore(taskService.getAll);
@@ -111,28 +113,44 @@ const Planner = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Col: Daily Plan */}
                 <div className="lg:col-span-2 space-y-8">
-                    <div className="bg-gradient-to-r from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-800 dark:from-slate-800 dark:via-purple-900/30 dark:to-slate-900 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden border border-white/10"
+                    >
                         <div className="relative z-10">
                             <div className="flex justify-between items-start mb-2">
                                 <div>
-                                    <h2 className="text-3xl font-bold">Today's Mission</h2>
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <h2 className="text-3xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">Today's Mission</h2>
+                                        <ComingSoonBadge size="sm" />
+                                    </div>
                                     <p className="opacity-80">AI-generated schedule based on your deadlines.</p>
                                 </div>
-                                <Button
-                                    variant="secondary"
-                                    className="!bg-white/10 !border-white/20 hover:!bg-white/20 text-white"
-                                    onClick={generateAIPlan}
-                                    disabled={isLoadingPlan}
-                                >
-                                    {isLoadingPlan ? <RefreshCw size={16} className="animate-spin" /> : <Sparkles size={16} />}
-                                </Button>
+                                <div className="relative">
+                                    <Button
+                                        variant="secondary"
+                                        className="!bg-white/10 !border-white/20 hover:!bg-white/20 text-white hover:scale-105 transition-transform"
+                                        onClick={generateAIPlan}
+                                        disabled={isLoadingPlan}
+                                    >
+                                        {isLoadingPlan ? <RefreshCw size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                                    </Button>
+                                    <ComingSoonBadge size="sm" position="top-right" />
+                                </div>
                             </div>
 
                             <div className="space-y-4 mt-6">
                                 {dailyPlan.map((item, i) => (
-                                    <div key={i} className="bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex items-center justify-between group hover:bg-white/20 transition-colors cursor-pointer">
+                                    <motion.div
+                                        key={i}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: i * 0.1 }}
+                                        className="bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex items-center justify-between group hover:bg-white/20 hover:scale-[1.02] transition-all cursor-pointer hover:shadow-lg hover:shadow-purple-500/20"
+                                    >
                                         <div className="flex items-center gap-4">
-                                            <div className={`p-3 rounded-xl bg-white/10 ${item.color.replace('text-', 'text-white ')}`}>
+                                            <div className={`p-3 rounded-xl bg-white/10 ${item.color.replace('text-', 'text-white ')} group-hover:scale-110 transition-transform`}>
                                                 <item.icon size={20} />
                                             </div>
                                             <div>
@@ -143,7 +161,7 @@ const Planner = () => {
                                             </div>
                                         </div>
                                         <ArrowRight size={20} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    </div>
+                                    </motion.div>
                                 ))}
                                 {dailyPlan.length === 0 && (
                                     <div className="text-center py-8 opacity-60">
@@ -153,8 +171,9 @@ const Planner = () => {
                                 )}
                             </div>
                         </div>
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500 blur-[100px] opacity-20" />
-                    </div>
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-purple-500 to-pink-500 blur-[120px] opacity-20" />
+                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-blue-500 to-cyan-500 blur-[100px] opacity-15" />
+                    </motion.div>
 
                     <Card title="Exam Countdown">
                         <div className="space-y-4">
@@ -189,14 +208,22 @@ const Planner = () => {
                     <Card title="Smart Reviews" HeaderAction={<Brain size={18} className="text-primary-500" />}>
                         <div className="space-y-4">
                             {dueReviews.map(deck => (
-                                <div key={deck.id} className="p-4 border border-slate-100 dark:border-slate-800 rounded-2xl hover:border-primary-200 transition-colors">
+                                <motion.div
+                                    key={deck.id}
+                                    whileHover={{ scale: 1.02 }}
+                                    className="p-4 border border-slate-100 dark:border-slate-800 rounded-2xl hover:border-primary-300 hover:shadow-lg hover:shadow-primary-500/10 transition-all relative overflow-hidden"
+                                >
                                     <div className="flex justify-between items-start mb-2">
                                         <span className="text-[10px] font-bold text-primary-500 bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded">{getModuleName(deck.moduleId)}</span>
                                         <span className="text-xs font-bold text-slate-400">{deck.count} cards due</span>
                                     </div>
                                     <h4 className="font-bold text-slate-800 dark:text-slate-100 mb-3">{deck.name}</h4>
-                                    <Button className="w-full text-xs py-2">Start Session</Button>
-                                </div>
+                                    <div className="relative">
+                                        <Button className="w-full text-xs py-2">Start Session</Button>
+                                        <ComingSoonBadge size="sm" position="top-right" />
+                                    </div>
+                                    <div className="absolute top-0 right-0 w-20 h-20 bg-primary-500/5 blur-2xl rounded-full" />
+                                </motion.div>
                             ))}
                             {dueReviews.length === 0 && (
                                 <div className="text-center py-6 text-slate-400 text-sm">

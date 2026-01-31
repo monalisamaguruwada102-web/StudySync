@@ -13,7 +13,9 @@ const Layout = ({ children, title = 'Dashboard' }) => {
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen relative z-10 transition-all duration-300">
                 <Header title={title} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-                <main className="p-4 lg:p-8 flex-1 overflow-x-hidden">
+                {/* Premium gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary-50/30 via-transparent to-purple-50/20 dark:from-primary-900/5 dark:via-transparent dark:to-purple-900/10 pointer-events-none z-0" />
+                <main className="p-4 lg:p-8 flex-1 overflow-x-hidden relative z-10">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={window.location.pathname}
