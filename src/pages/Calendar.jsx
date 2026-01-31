@@ -18,7 +18,7 @@ import {
     RefreshCw,
     ExternalLink
 } from 'lucide-react';
-import axios from 'axios';
+import api from '../services/api';
 import {
     format,
     addMonths,
@@ -49,17 +49,13 @@ const Calendar = () => {
     const fetchExternalEvents = async () => {
         try {
             // Try to get URL from API settings first
-            const settingsRes = await axios.get('http://localhost:3001/api/user/settings', {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
+            const settingsRes = await api.get('/user/settings');
             const url = settingsRes.data.calendar_sync_url;
 
             if (!url) return;
 
             setIsSyncing(true);
-            const response = await axios.post('http://localhost:3001/api/sync/calendar', { url }, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
+            const response = await api.post('/sync/calendar', { url });
             setExternalEvents(response.data);
         } catch (error) {
             console.error('Failed to sync external calendar:', error);

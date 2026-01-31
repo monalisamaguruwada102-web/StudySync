@@ -34,9 +34,7 @@ const Settings = () => {
     React.useEffect(() => {
         const fetchSettings = async () => {
             try {
-                const response = await axios.get('http://localhost:3001/api/user/settings', {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-                });
+                const response = await api.get('/user/settings');
                 setCalendarUrl(response.data.calendar_sync_url || '');
                 setNotionToken(response.data.notion_api_token || '');
             } catch (err) {
@@ -48,9 +46,7 @@ const Settings = () => {
 
     const saveUserSetting = async (key, value) => {
         try {
-            await axios.post('http://localhost:3001/api/user/settings', { [key]: value }, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
+            await api.post('/user/settings', { [key]: value });
         } catch (err) {
             console.error('Failed to save user setting:', err);
         }

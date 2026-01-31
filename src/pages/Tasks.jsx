@@ -8,7 +8,7 @@ import { useFirestore } from '../hooks/useFirestore';
 import { taskService, moduleService } from '../services/firestoreService';
 import { Plus, CheckCircle, Circle, AlertCircle, Trash2, Calendar, Book, Database, Loader2 } from 'lucide-react';
 import { isBefore, parseISO, startOfDay } from 'date-fns';
-import axios from 'axios';
+import api from '../services/api';
 
 const Tasks = () => {
     const { data: tasks, loading, refresh } = useFirestore(taskService.getAll);
@@ -25,9 +25,7 @@ const Tasks = () => {
     const handleNotionImport = async () => {
         let token = null;
         try {
-            const res = await axios.get('http://localhost:3001/api/user/settings', {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
+            const res = await api.get('/user/settings');
             token = res.data.notion_api_token;
         } catch (e) {
             console.error("Failed to fetch Notion token from cloud");
@@ -40,9 +38,7 @@ const Tasks = () => {
 
         setIsImporting(true);
         try {
-            await axios.post('http://localhost:3001/api/sync/notion-tasks', { token }, {
-                headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-            });
+            await api.post('/sync/notion-tasks', { token });
             await refresh();
             alert('Notion tasks imported successfully!');
         } catch (error) {
