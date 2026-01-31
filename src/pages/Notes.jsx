@@ -109,7 +109,14 @@ const Notes = () => {
                 audioPath = response.data.filePath;
             }
 
-            await noteService.add({ ...formData, pdfPath, audioPath });
+            // Convert empty moduleId to null for database
+            const noteData = {
+                ...formData,
+                moduleId: formData.moduleId || null,
+                pdfPath,
+                audioPath
+            };
+            await noteService.add(noteData);
             await refresh();
             setIsModalOpen(false);
             setFormData({ title: '', moduleId: '', content: '', resourceLink: '', pdfPath: '' });
@@ -322,14 +329,13 @@ const Notes = () => {
                         required
                     />
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Module</label>
+                        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Module (Optional)</label>
                         <select
                             className="px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 dark:text-slate-100"
                             value={formData.moduleId}
                             onChange={(e) => setFormData({ ...formData, moduleId: e.target.value })}
-                            required
                         >
-                            <option value="">Select a module</option>
+                            <option value="">No Module (General)</option>
                             {modules.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                         </select>
                     </div>
