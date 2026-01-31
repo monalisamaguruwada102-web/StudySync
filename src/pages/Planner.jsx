@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import Layout from '../components/layout/Layout';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -28,6 +28,8 @@ import {
     parseISO,
     isValid
 } from 'date-fns';
+import aiService from '../services/aiService';
+import { Sparkles, RefreshCw } from 'lucide-react';
 
 const Planner = () => {
     const { data: tasks } = useFirestore(taskService.getAll);
@@ -35,8 +37,12 @@ const Planner = () => {
     const { data: cards } = useFirestore(flashcardService.getAll);
     const { data: modules } = useFirestore(moduleService.getAll);
 
+    const [dailyPlan, setDailyPlan] = useState([]);
+    const [isLoadingPlan, setIsLoadingPlan] = useState(false);
+
     // 1. Identify upcoming exams
     const exams = useMemo(() => {
+        if (!tasks) return [];
         return tasks
             .filter(t => (t.title.toLowerCase().includes('exam') || t.title.toLowerCase().includes('quiz') || t.title.toLowerCase().includes('midterm')) && !isPast(parseISO(t.dueDate)) && t.status !== 'Completed')
             .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
@@ -70,63 +76,33 @@ const Planner = () => {
         return dueDecks.sort((a, b) => b.priority - a.priority).slice(0, 3);
     }, [decks, cards]);
 
-    // 3. Generate Daily Schedule
-    const dailyPlan = useMemo(() => {
-        const plan = [];
-        const today = new Date();
-
-        // Priority 1: Events/Exams happening soon
-        if (exams.length > 0) {
-            const nextExam = exams[0];
-            const daysLeft = differenceInDays(parseISO(nextExam.dueDate), today);
-
-            if (daysLeft <= 3) {
-                plan.push({
-                    type: 'exam_prep',
-                    title: `CRAM SESSION: ${nextExam.title}`,
-                    duration: '2h',
-                    icon: AlertCircle,
-                    color: 'text-red-500 bg-red-50 dark:bg-red-900/20'
-                });
-            } else {
-                plan.push({
-                    type: 'exam_prep',
-                    title: `Review for ${nextExam.title}`,
-                    duration: '1h',
-                    icon: BookOpen,
-                    color: 'text-orange-500 bg-orange-50 dark:bg-orange-900/20'
-                });
-            }
+    const generateAIPlan = async () => {
+        if (!tasks || !modules || !cards) return;
+        setIsLoadingPlan(true);
+        try {
+            const plan = await aiService.generateStudyPlan(tasks, modules, cards);
+            setDailyPlan(plan.map(item => ({
+                ...item,
+                icon: item.type === 'exam_prep' ? AlertCircle : (item.type === 'review' ? Brain : CheckCircle2),
+                color: item.type === 'exam_prep' ? 'text-red-500 bg-red-50 dark:bg-red-900/20' : (item.type === 'review' ? 'text-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'text-blue-500 bg-blue-50 dark:bg-blue-900/20')
+            })));
+        } catch (error) {
+            console.error('Failed to generate AI plan:', error);
+            // Fallback to static logic if AI fails
+            const fallbackPlan = [
+                { type: 'review', title: 'Daily Review', duration: '30m', icon: Brain, color: 'text-primary-500 bg-primary-50 dark:bg-primary-900/20' }
+            ];
+            setDailyPlan(fallbackPlan);
+        } finally {
+            setIsLoadingPlan(false);
         }
+    };
 
-        // Priority 2: Flashcards
-        if (dueReviews.length > 0) {
-            plan.push({
-                type: 'review',
-                title: `Mastery Review: ${dueReviews[0].name}`,
-                duration: '30m',
-                icon: Brain,
-                color: 'text-primary-500 bg-primary-50 dark:bg-primary-900/20'
-            });
+    useEffect(() => {
+        if (tasks && modules && cards && dailyPlan.length === 0) {
+            generateAIPlan();
         }
-
-        // Priority 3: Pending Tasks
-        const urgentTasks = tasks
-            .filter(t => !t.title.toLowerCase().includes('exam') && t.status !== 'Completed' && differenceInDays(parseISO(t.dueDate), today) <= 2)
-            .slice(0, 2);
-
-        urgentTasks.forEach(t => {
-            plan.push({
-                type: 'task',
-                title: `Finish: ${t.title}`,
-                duration: '45m',
-                icon: CheckCircle2,
-                color: 'text-blue-500 bg-blue-50 dark:bg-blue-900/20'
-            });
-        });
-
-        return plan;
-    }, [exams, dueReviews, tasks]);
+    }, [tasks, modules, cards]);
 
     const getModuleName = (id) => modules.find(m => m.id === id)?.name || 'General';
 
@@ -137,10 +113,22 @@ const Planner = () => {
                 <div className="lg:col-span-2 space-y-8">
                     <div className="bg-gradient-to-r from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
                         <div className="relative z-10">
-                            <h2 className="text-3xl font-bold mb-2">Today's Mission</h2>
-                            <p className="opacity-80 mb-6">AI-generated schedule based on your deadlines.</p>
+                            <div className="flex justify-between items-start mb-2">
+                                <div>
+                                    <h2 className="text-3xl font-bold">Today's Mission</h2>
+                                    <p className="opacity-80">AI-generated schedule based on your deadlines.</p>
+                                </div>
+                                <Button
+                                    variant="secondary"
+                                    className="!bg-white/10 !border-white/20 hover:!bg-white/20 text-white"
+                                    onClick={generateAIPlan}
+                                    disabled={isLoadingPlan}
+                                >
+                                    {isLoadingPlan ? <RefreshCw size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                                </Button>
+                            </div>
 
-                            <div className="space-y-4">
+                            <div className="space-y-4 mt-6">
                                 {dailyPlan.map((item, i) => (
                                     <div key={i} className="bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex items-center justify-between group hover:bg-white/20 transition-colors cursor-pointer">
                                         <div className="flex items-center gap-4">

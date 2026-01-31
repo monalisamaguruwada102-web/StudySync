@@ -76,7 +76,6 @@ function App() {
                 <Route path="/sql" element={<SQLVisualizer />} />
                 <Route path="/deep-analytics" element={<DeepAnalytics />} />
                 <Route path="/planner" element={<Planner />} />
-                <Route path="/community" element={<StudyGroups />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/focus" element={<DeepFocus />} />
                 {/* Analytics link points to dashboard as it contains the main charts */}

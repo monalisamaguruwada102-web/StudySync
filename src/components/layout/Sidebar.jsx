@@ -32,11 +32,9 @@ const Sidebar = ({ isOpen, onClose }) => {
     const { user } = useAuth();
     const navItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-        { icon: Users, label: 'Community', path: '/community' },
         { icon: BookOpen, label: 'Modules', path: '/modules' },
         { icon: History, label: 'Study Logs', path: '/logs' },
         { icon: Columns, label: 'Kanban', path: '/kanban' },
-        { icon: Database, label: 'SQL Architect', path: '/sql' },
         { icon: Activity, label: 'Deep Analytics', path: '/deep-analytics' },
         { icon: Zap, label: 'Deep Focus', path: '/focus' },
         { icon: CalendarCheck, label: 'Auto Planner', path: '/planner' },

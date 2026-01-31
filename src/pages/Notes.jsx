@@ -427,12 +427,6 @@ const Notes = () => {
                             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                             required
                         />
-                        {audioBlob && (
-                            <div className="mt-2 p-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                                <p className="text-xs font-semibold text-slate-500 mb-1">Audio Preview</p>
-                                <audio controls src={URL.createObjectURL(audioBlob)} className="w-full text-xs" />
-                            </div>
-                        )}
                     </div>
                     <Input
                         label="Resource URL (Optional)"

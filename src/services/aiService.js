@@ -99,6 +99,46 @@ export const aiService = {
             console.error("Gemini Quiz generation error:", error);
             throw error;
         }
+    },
+
+    /**
+     * Generates a personalized study plan based on tasks, exams, and flashcards.
+     */
+    generateStudyPlan: async (tasks, modules, cards) => {
+        try {
+            const model = getModel();
+            const prompt = `Act as an expert study coach. Generate a personalized daily study plan for today.
+            
+            Current Data:
+            - Modules: ${JSON.stringify(modules.map(m => m.name))}
+            - Tasks/Exams: ${JSON.stringify(tasks.filter(t => t.status !== 'Completed').map(t => ({ title: t.title, dueDate: t.dueDate })))}
+            - Flashcards: ${cards.length} total across all decks.
+            
+            Instructions:
+            1. Prioritize upcoming exams (titles containing Exam, Quiz, Test).
+            2. Include time for active recall (flashcards).
+            3. Break sessions into manageable chunks (30m - 2h).
+            4. Return ONLY a JSON array of objects:
+               [{"type": "exam_prep" | "review" | "task", "title": "string", "duration": "string", "reason": "string"}]
+            
+            Make the plan realistic and evidence-based.`;
+
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            let responseText = response.text();
+
+            // Extract JSON if AI wrapped it in markdown code blocks
+            if (responseText.includes('```json')) {
+                responseText = responseText.split('```json')[1].split('```')[0].trim();
+            } else if (responseText.includes('```')) {
+                responseText = responseText.split('```')[1].split('```')[0].trim();
+            }
+
+            return JSON.parse(responseText);
+        } catch (error) {
+            console.error("Gemini Study Plan error:", error);
+            throw error;
+        }
     }
 };
 
