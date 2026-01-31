@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import BackgroundBubbles from '../ui/BackgroundBubbles';
+import FloatingParticles from '../ui/FloatingParticles';
 
 const Layout = ({ children, title = 'Dashboard' }) => {
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
@@ -10,6 +11,7 @@ const Layout = ({ children, title = 'Dashboard' }) => {
     return (
         <div className="min-h-screen bg-transparent flex transition-colors duration-300">
             <BackgroundBubbles />
+            <FloatingParticles count={15} />
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
             <div className="flex-1 lg:ml-64 flex flex-col min-h-screen relative z-10 transition-all duration-300">
                 <Header title={title} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
