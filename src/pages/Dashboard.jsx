@@ -51,6 +51,38 @@ ChartJS.register(
     Legend
 );
 
+const WelcomeMarquee = ({ user }) => {
+    const navItems = [
+        'Dashboard', 'Modules', 'Study Logs', 'Kanban',
+        'Deep Analytics', 'Deep Focus', 'Notes', 'Grades',
+        'Flashcards', 'Calendar', 'Analytics', 'Settings'
+    ];
+
+    const marqueeText = `Welcome, ${user?.name || 'Student'}! • ${navItems.join(' • ')} • `;
+
+    return (
+        <div className="mb-6 py-3 bg-white/5 dark:bg-slate-900/50 backdrop-blur-md border-y border-slate-200/50 dark:border-slate-800/50 overflow-hidden relative group">
+            <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-slate-50 dark:from-slate-950 to-transparent z-10" />
+            <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-slate-50 dark:from-slate-950 to-transparent z-10" />
+
+            <motion.div
+                initial={{ x: "0%" }}
+                animate={{ x: "-50%" }}
+                transition={{
+                    duration: 30,
+                    repeat: Infinity,
+                    ease: "linear"
+                }}
+                className="flex whitespace-nowrap gap-4"
+            >
+                <span className="text-sm font-bold tracking-widest uppercase text-slate-500 dark:text-slate-400">
+                    {marqueeText.repeat(4)}
+                </span>
+            </motion.div>
+        </div>
+    );
+};
+
 const Dashboard = () => {
     const { isDarkMode } = useTheme();
     const { user } = useAuth();
@@ -94,6 +126,7 @@ const Dashboard = () => {
 
     return (
         <Layout title="Dashboard">
+            <WelcomeMarquee user={user} />
             {/* Elite League Banner */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
