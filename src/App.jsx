@@ -23,7 +23,6 @@ import Calendar from './pages/Calendar';
 import Kanban from './pages/Kanban';
 import SQLVisualizer from './pages/SQLVisualizer';
 import DeepAnalytics from './pages/DeepAnalytics';
-import Planner from './pages/Planner';
 import Settings from './pages/Settings';
 import StudyGroups from './pages/StudyGroups';
 import DeepFocus from './pages/DeepFocus';
@@ -75,7 +74,7 @@ function App() {
                 <Route path="/kanban" element={<Kanban />} />
                 <Route path="/sql" element={<SQLVisualizer />} />
                 <Route path="/deep-analytics" element={<DeepAnalytics />} />
-                <Route path="/planner" element={<Planner />} />
+                <Route path="/deep-analytics" element={<DeepAnalytics />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/focus" element={<DeepFocus />} />
                 {/* Analytics link points to dashboard as it contains the main charts */}
