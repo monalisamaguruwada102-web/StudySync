@@ -1,20 +1,19 @@
-import { useState, useEffect } from "react";
-import { getAnalyticsData } from "../services/firestoreService";
-import { startOfWeek, endOfWeek, isWithinInterval, parseISO } from "date-fns";
+import { useMemo } from "react";
+import { startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
 
 export const useAnalytics = (logs, modules, tasks) => {
-    const [stats, setStats] = useState({
-        totalHours: 0,
-        activeModules: 0,
-        pendingTasks: 0,
-        weeklyProgress: 0,
-        moduleData: [], // for charts
-        weeklyTrend: [], // for charts
-        streak: 0
-    });
-
-    useEffect(() => {
-        if (!logs || !modules || !tasks) return;
+    return useMemo(() => {
+        if (!logs || !modules || !tasks) {
+            return {
+                totalHours: 0,
+                activeModules: 0,
+                pendingTasks: 0,
+                weeklyProgress: 0,
+                moduleData: [],
+                weeklyTrend: [],
+                streak: 0
+            };
+        }
 
         // 1. Total Hours
         const totalHours = logs.reduce((acc, log) => acc + parseFloat(log.hours || 0), 0);
@@ -56,14 +55,10 @@ export const useAnalytics = (logs, modules, tasks) => {
         });
 
         // 6. Streak tracking (simplified)
-        const logDates = [...new Set(logs.map(log => log.date))].sort().reverse();
-        let streak = 0;
-        let checkDate = new Date();
+        // This is a placeholder for actual streak logic based on consecutive days
+        const streak = 0;
 
-        // Check if there's a log today or yesterday to start streak
-        // (This is a simplified logic)
-
-        setStats({
+        return {
             totalHours,
             activeModules,
             pendingTasks,
@@ -71,9 +66,7 @@ export const useAnalytics = (logs, modules, tasks) => {
             moduleData,
             weeklyTrend,
             streak
-        });
+        };
 
     }, [logs, modules, tasks]);
-
-    return stats;
 };

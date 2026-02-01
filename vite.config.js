@@ -20,6 +20,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom', 'framer-motion', 'chart.js', 'react-chartjs-2'],
+          icons: ['lucide-react'],
           supabase: ['@supabase/supabase-js'],
         },
       },
