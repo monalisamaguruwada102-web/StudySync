@@ -75,7 +75,7 @@ const WelcomeMarquee = ({ user }) => {
                 }}
                 className="flex whitespace-nowrap gap-4"
             >
-                <span className="text-sm font-bold tracking-widest uppercase text-slate-500 dark:text-slate-400">
+                <span className="text-sm font-black tracking-widest uppercase text-indigo-600 dark:text-indigo-400">
                     {marqueeText.repeat(4)}
                 </span>
             </motion.div>
