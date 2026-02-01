@@ -70,7 +70,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                     bg-gradient-to-b from-white via-slate-50/50 to-white
                     dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-900
                     border-r border-slate-200/50 dark:border-slate-700/50
-                    flex flex-col h-screen fixed left-0 top-0 z-[60]
+                    flex flex-col h-screen supports-[height:100dvh]:h-[100dvh] fixed left-0 top-0 z-[60]
                     shadow-2xl shadow-slate-900/10 dark:shadow-black/50
                     transition-transform duration-300 ease-in-out
                     ${isOpen ? 'translate-x-0' : '-translate-x-full'}
@@ -149,7 +149,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                 </div>
 
                 {/* Navigation */}
-                <nav className="flex-1 px-4 py-0 space-y-1.5 overflow-y-auto no-scrollbar relative z-10">
+                <nav className="flex-1 px-4 py-0 space-y-1.5 overflow-y-auto min-h-0 relative z-10">
                     {navItems.map((item) => (
                         <NavLink
                             key={item.path}
@@ -160,7 +160,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                                 group relative overflow-hidden
                                 ${isActive
                                     ? 'bg-gradient-to-r from-primary-500/10 to-purple-500/10 dark:from-primary-500/20 dark:to-purple-500/20 text-primary-600 dark:text-primary-400 font-bold shadow-lg shadow-primary-500/10'
-                                    : 'text-slate-600 dark:text-slate-400 hover:bg-gradient-to-r hover:from-slate-100 hover:to-slate-50 dark:hover:from-slate-800 dark:hover:to-slate-800/50 hover:text-slate-900 dark:hover:text-slate-100 font-semibold'
+                                    : 'text-slate-700 dark:text-slate-300 hover:bg-gradient-to-r hover:from-slate-100 hover:to-slate-50 dark:hover:from-slate-800 dark:hover:to-slate-800/50 hover:text-slate-900 dark:hover:text-slate-100 font-semibold'
                                 }
                             `}
                         >
