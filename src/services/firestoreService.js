@@ -120,6 +120,13 @@ const createCollectionService = (collectionName) => {
                         return () => { };
                     }
 
+                    // 1. Check Cache First (Stale-While-Revalidate)
+                    const cachedData = dataCache.get(collectionName);
+                    if (cachedData) {
+                        callback(cachedData);
+                    }
+
+                    // 2. Network Request
                     const { data, error } = await supabase
                         .from(collectionName)
                         .select('*')
@@ -128,8 +135,12 @@ const createCollectionService = (collectionName) => {
                     if (error) throw error;
 
                     const mappedData = data.map(mapFromSupabase);
-                    dataCache.set(collectionName, mappedData);
-                    callback(mappedData);
+
+                    // Only update if data is different or no cache
+                    if (JSON.stringify(mappedData) !== JSON.stringify(cachedData)) {
+                        dataCache.set(collectionName, mappedData);
+                        callback(mappedData);
+                    }
 
                     // Keep a copy of the data for local updates
                     let currentData = [...mappedData];
@@ -165,8 +176,10 @@ const createCollectionService = (collectionName) => {
                     };
                 } catch (error) {
                     console.error(`Error fetching ${collectionName} from Supabase:`, error);
+                    // Use cache as fallback if available
                     const cached = dataCache.get(collectionName);
-                    callback(cached || []);
+                    if (cached) callback(cached);
+                    else callback([]);
                     return () => { };
                 }
             } else {

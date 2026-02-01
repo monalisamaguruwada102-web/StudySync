@@ -19,7 +19,7 @@ const Layout = ({ children, title = 'Dashboard' }) => {
                 <div className="absolute inset-0 bg-gradient-to-br from-primary-50/30 via-transparent to-purple-50/20 dark:from-primary-900/5 dark:via-transparent dark:to-purple-900/10 pointer-events-none z-0" />
 
                 {/* Watermark */}
-                <div className="fixed bottom-4 right-6 pointer-events-none z-50 opacity-20 hover:opacity-100 transition-opacity duration-300">
+                <div className="fixed bottom-4 right-6 pointer-events-none z-40 opacity-20 hover:opacity-100 transition-opacity duration-300">
                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900 dark:text-slate-100">
                         Created by JoshWebs ©
                     </p>

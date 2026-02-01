@@ -65,12 +65,12 @@ const Sidebar = ({ isOpen, onClose }) => {
 
             <aside
                 className={`
-                    w-72
+                    w-72 max-w-[80vw]
                     bg-white dark:bg-slate-900
                     bg-gradient-to-b from-white via-slate-50/50 to-white
                     dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-900
                     border-r border-slate-200/50 dark:border-slate-700/50
-                    flex flex-col h-screen fixed left-0 top-0 z-50
+                    flex flex-col h-screen fixed left-0 top-0 z-[60]
                     shadow-2xl shadow-slate-900/10 dark:shadow-black/50
                     transition-transform duration-300 ease-in-out
                     ${isOpen ? 'translate-x-0' : '-translate-x-full'}

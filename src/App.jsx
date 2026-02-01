@@ -10,22 +10,29 @@ import bg1 from './assets/images/login-bg-1.png';
 import bg2 from './assets/images/login-bg-2.png';
 import bg3 from './assets/images/login-bg-3.jpg';
 
-// Pages
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Modules from './pages/Modules';
-import StudyLogs from './pages/StudyLogs';
-import Tasks from './pages/Tasks';
-import Notes from './pages/Notes';
-import Grades from './pages/Grades';
-import Flashcards from './pages/Flashcards';
-import Calendar from './pages/Calendar';
-import Kanban from './pages/Kanban';
-import SQLVisualizer from './pages/SQLVisualizer';
-import DeepAnalytics from './pages/DeepAnalytics';
-import Settings from './pages/Settings';
-import StudyGroups from './pages/StudyGroups';
-import DeepFocus from './pages/DeepFocus';
+// Pages - Lazy Loaded
+const Login = React.lazy(() => import('./pages/Login'));
+const Dashboard = React.lazy(() => import('./pages/Dashboard'));
+const Modules = React.lazy(() => import('./pages/Modules'));
+const StudyLogs = React.lazy(() => import('./pages/StudyLogs'));
+const Tasks = React.lazy(() => import('./pages/Tasks'));
+const Notes = React.lazy(() => import('./pages/Notes'));
+const Grades = React.lazy(() => import('./pages/Grades'));
+const Flashcards = React.lazy(() => import('./pages/Flashcards'));
+const Calendar = React.lazy(() => import('./pages/Calendar'));
+const Kanban = React.lazy(() => import('./pages/Kanban'));
+const SQLVisualizer = React.lazy(() => import('./pages/SQLVisualizer'));
+const DeepAnalytics = React.lazy(() => import('./pages/DeepAnalytics'));
+const Settings = React.lazy(() => import('./pages/Settings'));
+const StudyGroups = React.lazy(() => import('./pages/StudyGroups'));
+const DeepFocus = React.lazy(() => import('./pages/DeepFocus'));
+
+// Loading Screen Component
+const LoadingScreen = () => (
+  <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+  </div>
+);
 
 function App() {
   const [bgIndex, setBgIndex] = useState(0);
@@ -59,28 +66,29 @@ function App() {
           {/* App Content */}
           <div className="relative z-10 min-h-screen">
             <ConnectionStatus />
-            <Routes>
-              <Route path="/login" element={<Login />} />
+            <React.Suspense fallback={<LoadingScreen />}>
+              <Routes>
+                <Route path="/login" element={<Login />} />
 
-              <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/modules" element={<Modules />} />
-                <Route path="/logs" element={<StudyLogs />} />
-                <Route path="/tasks" element={<Tasks />} />
-                <Route path="/notes" element={<Notes />} />
-                <Route path="/grades" element={<Grades />} />
-                <Route path="/flashcards" element={<Flashcards />} />
-                <Route path="/calendar" element={<Calendar />} />
-                <Route path="/kanban" element={<Kanban />} />
-                <Route path="/sql" element={<SQLVisualizer />} />
-                <Route path="/deep-analytics" element={<DeepAnalytics />} />
-                <Route path="/deep-analytics" element={<DeepAnalytics />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/focus" element={<DeepFocus />} />
-                {/* Analytics link points to dashboard as it contains the main charts */}
-                <Route path="/analytics" element={<Dashboard />} />
-              </Route>
-            </Routes>
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/modules" element={<Modules />} />
+                  <Route path="/logs" element={<StudyLogs />} />
+                  <Route path="/tasks" element={<Tasks />} />
+                  <Route path="/notes" element={<Notes />} />
+                  <Route path="/grades" element={<Grades />} />
+                  <Route path="/flashcards" element={<Flashcards />} />
+                  <Route path="/calendar" element={<Calendar />} />
+                  <Route path="/kanban" element={<Kanban />} />
+                  <Route path="/sql" element={<SQLVisualizer />} />
+                  <Route path="/deep-analytics" element={<DeepAnalytics />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/focus" element={<DeepFocus />} />
+                  {/* Analytics link points to dashboard as it contains the main charts */}
+                  <Route path="/analytics" element={<Dashboard />} />
+                </Route>
+              </Routes>
+            </React.Suspense>
           </div>
         </Router>
       </AuthProvider>
