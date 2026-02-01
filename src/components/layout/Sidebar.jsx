@@ -65,7 +65,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
             <aside
                 className={`
-                    w-72 max-w-[80vw]
+                    w-64 max-w-[80vw]
                     bg-white dark:bg-slate-900
                     bg-gradient-to-b from-white via-slate-50/50 to-white
                     dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-900

@@ -31,7 +31,7 @@ const Card = ({ children, className = '', title = '', HeaderAction = null }) => 
             <div className="absolute -inset-1 bg-gradient-to-r from-primary-500/0 to-purple-500/0 group-hover:from-primary-500/20 group-hover:to-purple-500/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
 
             {(title || HeaderAction) && (
-                <div className="px-6 py-4 border-b border-slate-200/50 dark:border-slate-700/50 flex items-center justify-between relative z-10 bg-gradient-to-r from-transparent via-slate-50/50 dark:via-slate-800/50 to-transparent">
+                <div className="px-5 py-3 border-b border-slate-200/50 dark:border-slate-700/50 flex items-center justify-between relative z-10 bg-gradient-to-r from-transparent via-slate-50/50 dark:via-slate-800/50 to-transparent">
                     {title && (
                         <h3 className="font-bold text-lg bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent tracking-tight">
                             {title}
@@ -40,7 +40,7 @@ const Card = ({ children, className = '', title = '', HeaderAction = null }) => 
                     {HeaderAction && <div>{HeaderAction}</div>}
                 </div>
             )}
-            <div className="p-6 relative z-10">
+            <div className="p-4 sm:p-5 relative z-10">
                 {children}
             </div>
 

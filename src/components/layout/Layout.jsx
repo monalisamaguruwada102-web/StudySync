@@ -13,7 +13,7 @@ const Layout = ({ children, title = 'Dashboard' }) => {
             <BackgroundBubbles />
             <FloatingParticles count={15} />
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-            <div className="flex-1 lg:ml-72 flex flex-col min-h-screen relative z-10 transition-all duration-300">
+            <div className="flex-1 lg:ml-64 flex flex-col min-h-screen relative z-10 transition-all duration-300 overflow-hidden">
                 <Header title={title} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
                 {/* Premium gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-br from-primary-50/30 via-transparent to-purple-50/20 dark:from-primary-900/5 dark:via-transparent dark:to-purple-900/10 pointer-events-none z-0" />
@@ -25,7 +25,7 @@ const Layout = ({ children, title = 'Dashboard' }) => {
                     </p>
                 </div>
 
-                <main className="p-4 lg:p-8 flex-1 overflow-x-hidden relative z-10">
+                <main className="p-4 lg:p-6 flex-1 overflow-x-hidden relative z-10 w-full">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={window.location.pathname}

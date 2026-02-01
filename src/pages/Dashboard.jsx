@@ -61,7 +61,7 @@ const WelcomeMarquee = ({ user }) => {
     const marqueeText = `Welcome, ${user?.name || 'Student'}! • ${navItems.join(' • ')} • `;
 
     return (
-        <div className="mb-6 py-3 bg-white/5 dark:bg-slate-900/50 backdrop-blur-md border-y border-slate-200/50 dark:border-slate-800/50 overflow-hidden relative group">
+        <div className="mb-6 py-2 bg-white/5 dark:bg-slate-900/50 backdrop-blur-md border-y border-slate-200/50 dark:border-slate-800/50 overflow-hidden relative group">
             <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-slate-50 dark:from-slate-950 to-transparent z-10" />
             <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-slate-50 dark:from-slate-950 to-transparent z-10" />
 
@@ -133,32 +133,32 @@ const Dashboard = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className={`mb-8 p-6 rounded-3xl border flex flex-col md:flex-row items-center justify-between gap-6 backdrop-blur-xl ${league.bg} ${league.border} ${league.glow || ''}`}
             >
-                <div className="flex items-center gap-6 text-center md:text-left">
-                    <div className={`p-5 rounded-2xl bg-white/5 border border-white/10 ${league.color}`}>
-                        <Trophy size={40} className="drop-shadow-[0_0_10px_currentColor]" />
+                <div className="flex items-center gap-4 text-center md:text-left">
+                    <div className={`p-4 rounded-2xl bg-white/5 border border-white/10 ${league.color}`}>
+                        <Trophy size={32} className="drop-shadow-[0_0_10px_currentColor]" />
                     </div>
                     <div>
                         <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
-                            <span className={`text-xs font-black uppercase tracking-[0.3em] ${league.color}`}>{league.name} League</span>
-                            <span className="px-2 py-0.5 rounded-full bg-white/10 text-[10px] font-bold text-white/60">Ranked</span>
+                            <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${league.color}`}>{league.name} League</span>
+                            <span className="px-1.5 py-0.5 rounded-full bg-white/10 text-[8px] font-bold text-white/60">Ranked</span>
                         </div>
-                        <h2 className="text-3xl font-black text-white">Level {user?.level || 1} Elite</h2>
+                        <h2 className="text-2xl font-black text-white leading-tight">Level {user?.level || 1} Elite</h2>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-12">
+                <div className="flex items-center gap-8 lg:gap-12">
                     <div className="text-center">
-                        <span className="block text-2xl font-black text-white">{user?.xp || 0}</span>
-                        <span className="text-[10px] uppercase font-bold text-white/40 tracking-widest">Current XP</span>
+                        <span className="block text-xl font-black text-white">{user?.xp || 0}</span>
+                        <span className="text-[9px] uppercase font-bold text-white/40 tracking-wider">Current XP</span>
                     </div>
-                    <div className="text-center">
-                        <span className="block text-2xl font-black text-white">Top 5%</span>
-                        <span className="text-[10px] uppercase font-bold text-white/40 tracking-widest">Global Rank</span>
+                    <div className="text-center hidden sm:block">
+                        <span className="block text-xl font-black text-white">Top 5%</span>
+                        <span className="text-[9px] uppercase font-bold text-white/40 tracking-wider">Global Rank</span>
                     </div>
-                    <div className="h-12 w-[1px] bg-white/10 hidden md:block" />
-                    <div className="flex flex-col gap-2 min-w-[150px]">
-                        <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                            <span className="text-white/40">Progress to Lvl {(user?.level || 1) + 1}</span>
+                    <div className="h-10 w-[1px] bg-white/10 hidden md:block" />
+                    <div className="flex flex-col gap-2 min-w-[120px]">
+                        <div className="flex justify-between text-[9px] font-bold uppercase tracking-wider">
+                            <span className="text-white/40">Next Level</span>
                             <span className="text-white">65%</span>
                         </div>
                         <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
@@ -185,7 +185,7 @@ const Dashboard = () => {
 
             <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
                 <StatCard
                     icon={<Clock className="text-blue-500" />}
                     label="Total Hours"
@@ -212,9 +212,9 @@ const Dashboard = () => {
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
                 {/* Visual Data Map Placeholder (Heatmap) */}
-                <Card title="Study Intensity (Last 365 Days)" className="lg:col-span-2">
+                <Card title="Study Intensity" className="lg:col-span-2">
                     <Heatmap logs={logs} />
                 </Card>
 
@@ -242,7 +242,7 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                 <Card title="Weekly Study Trend" className="lg:col-span-2">
                     <div className="h-[300px]">
                         <Bar
@@ -342,8 +342,8 @@ const StatCard = ({ icon, label, value, trend }) => (
         <div className="relative z-10">
             <div className="flex items-start justify-between">
                 <div>
-                    <p className="text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">{label}</p>
-                    <h3 className="text-2xl font-black text-slate-900 dark:text-slate-100">{value}</h3>
+                    <p className="text-slate-500 dark:text-slate-400 text-[9px] font-black uppercase tracking-wider mb-0.5">{label}</p>
+                    <h3 className="text-xl font-black text-slate-900 dark:text-slate-100">{value}</h3>
                 </div>
                 <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl group-hover:bg-primary-500 group-hover:text-white transition-colors duration-300">
                     {React.cloneElement(icon, { size: 18 })}
