@@ -20,7 +20,7 @@ const Layout = ({ children, title = 'Dashboard' }) => {
 
                 {/* Watermark */}
                 <div className="fixed bottom-4 right-6 pointer-events-none z-40 opacity-20 hover:opacity-100 transition-opacity duration-300">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-900 dark:text-slate-100">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500">
                         Created by JoshWebs ©
                     </p>
                 </div>
