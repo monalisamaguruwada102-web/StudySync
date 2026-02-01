@@ -8,6 +8,7 @@ import Heatmap from '../components/analytics/Heatmap';
 import { useAuth } from '../context/AuthContext';
 import { getLeague } from '../utils/gamification';
 import AnimatedBadge from '../components/ui/AnimatedBadge';
+import HelpModal from '../components/dashboard/HelpModal';
 import KnowledgeGraph from '../components/analytics/KnowledgeGraph';
 import {
     Clock,
@@ -19,7 +20,8 @@ import {
     Trophy,
     Flame,
     Target,
-    Brain
+    Brain,
+    HelpCircle
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import {
@@ -55,6 +57,7 @@ const Dashboard = () => {
     const { data: modules } = useFirestore(moduleService.getAll);
     const { data: logs } = useFirestore(studyLogService.getAll);
     const { data: tasks } = useFirestore(taskService.getAll);
+    const [isHelpOpen, setIsHelpOpen] = React.useState(false);
 
     const stats = useAnalytics(logs, modules, tasks);
     const league = useMemo(() => getLeague(user?.level || 1), [user?.level]);
@@ -135,6 +138,19 @@ const Dashboard = () => {
                     </div>
                 </div>
             </motion.div>
+
+            {/* Help Button */}
+            <div className="mb-6">
+                <button
+                    onClick={() => setIsHelpOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95 font-semibold text-sm"
+                >
+                    <HelpCircle size={18} />
+                    How to use Study Assistance
+                </button>
+            </div>
+
+            <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <StatCard
