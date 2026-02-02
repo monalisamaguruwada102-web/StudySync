@@ -51,19 +51,24 @@ ChartJS.register(
     Legend
 );
 
-const WelcomeMarquee = ({ user }) => {
+const WelcomeMarquee = ({ user, stats }) => {
     const navItems = [
         'Dashboard', 'Modules', 'Study Logs', 'Kanban',
         'Deep Analytics', 'Deep Focus', 'Notes', 'Grades',
         'Flashcards', 'Calendar', 'Analytics', 'Settings'
     ];
 
-    const marqueeText = `Welcome, ${user?.name || 'Student'}! • ${navItems.join(' • ')} • `;
+    const marqueeText = `Welcome, ${user?.name || 'Student'}! • Active Sessions: ${stats.totalHours.toFixed(1)} hrs • Pending Tasks: ${stats.pendingTasks} • Navigation: ${navItems.join(' • ')} • `;
 
     return (
         <div className="mb-6 py-2 bg-white/5 dark:bg-slate-900/50 backdrop-blur-md border-y border-slate-200/50 dark:border-slate-800/50 overflow-hidden relative group">
             <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-slate-50 dark:from-slate-950 to-transparent z-10" />
             <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-slate-50 dark:from-slate-950 to-transparent z-10" />
+
+            <div className="absolute top-1/2 -translate-y-1/2 left-4 z-20 flex items-center gap-1.5 px-2 py-0.5 bg-green-500/10 dark:bg-green-500/20 rounded-full border border-green-500/20">
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                <span className="text-[8px] font-black text-green-600 dark:text-green-400 uppercase tracking-tighter">Live Sync</span>
+            </div>
 
             <motion.div
                 initial={{ x: "0%" }}
@@ -126,7 +131,7 @@ const Dashboard = () => {
 
     return (
         <Layout title="Dashboard">
-            <WelcomeMarquee user={user} />
+            <WelcomeMarquee user={user} stats={stats} />
             {/* Elite League Banner */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}

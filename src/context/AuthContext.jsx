@@ -27,6 +27,13 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         checkAuth();
+
+        // Auto-refresh user data frequently for "Real-Time" feel (XP/Level updates)
+        const interval = setInterval(() => {
+            checkAuth();
+        }, 30000); // 30 seconds
+
+        return () => clearInterval(interval);
     }, []);
 
     const value = {
