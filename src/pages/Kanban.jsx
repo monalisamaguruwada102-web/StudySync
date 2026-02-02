@@ -112,11 +112,11 @@ const Kanban = () => {
                 </Button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-250px)]">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-250px)]">
                 {columns.map(col => (
                     <div
                         key={col.id}
-                        className={`flex flex-col bg-slate-50 dark:bg-slate-900/50 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 p-4 ${col.color} border-t-4`}
+                        className={`flex flex-col bg-slate-50 dark:bg-slate-900/50 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 p-3 ${col.color} border-t-4`}
                         onDragOver={onDragOver}
                         onDrop={(e) => onDrop(e, col.id)}
                     >
@@ -133,7 +133,7 @@ const Kanban = () => {
                                     key={task.id}
                                     draggable
                                     onDragStart={(e) => onDragStart(e, task.id)}
-                                    className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 group cursor-grab active:cursor-grabbing hover:border-primary-300 dark:hover:border-primary-500 transition-all"
+                                    className="bg-white dark:bg-slate-800 p-3 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 group cursor-grab active:cursor-grabbing hover:border-primary-300 dark:hover:border-primary-500 transition-all"
                                 >
                                     <div className="flex items-start justify-between mb-2">
                                         <div className="flex items-center gap-2 text-[10px] font-bold text-primary-500 uppercase tracking-widest bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded">

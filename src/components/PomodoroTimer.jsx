@@ -1,28 +1,31 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, RotateCcw, Coffee, BookOpen } from 'lucide-react';
 import Button from './ui/Button';
-import { pomodoroService } from '../services/firestoreService';
+import { pomodoroService, studyLogService } from '../services/firestoreService';
 import { useAuth } from '../context/AuthContext';
 
 const PomodoroTimer = () => {
     const { refreshAuth } = useAuth();
-    const [minutes, setMinutes] = useState(25);
+    const [minutes, setMinutes] = useState(0);
     const [seconds, setSeconds] = useState(0);
     const [isActive, setIsActive] = useState(false);
     const [mode, setMode] = useState('study'); // 'study' or 'break'
+    const MAX_MINUTES = 60;
 
     const timerRef = useRef(null);
 
     useEffect(() => {
         if (isActive) {
             timerRef.current = setInterval(() => {
-                if (seconds > 0) {
-                    setSeconds(seconds - 1);
-                } else if (minutes > 0) {
-                    setMinutes(minutes - 1);
-                    setSeconds(59);
+                if (seconds < 59) {
+                    setSeconds(s => s + 1);
+                } else if (minutes < MAX_MINUTES - 1) {
+                    setMinutes(m => m + 1);
+                    setSeconds(0);
                 } else {
-                    // Timer finished
+                    // Timer reached 60 minutes
+                    setMinutes(60);
+                    setSeconds(0);
                     clearInterval(timerRef.current);
                     setIsActive(false);
                     handleModeSwitch();
@@ -37,11 +40,21 @@ const PomodoroTimer = () => {
     const handleModeSwitch = async () => {
         if (mode === 'study') {
             try {
+                // Log to Pomodoro Sessions (Historical)
                 await pomodoroService.add({
                     date: new Date().toISOString(),
                     type: 'study',
-                    duration: 25
+                    duration: minutes + (seconds / 60)
                 });
+
+                // ALSO LOG TO STUDY LOGS (For Heatmap Visibility)
+                await studyLogService.add({
+                    date: new Date().toISOString().split('T')[0],
+                    topic: 'Pomodoro Focus Session',
+                    hours: (minutes / 60) + (seconds / 3600),
+                    moduleId: 'general' // Default or could be selected
+                });
+
                 await refreshAuth(); // Update XP bar
             } catch (error) {
                 console.error('Failed to save pomodoro session', error);
@@ -63,7 +76,7 @@ const PomodoroTimer = () => {
     const resetTimer = () => {
         setIsActive(false);
         setMode('study');
-        setMinutes(25);
+        setMinutes(0);
         setSeconds(0);
     };
 
