@@ -65,11 +65,6 @@ const WelcomeMarquee = ({ user, stats }) => {
             <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-slate-50 dark:from-slate-950 to-transparent z-10" />
             <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-slate-50 dark:from-slate-950 to-transparent z-10" />
 
-            <div className="absolute top-1/2 -translate-y-1/2 left-4 z-20 flex items-center gap-1.5 px-2 py-0.5 bg-green-500/10 dark:bg-green-500/20 rounded-full border border-green-500/20">
-                <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-[8px] font-black text-green-600 dark:text-green-400 uppercase tracking-tighter">Live Sync</span>
-            </div>
-
             <motion.div
                 initial={{ x: "0%" }}
                 animate={{ x: "-50%" }}

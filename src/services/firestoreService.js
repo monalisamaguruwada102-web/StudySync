@@ -145,35 +145,8 @@ const createCollectionService = (collectionName) => {
                     // Keep a copy of the data for local updates
                     let currentData = [...mappedData];
 
-                    // Setup real-time subscription for "snapshot" feel
-                    const channel = supabase
-                        .channel(`public:${collectionName}:${userId}`)
-                        .on('postgres_changes', {
-                            event: '*',
-                            schema: 'public',
-                            table: collectionName,
-                            filter: `user_id=eq.${userId}`
-                        }, (payload) => {
-                            const { eventType, new: newRecord, old: oldRecord } = payload;
-
-                            if (eventType === 'INSERT') {
-                                const mapped = mapFromSupabase(newRecord);
-                                currentData = [...currentData, mapped];
-                            } else if (eventType === 'UPDATE') {
-                                const mapped = mapFromSupabase(newRecord);
-                                currentData = currentData.map(item => item.id == mapped.id ? mapped : item);
-                            } else if (eventType === 'DELETE') {
-                                currentData = currentData.filter(item => item.id != oldRecord.id);
-                            }
-
-                            dataCache.set(collectionName, currentData);
-                            callback(currentData);
-                        })
-                        .subscribe();
-
-                    return () => {
-                        supabase.removeChannel(channel);
-                    };
+                    // Real-time subscription disabled
+                    return () => { };
                 } catch (error) {
                     console.error(`Error fetching ${collectionName} from Supabase:`, error);
                     // Use cache as fallback if available
@@ -205,25 +178,8 @@ const createCollectionService = (collectionName) => {
                     if (error) throw error;
                     callback(data);
 
-                    const channel = supabase
-                        .channel(`field:${collectionName}:${value}:${userId}`)
-                        .on('postgres_changes', {
-                            event: '*',
-                            schema: 'public',
-                            table: collectionName,
-                            filter: `${fieldName}=eq.${value}` // We can't easily chain filters in realtime subscription config safely without multiple params, relying on manual re-fetch
-                        }, () => {
-                            supabase.from(collectionName)
-                                .select('*')
-                                .eq(fieldName, value)
-                                .eq('user_id', userId)
-                                .then(({ data: refreshData }) => {
-                                    callback((refreshData || []).map(mapFromSupabase));
-                                });
-                        })
-                        .subscribe();
-
-                    return () => supabase.removeChannel(channel);
+                    // Real-time subscription disabled
+                    return () => { };
                 } catch (error) {
                     console.error(error);
                     callback([]);
