@@ -1,10 +1,12 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Share2, Zap, Brain, Target } from 'lucide-react';
+import { Zap, Brain, Target } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const KnowledgeGraph = ({ modules = [], logs = [] }) => {
+    const navigate = useNavigate();
+
     // Generate nodes and links based on modules
-    // In a real app, this would use module dependencies or categories
     const nodes = useMemo(() => {
         return modules.map((m, i) => ({
             id: m.id,
@@ -74,6 +76,8 @@ const KnowledgeGraph = ({ modules = [], logs = [] }) => {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: i * 0.1 }}
                         className="cursor-pointer"
+                        whileHover={{ scale: 1.1 }}
+                        onClick={() => navigate(`/modules/${node.id}`)}
                     >
                         {/* Glow Effect */}
                         <circle

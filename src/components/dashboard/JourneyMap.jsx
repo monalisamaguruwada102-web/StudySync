@@ -2,36 +2,46 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Lock, MapPin, Star } from 'lucide-react';
 import { useFirestore } from '../../hooks/useFirestore';
-import { moduleService } from '../../services/firestoreService';
+import { moduleService, taskService } from '../../services/firestoreService';
 import { useNavigate } from 'react-router-dom';
 
 const JourneyMap = () => {
     const navigate = useNavigate();
     const { data: modules } = useFirestore(moduleService.getAll);
+    const { data: tasks } = useFirestore(taskService.getAll);
 
-    // Sort modules randomly or by ID to create a consistent order "path"
+    // Sort modules by creation date
     const orderedModules = useMemo(() => {
-        return [...modules].sort((a, b) => a.created_at?.localeCompare(b.created_at));
+        return [...modules].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
     }, [modules]);
 
     // Generate Path Points (Winding Snake Layout)
     const points = useMemo(() => {
+        let firstIncompleteFound = false;
+
         return orderedModules.map((mod, index) => {
+            const modTasks = tasks.filter(t => t.moduleId === mod.id);
+            const isCompleted = modTasks.length > 0 && modTasks.every(t => t.status === 'Completed');
+
+            let isActive = false;
+            let isLocked = false;
+
+            if (!isCompleted && !firstIncompleteFound) {
+                isActive = true;
+                firstIncompleteFound = true;
+            } else if (!isCompleted && firstIncompleteFound) {
+                isLocked = true;
+            }
+
             const row = Math.floor(index / 3);
             const isReverse = row % 2 === 1;
             const col = index % 3;
-
-            // X position (10 to 90%)
-            const x = isReverse
-                ? 90 - (col * 40)
-                : 10 + (col * 40);
-
-            // Y position gets lower with each row
+            const x = isReverse ? 90 - (col * 40) : 10 + (col * 40);
             const y = 50 + (row * 120);
 
-            return { x, y, mod, id: mod.id };
+            return { x, y, mod, id: mod.id, isCompleted, isActive, isLocked };
         });
-    }, [orderedModules]);
+    }, [orderedModules, tasks]);
 
     const pathData = useMemo(() => {
         if (points.length === 0) return '';
@@ -92,11 +102,7 @@ const JourneyMap = () => {
                 </svg>
 
                 {points.map((point, index) => {
-                    // Logic for lock/unlock state (simplified: unlock first, or others if previous is "done")
-                    // For demo, let's say active is the last one, others are done
-                    const isCompleted = index < points.length - 1;
-                    const isActive = index === points.length - 1;
-                    const isLocked = false; // We won't lock for this demo
+                    const { isCompleted, isActive, isLocked } = point;
 
                     return (
                         <motion.div

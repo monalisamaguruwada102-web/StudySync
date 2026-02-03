@@ -194,24 +194,28 @@ const Dashboard = () => {
                     label="Total Hours"
                     value={stats.totalHours.toFixed(1)}
                     trend="+12% from last week"
+                    onClick={() => navigate('/logs')}
                 />
                 <StatCard
                     icon={<Layers className="text-purple-500" />}
                     label="Active Modules"
                     value={stats.activeModules}
                     trend="Currently enrolled"
+                    onClick={() => navigate('/modules')}
                 />
                 <StatCard
                     icon={<Calendar className="text-orange-500" />}
                     label="Pending Tasks"
                     value={stats.pendingTasks}
                     trend="Next due tomorrow"
+                    onClick={() => navigate('/kanban')}
                 />
                 <StatCard
                     icon={<Award className="text-pink-500" />}
                     label="Study Streak"
                     value={`${stats.streak} Days`}
                     trend="Keep it going!"
+                    onClick={() => navigate('/logs')}
                 />
             </div>
 
@@ -243,10 +247,24 @@ const Dashboard = () => {
 
                     <Card title="Achievements">
                         <div className="grid grid-cols-2 gap-4">
-                            <AnimatedBadge name="Early Bird" icon={Zap} color="primary" />
-                            <AnimatedBadge name="Persistence" icon={Flame} color="purple" />
-                            <AnimatedBadge name="Scholar" icon={Target} color="gold" />
-                            <AnimatedBadge name="Focus King" icon={Award} color="green" />
+                            {stats.badges.length > 0 ? stats.badges.map(badge => {
+                                const Icon = badge.icon === 'Zap' ? Zap :
+                                    badge.icon === 'Flame' ? Flame :
+                                        badge.icon === 'Target' ? Target : Award;
+                                return (
+                                    <AnimatedBadge
+                                        key={badge.name}
+                                        name={badge.name}
+                                        icon={Icon}
+                                        color={badge.color}
+                                    />
+                                );
+                            }) : (
+                                <div className="col-span-2 py-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800">
+                                    <Trophy size={24} className="mx-auto mb-2 text-slate-300 opacity-20" />
+                                    <p className="text-[10px] font-black text-slate-400 tracking-widest uppercase">No Badges Yet</p>
+                                </div>
+                            )}
                         </div>
                     </Card>
                 </div>
@@ -347,8 +365,11 @@ const Dashboard = () => {
     );
 };
 
-const StatCard = ({ icon, label, value, trend }) => (
-    <Card className="hover:shadow-md transition-shadow group relative overflow-hidden">
+const StatCard = ({ icon, label, value, trend, onClick }) => (
+    <Card
+        className={`hover:shadow-md transition-shadow group relative overflow-hidden ${onClick ? 'cursor-pointer active:scale-95 transition-transform' : ''}`}
+        onClick={onClick}
+    >
         <div className="relative z-10">
             <div className="flex items-start justify-between">
                 <div>

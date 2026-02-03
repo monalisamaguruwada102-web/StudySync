@@ -54,18 +54,52 @@ export const useAnalytics = (logs, modules, tasks) => {
             };
         });
 
-        // 6. Streak tracking (simplified)
-        // This is a placeholder for actual streak logic based on consecutive days
-        const streak = 0;
+        // 6. Streak tracking (Real Logic)
+        const sortedDates = [...new Set(logs.map(log => {
+            const date = log.date || log.createdAt;
+            return date ? new Date(date).toISOString().split('T')[0] : null;
+        }))].filter(Boolean).sort().reverse();
+
+        let streak = 0;
+        if (sortedDates.length > 0) {
+            const today = new Date().toISOString().split('T')[0];
+            const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+            // Check if user studied today or yesterday to continue streak
+            if (sortedDates[0] === today || sortedDates[0] === yesterday) {
+                streak = 1;
+                for (let i = 0; i < sortedDates.length - 1; i++) {
+                    const current = new Date(sortedDates[i]);
+                    const next = new Date(sortedDates[i + 1]);
+                    const diff = (current - next) / (1000 * 60 * 60 * 24);
+                    if (diff === 1) streak++;
+                    else break;
+                }
+            }
+        }
+
+        // 7. Achievement Detection
+        const badges = [];
+        if (streak >= 3) badges.push({ name: 'Persistence', icon: 'Flame', color: 'purple' });
+        if (totalHours >= 10) badges.push({ name: 'Scholar', icon: 'Target', color: 'gold' });
+        if (tasks.filter(t => t.status === 'Completed').length >= 5) badges.push({ name: 'Focus King', icon: 'Award', color: 'green' });
+
+        // Early Bird: Study before 8 AM
+        const hasEarlySession = logs.some(log => {
+            const date = log.date ? new Date(log.date) : null;
+            return date && date.getHours() < 8;
+        });
+        if (hasEarlySession) badges.push({ name: 'Early Bird', icon: 'Zap', color: 'primary' });
 
         return {
             totalHours,
             activeModules,
             pendingTasks,
-            weeklyProgress: 0, // Placeholder
+            weeklyProgress: modules.length > 0 ? (moduleData.reduce((acc, m) => acc + m.progress, 0) / modules.length) : 0,
             moduleData,
             weeklyTrend,
-            streak
+            streak,
+            badges
         };
 
     }, [logs, modules, tasks]);

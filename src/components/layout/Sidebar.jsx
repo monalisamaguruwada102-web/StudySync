@@ -36,16 +36,20 @@ const Sidebar = ({ isOpen, onClose }) => {
 
             <aside
                 className={`
-                    w-72 max-w-[85vw]
-                    bg-white dark:bg-slate-900
-                    bg-gradient-to-b from-white via-slate-50/50 to-white
-                    dark:from-slate-900 dark:via-slate-900/95 dark:to-slate-900
-                    border-r border-slate-200/50 dark:border-slate-700/50
-                    flex flex-col h-screen supports-[height:100dvh]:h-[100dvh] fixed left-0 top-0 z-[100]
-                    shadow-2xl shadow-slate-900/10 dark:shadow-black/50
-                    transition-transform duration-300 ease-in-out
+                    lg:w-72 w-[85vw] max-w-sm
+                    bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl
+                    border border-white/20 dark:border-white/10
+                    flex flex-col fixed z-[100]
+                    shadow-2xl shadow-black/20
+                    transition-all duration-500 ease-[bezier(0.23,1,0.32,1)]
+                    
+                    /* Desktop: Floating Glass Panel */
+                    lg:h-[calc(100vh-2rem)] lg:my-4 lg:ml-4 lg:rounded-[2.5rem]
+                    lg:translate-x-0 lg:top-0 lg:left-0
+                    
+                    /* Mobile: Full Screen Drawer */
+                    h-[100dvh] top-0 left-0
                     ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-                    lg:translate-x-0
                 `}
             >
                 {/* Premium gradient overlay */}
@@ -164,10 +168,20 @@ const Sidebar = ({ isOpen, onClose }) => {
 
                     <button
                         onClick={() => logout()}
-                        className="flex items-center gap-2 w-full px-3 py-2 text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-all duration-200 text-xs font-semibold mt-2 group"
+                        className="
+                            group flex items-center gap-3 w-full px-4 py-3 
+                            text-slate-500 dark:text-slate-400 
+                            hover:text-red-500 dark:hover:text-red-400 
+                            bg-white/50 dark:bg-black/20 hover:bg-red-50 dark:hover:bg-red-900/10
+                            border border-transparent hover:border-red-200 dark:hover:border-red-900/30
+                            rounded-2xl transition-all duration-300
+                            text-xs font-bold uppercase tracking-wider
+                        "
                     >
-                        <LogOut size={14} className="group-hover:-translate-x-0.5 transition-transform" />
-                        <span>Sign Out</span>
+                        <div className="p-1.5 rounded-lg bg-slate-200/50 dark:bg-slate-800 group-hover:bg-red-100 dark:group-hover:bg-red-900/30 transition-colors">
+                            <LogOut size={16} className="group-hover:-translate-x-0.5 transition-transform" />
+                        </div>
+                        <span>Sign Out System</span>
                     </button>
                 </div>
             </aside>

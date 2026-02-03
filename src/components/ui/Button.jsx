@@ -6,45 +6,40 @@ const Button = ({ children, variant = 'primary', className = '', ...props }) => 
 
     const variants = {
         primary: `
-            bg-gradient-to-r from-primary-600 to-primary-700 
+            bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700
             text-white 
-            shadow-xl shadow-primary-500/40 
-            hover:shadow-2xl hover:shadow-primary-600/50
-            border border-primary-500/20
-            hover:from-primary-500 hover:to-primary-600
+            shadow-[0_8px_20px_-6px_rgba(99,102,241,0.4)]
+            hover:shadow-[0_12px_28px_-6px_rgba(99,102,241,0.5)]
+            border-t border-white/20 border-b border-black/10
+            hover:scale-[1.02] active:scale-[0.98]
         `,
         secondary: `
-            bg-gradient-to-r from-white to-slate-50 
-            dark:from-slate-800 dark:to-slate-900 
+            bg-white dark:bg-slate-800/80 backdrop-blur-md
             text-slate-700 dark:text-slate-200 
-            border border-slate-300 dark:border-slate-600
-            hover:border-slate-400 dark:hover:border-slate-500
-            shadow-lg shadow-slate-200/50 dark:shadow-slate-950/50
-            hover:shadow-xl
+            border border-slate-200 dark:border-white/10
+            shadow-sm hover:shadow-md
+            hover:bg-slate-50 dark:hover:bg-slate-700/80
+            hover:border-slate-300 dark:hover:border-white/20
         `,
         accent: `
-            bg-gradient-to-r from-accent-500 to-pink-500 
+            bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-600 
             text-white 
-            shadow-xl shadow-accent-500/40 
-            hover:shadow-2xl hover:shadow-accent-600/50
-            border border-accent-400/20
-            hover:from-accent-400 hover:to-pink-400
+            shadow-[0_8px_20px_-6px_rgba(236,72,153,0.4)]
+            hover:shadow-[0_12px_28px_-6px_rgba(236,72,153,0.5)]
+            border-t border-white/20 border-b border-black/10
         `,
         ghost: `
             bg-transparent 
             text-slate-600 dark:text-slate-400 
-            hover:bg-gradient-to-r hover:from-slate-100 hover:to-slate-50
-            dark:hover:from-slate-800 dark:hover:to-slate-900
-            border border-transparent
-            hover:border-slate-200 dark:hover:border-slate-700
+            hover:bg-slate-100/50 dark:hover:bg-white/5
+            hover:text-primary-600 dark:hover:text-primary-400
+            border border-transparent hover:border-slate-200/50 dark:hover:border-white/5
         `,
         danger: `
-            bg-gradient-to-r from-red-500 to-red-600 
+            bg-gradient-to-br from-red-500 to-red-600 
             text-white 
-            shadow-xl shadow-red-500/40 
-            hover:shadow-2xl hover:shadow-red-600/50
-            border border-red-400/20
-            hover:from-red-400 hover:to-red-500
+            shadow-[0_8px_20px_-6px_rgba(239,68,68,0.4)]
+            border-t border-white/20 border-b border-black/10
         `,
     };
 
