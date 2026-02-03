@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors, Theme } from '../theme/Theme';
@@ -39,16 +39,16 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
     };
 
-    const setTheme = async (newMode: ThemeMode) => {
+    const setTheme = useCallback(async (newMode: ThemeMode) => {
         setMode(newMode);
         try {
             await AsyncStorage.setItem(THEME_STORAGE_KEY, newMode);
         } catch (error) {
             console.error('Failed to save theme:', error);
         }
-    };
+    }, []);
 
-    const toggleTheme = async () => {
+    const toggleTheme = useCallback(async () => {
         const nextThemes: Record<ThemeMode, ThemeMode> = {
             'light': 'dark',
             'dark': 'midnight',
@@ -56,17 +56,19 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             'forest': 'light'
         };
         await setTheme(nextThemes[mode]);
-    };
+    }, [mode, setTheme]);
+
+    const value = useMemo(() => ({
+        mode,
+        toggleTheme,
+        setTheme,
+        isDark: mode !== 'light',
+        colors: (Theme as any)[mode].Colors,
+        shadows: (Theme as any)[mode].Shadows
+    }), [mode, toggleTheme, setTheme]);
 
     return (
-        <ThemeContext.Provider value={{
-            mode,
-            toggleTheme,
-            setTheme,
-            isDark: mode !== 'light',
-            colors: (Theme as any)[mode].Colors,
-            shadows: (Theme as any)[mode].Shadows
-        }}>
+        <ThemeContext.Provider value={value}>
             {children}
         </ThemeContext.Provider>
     );
