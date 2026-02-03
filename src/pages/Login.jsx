@@ -4,32 +4,15 @@ import { login } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
-import { GraduationCap, Lock, ArrowRight, User, X, Monitor, Smartphone, Download, HelpCircle } from 'lucide-react';
+import { GraduationCap, Lock, ArrowRight, User, Mail, Monitor, Smartphone, Download, HelpCircle } from 'lucide-react';
 
 const Login = () => {
-    const [selectedUser, setSelectedUser] = useState(null);
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const { refreshAuth } = useAuth();
-
-    const users = [
-        { name: 'Joshua Mujakari', email: 'joshuamujakari15@gmail.com', role: 'Student' },
-        { name: 'Monalisa Maguruwada', email: 'monalisamaguruwada@gmail.com', role: 'Student' }
-    ];
-
-    const handleUserSelect = (user) => {
-        setSelectedUser(user);
-        setError('');
-        setPassword('');
-    };
-
-    const handleBack = () => {
-        setSelectedUser(null);
-        setError('');
-        setPassword('');
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -37,7 +20,7 @@ const Login = () => {
         setLoading(true);
 
         try {
-            await login(selectedUser.email, password);
+            await login(email, password);
             await refreshAuth();
             navigate('/');
         } catch (err) {
@@ -54,7 +37,7 @@ const Login = () => {
                         <GraduationCap size={40} className="drop-shadow-lg" />
                     </div>
                     <h1 className="text-4xl font-bold text-white mb-2 tracking-tight drop-shadow-md">StudySync</h1>
-                    <p className="text-slate-200 text-lg font-light">Who is studying today?</p>
+                    <p className="text-slate-200 text-lg font-light">Your Personal Study Companion</p>
                 </div>
 
                 <Card className="!p-8 shadow-2xl border border-white/20 bg-white/10 backdrop-blur-xl rounded-3xl text-white">
@@ -64,73 +47,50 @@ const Login = () => {
                         </div>
                     )}
 
-                    {!selectedUser ? (
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-4">
-                            {users.map((user) => (
-                                <button
-                                    key={user.email}
-                                    onClick={() => handleUserSelect(user)}
-                                    className="w-full flex items-center p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/20 transition-all group text-left"
-                                >
-                                    <div className="w-12 h-12 rounded-full bg-primary-500/20 flex items-center justify-center text-primary-200 group-hover:bg-primary-500 group-hover:text-white transition-colors mr-4">
-                                        <User size={24} />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold text-lg text-white group-hover:translate-x-1 transition-transform">{user.name}</h3>
-                                        <p className="text-sm text-slate-300">{user.email}</p>
-                                    </div>
-                                    <ArrowRight className="ml-auto text-slate-400 group-hover:text-white opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-1" size={20} />
-                                </button>
-                            ))}
-                        </div>
-                    ) : (
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="flex items-center">
-                                    <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center text-white mr-3">
-                                        <User size={20} />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold text-white">{selectedUser.name}</h3>
-                                        <p className="text-xs text-slate-300">{selectedUser.email}</p>
-                                    </div>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={handleBack}
-                                    className="p-2 hover:bg-white/10 rounded-full transition-colors text-slate-300 hover:text-white"
-                                >
-                                    <X size={20} />
-                                </button>
-                            </div>
-
                             <div className="relative group">
-                                <Lock className="absolute left-4 top-[14px] text-slate-300 group-focus-within:text-white transition-colors" size={20} />
+                                <Mail className="absolute left-4 top-[14px] text-slate-300 group-focus-within:text-white transition-colors" size={20} />
                                 <input
-                                    type="password"
-                                    placeholder="Enter your password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    type="email"
+                                    placeholder="Email Address"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-transparent transition-all hover:bg-white/10"
                                     autoFocus
                                     required
                                 />
                             </div>
 
-                            <div className="space-y-3">
-                                <Button
-                                    type="submit"
-                                    className="w-full h-12 text-lg font-medium rounded-xl bg-primary-600 hover:bg-primary-500 shadow-lg shadow-primary-900/40 text-white border-none transition-all hover:shadow-primary-600/50 hover:-translate-y-0.5"
-                                    disabled={loading}
-                                >
-                                    <span className="flex items-center justify-center gap-2">
-                                        {loading ? 'Unlocking...' : 'Unlock Dashboard'}
-                                        {!loading && <ArrowRight size={18} />}
-                                    </span>
-                                </Button>
+                            <div className="relative group">
+                                <Lock className="absolute left-4 top-[14px] text-slate-300 group-focus-within:text-white transition-colors" size={20} />
+                                <input
+                                    type="password"
+                                    placeholder="Password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-transparent transition-all hover:bg-white/10"
+                                    required
+                                />
                             </div>
-                        </form>
-                    )}
+                        </div>
+
+                        <div className="space-y-3">
+                            <Button
+                                type="submit"
+                                className="w-full h-12 text-lg font-medium rounded-xl bg-primary-600 hover:bg-primary-500 shadow-lg shadow-primary-900/40 text-white border-none transition-all hover:shadow-primary-600/50 hover:-translate-y-0.5"
+                                disabled={loading}
+                            >
+                                <span className="flex items-center justify-center gap-2">
+                                    {loading ? 'Processing...' : 'Continue'}
+                                    {!loading && <ArrowRight size={18} />}
+                                </span>
+                            </Button>
+                            <p className="text-center text-xs text-slate-400 mt-4">
+                                New users will be automatically registered.
+                            </p>
+                        </div>
+                    </form>
                 </Card>
 
                 {/* Get the App Section */}

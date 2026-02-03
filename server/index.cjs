@@ -136,11 +136,11 @@ const authenticateToken = (req, res, next) => {
 app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
 
-    // Whitelist check
-    const allowedUsers = ['joshuamujakari15@gmail.com', 'monalisamaguruwada@gmail.com'];
-    if (!allowedUsers.includes(email)) {
-        return res.status(403).json({ error: 'Access denied. Please contact system administrator.' });
-    }
+    // Whitelist check removed for public access
+    // const allowedUsers = ['joshuamujakari15@gmail.com', 'monalisamaguruwada@gmail.com'];
+    // if (!allowedUsers.includes(email)) {
+    //     return res.status(403).json({ error: 'Access denied. Please contact system administrator.' });
+    // }
 
     let user = db.find('users', u => u.email === email);
 
