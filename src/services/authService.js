@@ -36,3 +36,13 @@ export const isUserAuthorized = async (user) => {
         return false;
     }
 };
+
+export const updateUserXP = async (amount) => {
+    try {
+        const response = await api.post('/api/user/xp', { amount });
+        return response.data;
+    } catch (error) {
+        console.error('Failed to update XP:', error);
+        return null;
+    }
+};

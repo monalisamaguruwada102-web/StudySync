@@ -191,6 +191,17 @@ app.post('/api/user/settings', authenticateToken, (req, res) => {
     res.json(updatedUser.settings);
 });
 
+// --- XP ENDPOINT ---
+app.post('/api/user/xp', authenticateToken, (req, res) => {
+    const { amount } = req.body;
+    if (!amount || typeof amount !== 'number') {
+        return res.status(400).json({ error: 'Invalid XP amount' });
+    }
+    const result = db.addXP(req.user.id, amount);
+    if (!result) return res.status(404).json({ error: 'User not found' });
+    res.json(result);
+});
+
 // --- CRUD ROUTES ---
 
 const collections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 'flashcardDecks', 'flashcards', 'calendarEvents', 'pomodoroSessions'];

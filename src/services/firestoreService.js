@@ -1,5 +1,6 @@
 import { supabase } from "./supabase";
 import { dataCache } from "../utils/dataCache";
+import { updateUserXP } from "./authService";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://pocuggehxeuheqzgixsx.supabase.co';
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvY3VnZ2VoeGV1aGVxemdpeHN4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3MDU1MzQsImV4cCI6MjA4NTI4MTUzNH0.QjIFMzJ4xf3PNnUbMSUMg8mIyPLis7yI_PuPNZT5CMg';
@@ -203,14 +204,56 @@ const createCollectionService = (collectionName) => {
 };
 
 export const moduleService = createCollectionService("modules");
-export const studyLogService = createCollectionService("study_logs"); // snake_case is standard for DB
-export const taskService = createCollectionService("tasks");
+export const moduleService = createCollectionService("modules");
+
+export const studyLogService = {
+    ...createCollectionService("study_logs"),
+    add: async (data) => {
+        const result = await createCollectionService("study_logs").add(data);
+        if (data.hours) {
+            const xp = Math.round(parseFloat(data.hours) * 100);
+            await updateUserXP(xp);
+        }
+        return result;
+    }
+};
+
+export const taskService = {
+    ...createCollectionService("tasks"),
+    update: async (id, data) => {
+        const result = await createCollectionService("tasks").update(id, data);
+        if (data.status === 'Completed') {
+            await updateUserXP(50);
+        }
+        return result;
+    }
+};
+
 export const noteService = createCollectionService("notes");
 export const gradeService = createCollectionService("grades");
 export const flashcardDeckService = createCollectionService("flashcard_decks");
-export const flashcardService = createCollectionService("flashcards");
+
+export const flashcardService = {
+    ...createCollectionService("flashcards"),
+    update: async (id, data) => {
+        // Fetch old card to check level increase not needed for this simple impl, 
+        // just reward small XP for any review/update
+        const result = await createCollectionService("flashcards").update(id, data);
+        await updateUserXP(5); // 5 XP per card review
+        return result;
+    }
+};
+
 export const calendarService = createCollectionService("calendar_events");
-export const pomodoroService = createCollectionService("pomodoro_sessions");
+
+export const pomodoroService = {
+    ...createCollectionService("pomodoro_sessions"),
+    add: async (data) => {
+        const result = await createCollectionService("pomodoro_sessions").add(data);
+        await updateUserXP(50); // 50 XP per session
+        return result;
+    }
+};
 
 export const getAnalyticsData = async () => {
     if (USE_SUPABASE) {
