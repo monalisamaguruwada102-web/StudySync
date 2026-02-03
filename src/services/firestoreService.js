@@ -22,6 +22,12 @@ const mapFromSupabase = (item) => {
     if (newItem.created_at) { newItem.createdAt = newItem.created_at; delete newItem.created_at; }
     if (newItem.updated_at) { newItem.updatedAt = newItem.updated_at; delete newItem.updated_at; }
     if (newItem.activity) { newItem.topic = newItem.activity; delete newItem.activity; }
+
+    // Flashcards mapping
+    if (newItem.question) { newItem.front = newItem.question; delete newItem.question; }
+    if (newItem.answer) { newItem.back = newItem.answer; delete newItem.answer; }
+    if (newItem.next_review) { newItem.nextReview = newItem.next_review; delete newItem.next_review; }
+
     return newItem;
 };
 
@@ -42,6 +48,12 @@ const mapToSupabase = (item) => {
     if ('createdAt' in newItem) { newItem.created_at = newItem.createdAt; delete newItem.createdAt; }
     if ('updatedAt' in newItem) { newItem.updated_at = newItem.updatedAt; delete newItem.updated_at; }
     if ('topic' in newItem) { newItem.activity = newItem.topic; delete newItem.topic; }
+
+    // Flashcards mapping
+    if ('front' in newItem) { newItem.question = newItem.front; delete newItem.front; }
+    if ('back' in newItem) { newItem.answer = newItem.back; delete newItem.back; }
+    if ('nextReview' in newItem) { newItem.next_review = newItem.nextReview; delete newItem.nextReview; }
+
     return newItem;
 };
 
