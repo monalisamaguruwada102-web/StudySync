@@ -5,10 +5,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import ConnectionStatus from './components/ConnectionStatus';
 
-// Assets
-import bg1 from './assets/images/login-bg-1.png';
-import bg2 from './assets/images/login-bg-2.png';
-import bg3 from './assets/images/login-bg-3.jpg';
+import BackgroundSlideshow from './components/layout/BackgroundSlideshow';
 
 // Pages - Lazy Loaded
 const Login = React.lazy(() => import('./pages/Login'));
@@ -35,33 +32,14 @@ const LoadingScreen = () => (
 );
 
 function App() {
-  const [bgIndex, setBgIndex] = useState(0);
-  const backgrounds = [bg1, bg2, bg3];
 
-  // Background Slideshow
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setBgIndex((prev) => (prev + 1) % backgrounds.length);
-    }, 5000); // Change image every 5 seconds
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <ThemeProvider>
       <AuthProvider>
         <Router>
           {/* Global Background */}
-          <div className="fixed inset-0 z-0">
-            {backgrounds.map((bg, index) => (
-              <div
-                key={index}
-                className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out ${index === bgIndex ? 'opacity-100' : 'opacity-0'
-                  }`}
-                style={{ backgroundImage: `url(${bg})` }}
-              />
-            ))}
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
-          </div>
+          <BackgroundSlideshow />
 
           {/* App Content */}
           <div className="relative z-10 min-h-screen">
