@@ -1,70 +1,20 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    LayoutDashboard,
-    BookOpen,
-    History,
-    CheckSquare,
-    FileText,
-    TrendingUp,
     LogOut,
     GraduationCap,
-    Calculator,
-    Brain,
-    CalendarDays,
-    Settings,
     Trophy,
-    Star,
-    Columns,
-    Database,
-    Activity,
-    Users,
-    Zap,
     Sparkles
 } from 'lucide-react';
 import { logout } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
 import PomodoroTimer from '../PomodoroTimer';
 import MusicPlayer from './MusicPlayer';
+import { navGroups } from '../../data/navigation';
+import { NavLink } from 'react-router-dom';
 
 const Sidebar = ({ isOpen, onClose }) => {
     const { user } = useAuth();
-
-    const navGroups = [
-        {
-            title: "Overview",
-            items: [
-                { icon: LayoutDashboard, label: 'Dashboard', path: '/', gradient: 'from-blue-500 to-cyan-500' },
-                { icon: CalendarDays, label: 'Calendar', path: '/calendar', gradient: 'from-blue-500 to-indigo-500' },
-                { icon: Columns, label: 'Kanban', path: '/kanban', gradient: 'from-orange-500 to-red-500' },
-            ]
-        },
-        {
-            title: "Study Zone",
-            items: [
-                { icon: BookOpen, label: 'Modules', path: '/modules', gradient: 'from-purple-500 to-pink-500' },
-                { icon: Brain, label: 'Flashcards', path: '/flashcards', gradient: 'from-fuchsia-500 to-pink-500' },
-                { icon: FileText, label: 'Notes', path: '/notes', gradient: 'from-teal-500 to-cyan-500' },
-                { icon: Zap, label: 'Deep Focus', path: '/focus', gradient: 'from-yellow-500 to-orange-500' },
-            ]
-        },
-        {
-            title: "Analytics",
-            items: [
-                { icon: History, label: 'Study Logs', path: '/logs', gradient: 'from-green-500 to-emerald-500' },
-                { icon: Calculator, label: 'Grades', path: '/grades', gradient: 'from-violet-500 to-purple-500' },
-                { icon: Activity, label: 'Deep Analytics', path: '/deep-analytics', gradient: 'from-indigo-500 to-purple-500' },
-                { icon: TrendingUp, label: 'Analytics', path: '/analytics', gradient: 'from-emerald-500 to-teal-500' },
-            ]
-        },
-        {
-            title: "System",
-            items: [
-                { icon: Settings, label: 'Settings', path: '/settings', gradient: 'from-slate-500 to-gray-500' },
-            ]
-        }
-    ];
 
     const nextLevelXP = (user?.level || 1) * 1000;
     const xpPercentage = ((user?.xp || 0) / nextLevelXP) * 100;
@@ -154,8 +104,8 @@ const Sidebar = ({ isOpen, onClose }) => {
                     </div>
                 </div>
 
-                {/* Navigation */}
-                <div className="flex-1 overflow-y-auto min-h-0 px-4 pb-4 space-y-6 relative z-10 custom-scrollbar">
+                {/* Navigation (Mobile Only) */}
+                <div className="flex-1 overflow-y-auto min-h-0 px-4 pb-4 space-y-6 relative z-10 custom-scrollbar lg:hidden">
                     {navGroups.map((group, groupIndex) => (
                         <div key={group.title}>
                             <h3 className="px-3 mb-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
@@ -203,6 +153,9 @@ const Sidebar = ({ isOpen, onClose }) => {
                         </div>
                     ))}
                 </div>
+
+                {/* Spacer to push footer to bottom */}
+                <div className="flex-1"></div>
 
                 {/* Music Player & Timer (Fixed at bottom) */}
                 <div className="p-4 border-t border-slate-200/50 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm relative z-10 gap-2 flex flex-col">
