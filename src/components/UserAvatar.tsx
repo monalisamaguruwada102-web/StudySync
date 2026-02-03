@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { Image } from 'expo-image';
 import { Theme } from '../theme/Theme';
 
 interface UserAvatarProps {
@@ -26,6 +27,9 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({ uri, name, size = 40, co
             <Image
                 source={{ uri }}
                 style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: '#f1f5f9' }}
+                contentFit="cover"
+                cachePolicy="disk"
+                transition={200}
             />
         );
     }

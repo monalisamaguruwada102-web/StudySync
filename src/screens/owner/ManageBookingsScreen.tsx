@@ -21,6 +21,117 @@ import { bookingsService } from '../../services/bookings.service';
 import { notificationService } from '../../services/notifications.service';
 import { Booking } from '../../types';
 
+// Memoized Booking Item defined outside to prevent re-creation on parent render
+const BookingItem = React.memo(({
+    item,
+    colors,
+    shadows,
+    handleUpdateStatus,
+    handleCall,
+    handleWhatsApp,
+    formatDateSafely
+}: {
+    item: Booking;
+    colors: any;
+    shadows: any;
+    handleUpdateStatus: (id: string, status: Booking['status']) => void;
+    handleCall: (phone: string) => void;
+    handleWhatsApp: (phone: string, name: string, title: string) => void;
+    formatDateSafely: (date: string) => string;
+}) => {
+    const isPending = item.status === 'pending';
+    const isApproved = item.status === 'approved';
+
+    // Helper for safe hex opacity
+    const withOpacity = (hex: string, opacity: string) => {
+        if (!hex || typeof hex !== 'string' || !hex.startsWith('#')) return hex;
+        return hex + opacity;
+    };
+
+    return (
+        <View style={[styles.card, { backgroundColor: colors.surface }, shadows.soft]}>
+            <View style={styles.cardHeader}>
+                <View style={styles.studentInfo}>
+                    <Text style={[styles.studentName, { color: colors.text }]}>{item.studentName || 'Student'}</Text>
+                    <Text style={[styles.listingTitle, { color: colors.textLight }]}>{item.listingTitle}</Text>
+                </View>
+                <View style={[styles.statusBadge, {
+                    backgroundColor: (item?.status === 'pending') ? withOpacity(colors.warning, '20') :
+                        (item?.status === 'approved') ? withOpacity(colors.secondary, '20') :
+                            (item?.status === 'paid') ? withOpacity(colors.primary, '20') : withOpacity(colors.error, '20')
+                }]}>
+                    <Text style={[styles.statusText, {
+                        color: (item?.status === 'pending') ? colors.warning :
+                            (item?.status === 'approved') ? colors.secondary :
+                                (item?.status === 'paid') ? colors.primary : colors.error
+                    }]}>{(item?.status || 'unknown').toUpperCase()}</Text>
+                </View>
+            </View>
+
+            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+            <View style={styles.detailsRow}>
+                <View style={styles.detailItem}>
+                    <Calendar size={14} color={colors.textLight} />
+                    <Text style={[styles.detailText, { color: colors.textLight }]}>
+                        {formatDateSafely(item.createdAt)}
+                    </Text>
+                </View>
+                <View style={styles.detailItem}>
+                    <Hash size={14} color={colors.textLight} />
+                    <Text style={[styles.detailText, { color: colors.textLight }]} numberOfLines={1}>
+                        Ref: {item?.paymentReference || 'No Reference'}
+                    </Text>
+                </View>
+            </View>
+
+            {isPending && (
+                <View style={styles.actions}>
+                    <TouchableOpacity
+                        style={[styles.actionBtn, { borderColor: colors.error }]}
+                        onPress={() => handleUpdateStatus(item.id, 'rejected')}
+                    >
+                        <X size={20} color={colors.error} />
+                        <Text style={[styles.actionBtnText, { color: colors.error }]}>Reject</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.actionBtn, { backgroundColor: colors.primary, borderColor: colors.primary }]}
+                        onPress={() => handleUpdateStatus(item.id, 'approved')}
+                    >
+                        <Check size={20} color="white" />
+                        <Text style={[styles.actionBtnText, { color: 'white' }]}>Approve</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
+            {isApproved && (
+                <TouchableOpacity
+                    style={[styles.confirmPaidBtn, { backgroundColor: colors.secondary }]}
+                    onPress={() => handleUpdateStatus(item.id, 'paid')}
+                >
+                    <Check size={20} color="white" />
+                    <Text style={styles.confirmPaidText}>Confirm Payment Received</Text>
+                </TouchableOpacity>
+            )}
+
+            <View style={styles.contactActions}>
+                <TouchableOpacity
+                    style={[styles.iconBtn, { backgroundColor: withOpacity(colors.primary || '#2563eb', '15') }]}
+                    onPress={() => handleCall(item?.studentPhone || '0771234567')}
+                >
+                    <Phone size={18} color={colors.primary || '#2563eb'} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.iconBtn, { backgroundColor: withOpacity(colors.primary || '#2563eb', '15'), marginLeft: 12 }]}
+                    onPress={() => handleWhatsApp(item?.studentPhone || '0771234567', item?.studentName || 'Student', item?.listingTitle || 'the property')}
+                >
+                    <MessageCircle size={18} color={colors.primary || '#2563eb'} />
+                </TouchableOpacity>
+            </View>
+        </View>
+    );
+});
+
 export const ManageBookingsScreen = () => {
     const navigation = useNavigation<any>();
     const { user } = useAuth();
@@ -35,7 +146,7 @@ export const ManageBookingsScreen = () => {
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
 
-    const formatDateSafely = (dateString: string) => {
+    const formatDateSafely = useCallback((dateString: string) => {
         try {
             const date = new Date(dateString);
             if (isNaN(date.getTime())) return 'N/A';
@@ -43,17 +154,17 @@ export const ManageBookingsScreen = () => {
         } catch (e) {
             return 'N/A';
         }
-    };
+    }, []);
 
-    const handleCall = (phone: string) => {
+    const handleCall = useCallback((phone: string) => {
         const url = `tel:${phone}`;
         Linking.openURL(url).catch((err) => {
             console.error('[ManageBookings] Call Error:', err);
             Alert.alert('Call Failed', 'Unable to open the phone dialer. Please make sure your device supports calls.');
         });
-    };
+    }, []);
 
-    const handleWhatsApp = (phone: string, studentName: string, listingTitle: string) => {
+    const handleWhatsApp = useCallback((phone: string, studentName: string, listingTitle: string) => {
         const message = `Hi ${studentName}, I'm the owner of ${listingTitle}. I'm reaching out regarding your booking request.`;
         const url = `whatsapp://send?phone=${phone}&text=${encodeURIComponent(message)}`;
 
@@ -70,7 +181,7 @@ export const ManageBookingsScreen = () => {
                 });
             }
         });
-    };
+    }, []);
 
     const loadBookings = useCallback(async (pageNum: number = 0, shouldRefresh: boolean = false) => {
         if (!user?.id) return;
@@ -88,7 +199,12 @@ export const ManageBookingsScreen = () => {
                 setPage(0);
                 setHasMore(data.length === 20); // Assuming page size is 20
             } else {
-                setBookings(prev => [...prev, ...data]);
+                setBookings(prev => {
+                    // Filter out any duplicates that might have been added via subscription
+                    const existingIds = new Set(prev.map(b => b.id));
+                    const newUnique = data.filter(b => !existingIds.has(b.id));
+                    return [...prev, ...newUnique];
+                });
                 setHasMore(data.length === 20);
             }
         } catch (error: any) {
@@ -118,50 +234,8 @@ export const ManageBookingsScreen = () => {
         }
     }, [loadingMore, hasMore, loading, refreshing, page, loadBookings]);
 
-    useEffect(() => {
-        loadBookings(0);
-
-        if (!user?.id) return;
-
-        console.log('[ManageBookings] Setting up subscription for owner:', user.id);
-
-        const subscription = bookingsService.subscribeToBookings(user.id, 'owner', (newBooking) => {
-            try {
-                console.log('[ManageBookings] Received new booking update:', newBooking.id, newBooking.status);
-
-                setBookings(prev => {
-                    const exists = prev.some(b => b.id === newBooking.id);
-                    if (exists) {
-                        console.log('[ManageBookings] Updating existing booking:', newBooking.id);
-                        return prev.map(b => b.id === newBooking.id ? newBooking : b);
-                    }
-
-                    console.log('[ManageBookings] Adding new booking:', newBooking.id);
-
-                    // If it's a completely new request, notify the owner
-                    notificationService.scheduleLocalNotification(
-                        "New Booking Request!",
-                        `${newBooking.studentName || 'A student'} has requested a booking for ${newBooking.listingTitle || 'your property'}.`
-                    );
-
-                    // Sort to keep newest at top
-                    return [newBooking, ...prev];
-                });
-
-                // Also invalidate cache so next fresh load gets the update
-                bookingsService.invalidateCache(user.id, 'owner');
-            } catch (error) {
-                console.error('[ManageBookings] Error handling booking update:', error);
-            }
-        });
-
-        return () => {
-            console.log('[ManageBookings] Cleaning up subscription');
-            subscription.unsubscribe();
-        };
-    }, [user?.id, loadBookings]);
-
-    const handleUpdateStatus = async (bookingId: string, status: Booking['status']) => {
+    const handleUpdateStatus = useCallback(async (bookingId: string, status: Booking['status']) => {
+        if (!bookingId) return;
         const statusLabel = status === 'approved' ? 'Approve' : status === 'rejected' ? 'Reject' : 'Confirm Payment';
 
         Alert.alert(
@@ -178,8 +252,6 @@ export const ManageBookingsScreen = () => {
                                 'Booking Updated',
                                 `The booking status has been updated to ${status}.`
                             );
-                            // No need to reload entire list, subscription will handle UI update
-                            // but we can locally update if we want faster feedback or if subscription is slow
                             setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status } : b));
                         } catch (error: any) {
                             Alert.alert('Update Failed', error.message || 'Failed to update booking status. Please try again.');
@@ -188,100 +260,66 @@ export const ManageBookingsScreen = () => {
                 }
             ]
         );
-    };
+    }, []);
 
-    // Memoized Booking Item for performance
-    const BookingItem = React.memo(({ item }: { item: Booking }) => {
-        const isPending = item.status === 'pending';
-        const isApproved = item.status === 'approved';
+    useEffect(() => {
+        loadBookings(0);
 
-        return (
-            <View style={[styles.card, { backgroundColor: colors.surface }, shadows.soft]}>
-                <View style={styles.cardHeader}>
-                    <View style={styles.studentInfo}>
-                        <Text style={[styles.studentName, { color: colors.text }]}>{item.studentName || 'Student'}</Text>
-                        <Text style={[styles.listingTitle, { color: colors.textLight }]}>{item.listingTitle}</Text>
-                    </View>
-                    <View style={[styles.statusBadge, {
-                        backgroundColor: item.status === 'pending' ? colors.warning + '20' :
-                            item.status === 'approved' ? colors.secondary + '20' :
-                                item.status === 'paid' ? colors.primary + '20' : colors.error + '20'
-                    }]}>
-                        <Text style={[styles.statusText, {
-                            color: item.status === 'pending' ? colors.warning :
-                                item.status === 'approved' ? colors.secondary :
-                                    item.status === 'paid' ? colors.primary : colors.error
-                        }]}>{item.status.toUpperCase()}</Text>
-                    </View>
-                </View>
+        if (!user?.id) return;
 
-                <View style={[styles.divider, { backgroundColor: colors.border }]} />
+        console.log('[ManageBookings] Setting up subscription for owner:', user.id);
 
-                <View style={styles.detailsRow}>
-                    <View style={styles.detailItem}>
-                        <Calendar size={14} color={colors.textLight} />
-                        <Text style={[styles.detailText, { color: colors.textLight }]}>
-                            {formatDateSafely(item.createdAt)}
-                        </Text>
-                    </View>
-                    <View style={styles.detailItem}>
-                        <Hash size={14} color={colors.textLight} />
-                        <Text style={[styles.detailText, { color: colors.textLight }]}>
-                            Ref: {item.paymentReference || 'No Reference'}
-                        </Text>
-                    </View>
-                </View>
+        const subscription = bookingsService.subscribeToBookings(user.id, 'owner', (newBooking) => {
+            try {
+                if (!newBooking || !newBooking.id) return;
 
-                {isPending && (
-                    <View style={styles.actions}>
-                        <TouchableOpacity
-                            style={[styles.actionBtn, { borderColor: colors.error }]}
-                            onPress={() => handleUpdateStatus(item.id, 'rejected')}
-                        >
-                            <X size={20} color={colors.error} />
-                            <Text style={[styles.actionBtnText, { color: colors.error }]}>Reject</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.actionBtn, { backgroundColor: colors.primary, borderColor: colors.primary }]}
-                            onPress={() => handleUpdateStatus(item.id, 'approved')}
-                        >
-                            <Check size={20} color="white" />
-                            <Text style={[styles.actionBtnText, { color: 'white' }]}>Approve</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
+                console.log('[ManageBookings] Received new booking update:', newBooking.id, newBooking.status);
 
-                {isApproved && (
-                    <TouchableOpacity
-                        style={[styles.confirmPaidBtn, { backgroundColor: colors.secondary }]}
-                        onPress={() => handleUpdateStatus(item.id, 'paid')}
-                    >
-                        <Check size={20} color="white" />
-                        <Text style={styles.confirmPaidText}>Confirm Payment Received</Text>
-                    </TouchableOpacity>
-                )}
+                setBookings(prev => {
+                    const exists = prev.some(b => b.id === newBooking.id);
+                    if (exists) {
+                        console.log('[ManageBookings] Updating existing booking:', newBooking.id);
+                        return prev.map(b => b.id === newBooking.id ? newBooking : b);
+                    }
 
-                <View style={styles.contactActions}>
-                    <TouchableOpacity
-                        style={[styles.iconBtn, { backgroundColor: colors.primary + '15' }]}
-                        onPress={() => handleCall(item.studentPhone || '0771234567')}
-                    >
-                        <Phone size={18} color={colors.primary} />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.iconBtn, { backgroundColor: colors.primary + '15', marginLeft: 12 }]}
-                        onPress={() => handleWhatsApp(item.studentPhone || '0771234567', item.studentName || 'Student', item.listingTitle || 'the property')}
-                    >
-                        <MessageCircle size={18} color={colors.primary} />
-                    </TouchableOpacity>
-                </View>
-            </View>
-        );
-    });
+                    console.log('[ManageBookings] Adding new booking:', newBooking.id);
+
+                    // Side effect moved outside of state updater
+                    setTimeout(() => {
+                        notificationService.scheduleLocalNotification(
+                            "New Booking Request!",
+                            `${newBooking.studentName || 'A student'} has requested a booking for ${newBooking.listingTitle || 'your property'}.`
+                        );
+                    }, 0);
+
+                    // Sort to keep newest at top
+                    return [newBooking, ...prev];
+                });
+
+                // Also invalidate cache so next fresh load gets the update
+                bookingsService.invalidateCache(user.id, 'owner');
+            } catch (error) {
+                console.error('[ManageBookings] Error handling booking update:', error);
+            }
+        });
+
+        return () => {
+            console.log('[ManageBookings] Cleaning up subscription');
+            subscription.unsubscribe();
+        };
+    }, [user?.id, loadBookings, colors.primary]); // Added relevant deps
 
     const renderBookingItem = useCallback(({ item }: { item: Booking }) => (
-        <BookingItem item={item} />
-    ), [colors, shadows, handleUpdateStatus, handleCall, handleWhatsApp]);
+        <BookingItem
+            item={item}
+            colors={colors}
+            shadows={shadows}
+            handleUpdateStatus={handleUpdateStatus}
+            handleCall={handleCall}
+            handleWhatsApp={handleWhatsApp}
+            formatDateSafely={formatDateSafely}
+        />
+    ), [colors, shadows, handleUpdateStatus, handleCall, handleWhatsApp, formatDateSafely]);
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
@@ -303,7 +341,7 @@ export const ManageBookingsScreen = () => {
                 <FlatList
                     data={bookings}
                     renderItem={renderBookingItem}
-                    keyExtractor={item => item.id}
+                    keyExtractor={item => item?.id || Math.random().toString()}
                     contentContainerStyle={styles.list}
                     onRefresh={handleRefresh}
                     refreshing={refreshing}

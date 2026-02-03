@@ -37,12 +37,14 @@ import { LegalScreen } from '../screens/support/LegalScreen';
 import { PaymentHistoryScreen } from '../screens/student/PaymentHistoryScreen';
 import { SupportBotScreen } from '../screens/support/SupportBotScreen';
 import { MyBookingsScreen } from '../screens/student/MyBookingsScreen';
+import { PaymentReceiptScreen } from '../screens/student/PaymentReceiptScreen';
 
 // Chat
 import { ChatListScreen } from '../screens/chat/ChatListScreen';
 import { ChatRoomScreen } from '../screens/chat/ChatRoomScreen';
 import { notificationService } from '../services/notifications.service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -217,6 +219,7 @@ export const AppNavigator = () => {
                         <Stack.Screen name="SupportBot" component={SupportBotScreen} />
                         <Stack.Screen name="MyBookings" component={MyBookingsScreen} />
                         <Stack.Screen name="ManageBookings" component={ManageBookingsScreen} />
+                        <Stack.Screen name="PaymentReceipt" component={PaymentReceiptScreen} />
                     </>
                 ) : (
                     <>
@@ -234,6 +237,7 @@ export const AppNavigator = () => {
                         <Stack.Screen name="SupportBot" component={SupportBotScreen} />
                         <Stack.Screen name="MyBookings" component={MyBookingsScreen} />
                         <Stack.Screen name="ManageBookings" component={ManageBookingsScreen} />
+                        <Stack.Screen name="PaymentReceipt" component={PaymentReceiptScreen} />
                     </>
                 )}
             </Stack.Navigator>

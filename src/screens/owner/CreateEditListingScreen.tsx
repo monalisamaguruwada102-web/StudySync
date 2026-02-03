@@ -145,10 +145,11 @@ export const CreateEditListingScreen = () => {
                 return;
             }
             const priceValue = parseFloat(price);
-            if (isNaN(priceValue) || priceValue > 100) {
-                Alert.alert('Price Constraint', 'Price must be $100 or less per session.');
+            if (isNaN(priceValue) || priceValue > 500) {
+                Alert.alert('Price Constraint', 'Price must be $500 or less per month.');
                 return;
             }
+
             setCurrentStep(3);
         }
     };

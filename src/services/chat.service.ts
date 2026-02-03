@@ -11,7 +11,7 @@ class ChatService {
         if (IS_SUPABASE_CONFIGURED) {
             const { data, error } = await supabase
                 .from('conversations')
-                .select('*')
+                .select('id, participant_ids, participant_names, last_message, last_message_time')
                 .contains('participant_ids', [userId])
                 .order('last_message_time', { ascending: false });
 
@@ -74,30 +74,46 @@ class ChatService {
         }
 
         if (IS_SUPABASE_CONFIGURED) {
-            // Return cached data immediately if available, then fetch fresh in background
-            // Note: Standard return for now, but UI will benefit from getMessages being called with cache logic
-            const { data, error } = await supabase
-                .from('messages')
-                .select('*')
-                .eq('conversation_id', conversationId)
-                .order('created_at', { ascending: true });
+            try {
+                const { data, error } = await supabase
 
-            if (error) {
+                    .from('messages')
+                    .select('*')
+                    .eq('conversation_id', conversationId)
+                    .order('created_at', { ascending: true });
+
+                if (error) {
+                    console.error('[ChatService] getMessages Supabase error:', {
+                        message: error.message,
+                        details: error.details,
+                        hint: error.hint,
+                        code: error.code
+                    });
+                    if (cachedMessages.length > 0) return cachedMessages;
+                    throw error;
+                }
+
+                if (!data) {
+                    console.warn('[ChatService] getMessages returned null data for:', conversationId);
+                    return [];
+                }
+
+                const freshMessages = data.map(m => ({
+                    id: m.id,
+                    conversationId: m.conversation_id,
+                    senderId: m.sender_id,
+                    text: m.text,
+                    timestamp: new Date(m.created_at).getTime(),
+                }));
+
+                // Async update cache
+                AsyncStorage.setItem(`${MSG_KEY}_${conversationId}`, JSON.stringify(freshMessages));
+                return freshMessages;
+            } catch (err: any) {
+                console.error('[ChatService] getMessages unexpected error:', err);
                 if (cachedMessages.length > 0) return cachedMessages;
-                throw error;
+                throw err;
             }
-
-            const freshMessages = (data || []).map(m => ({
-                id: m.id,
-                conversationId: m.conversation_id,
-                senderId: m.sender_id,
-                text: m.text,
-                timestamp: new Date(m.created_at).getTime(),
-            }));
-
-            // Async update cache
-            AsyncStorage.setItem(`${MSG_KEY}_${conversationId}`, JSON.stringify(freshMessages));
-            return freshMessages;
         }
 
         try {
@@ -127,7 +143,7 @@ class ChatService {
             // Check for existing conversation with these two exact participants
             const { data: existing, error: fetchError } = await supabase
                 .from('conversations')
-                .select('*')
+                .select('id, participant_ids, participant_names, last_message, last_message_time')
                 .contains('participant_ids', [currentUserId, otherUserId])
                 .single();
 
@@ -154,7 +170,7 @@ class ChatService {
                         [otherUserId]: otherUserName
                     }
                 }])
-                .select()
+                .select('id, participant_ids, participant_names')
                 .single();
 
             if (createError) throw createError;
@@ -215,7 +231,7 @@ class ChatService {
                     sender_id: senderId,
                     text: text,
                 }])
-                .select()
+                .select('id, conversation_id, sender_id, text, created_at')
                 .single();
 
             if (error) throw error;

@@ -26,12 +26,19 @@ const mapToBooking = (dbBooking: any): Booking => {
     // Return a safe object even if input is malformed or null
     const safeData = dbBooking || {};
 
+    // Safe status mapping to prevent UI crashes
+    const validStatuses: Booking['status'][] = ['pending', 'approved', 'rejected', 'paid', 'cancelled'];
+    let status = safeData.status || 'pending';
+    if (!validStatuses.includes(status as any)) {
+        status = 'pending';
+    }
+
     return {
         id: safeData.id || `local_${Math.random().toString(36).substr(2, 9)}`,
         listingId: safeData.listing_id || '',
         studentId: safeData.student_id || '',
         ownerId: safeData.owner_id || '',
-        status: safeData.status || 'pending',
+        status: status as Booking['status'],
         totalPrice: Number(safeData.total_price) || 0,
         paymentReference: safeData.payment_reference || '',
         createdAt: safeData.created_at || new Date().toISOString(),
@@ -195,11 +202,17 @@ export const bookingsService = {
             const { data, error } = await supabase
                 .from('bookings')
                 .insert([mapToDb(bookingData)])
-                .select()
+                .select('id, listing_id, student_id, owner_id, status, total_price, payment_reference, created_at, listing_title, student_name, student_phone, owner_phone')
                 .single();
 
             if (error) {
-                console.error('[BookingsService] Create failed:', error.message, error.details, error.hint);
+                console.error('[BookingsService] Create failed:', {
+                    message: error.message,
+                    details: error.details,
+                    hint: error.hint,
+                    code: error.code,
+                    payload: mapToDb(bookingData)
+                });
                 throw error;
             }
             console.log('[BookingsService] Booking created successfully:', data.id);
@@ -296,11 +309,17 @@ export const bookingsService = {
 
                             // Map and call the callback
                             const updatedBooking = mapToBooking(payload.new);
+
+                            // Basic validation before callback
+                            if (!updatedBooking.id || (!updatedBooking.studentId && !updatedBooking.ownerId)) {
+                                console.warn('[BookingsService] Invalid booking data in subscription, skipping');
+                                return;
+                            }
+
                             console.log('[BookingsService] Mapped booking:', updatedBooking.id);
                             callback(updatedBooking);
                         } catch (error) {
                             console.error('[BookingsService] Error in subscription callback:', error);
-                            // Don't crash the app - just log the error
                         }
                     }
                 )

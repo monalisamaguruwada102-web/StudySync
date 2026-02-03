@@ -4,13 +4,12 @@ import {
     Text,
     StyleSheet,
     TouchableOpacity,
-    Alert,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { MapPin, Users, Heart, Star, ShieldCheck, Sparkle, Eye } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 
-import { Theme, Spacing } from '../theme/Theme';
+import { Spacing } from '../theme/Theme';
 import { useTheme } from '../context/ThemeContext';
 import { Listing } from '../types';
 import { bookmarksService } from '../services/bookmarks.service';
@@ -22,7 +21,7 @@ interface Props {
     onPress?: () => void;
 }
 
-export const PropertyCard: React.FC<Props> = ({ listing, onPress }) => {
+export const PropertyCard: React.FC<Props> = React.memo(({ listing, onPress }) => {
     const navigation = useNavigation<any>();
     const { colors, shadows } = useTheme();
 
@@ -48,9 +47,6 @@ export const PropertyCard: React.FC<Props> = ({ listing, onPress }) => {
         e.stopPropagation();
         const newState = await bookmarksService.toggleBookmark(listing.id);
         setIsSaved(newState);
-
-        // Brief toast-like feedback could go here, but Alert is simpler for now
-        // Alert.alert(newState ? 'Saved!' : 'Removed', newState ? 'Added to your wishlist.' : 'Removed from your wishlist.');
     };
 
     return (
@@ -169,7 +165,7 @@ export const PropertyCard: React.FC<Props> = ({ listing, onPress }) => {
             </View>
         </TouchableOpacity>
     );
-};
+});
 
 const styles = StyleSheet.create({
     card: {

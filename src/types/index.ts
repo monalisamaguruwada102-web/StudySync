@@ -166,6 +166,19 @@ export interface Lease {
     rentSchedule: string;
     status: 'pending' | 'signed' | 'expired' | 'cancelled';
     pdfUrl?: string;
+    signedAt?: string;
+    createdAt: string;
+}
+
+export interface VisitorPass {
+    id: string;
+    studentId: string;
+    listingId: string;
+    visitorName: string;
+    visitorPhone: string;
+    visitDate: string;
+    qrCodeContent: string;
+    status: 'pending' | 'scanned' | 'expired';
     scannedAt?: string;
     createdAt: string;
 }

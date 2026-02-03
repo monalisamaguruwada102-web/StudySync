@@ -156,7 +156,7 @@ export const listingsService = {
                     .from('listings')
                     .update(dbData)
                     .eq('id', listingData.id)
-                    .select()
+                    .select('id, owner_id, owner_name, owner_phone, owner_avatar, property_name, title, description, price, location, gender, max_occupancy, amenities, images, is_verified, is_premium, boost_expiry, boost_status, boost_period, latitude, longitude, ecocash_number, full_until, is_priority_verification')
                     .single();
 
                 if (error) throw error;
@@ -165,7 +165,7 @@ export const listingsService = {
                 const { data, error } = await supabase
                     .from('listings')
                     .insert([dbData])
-                    .select()
+                    .select('id, owner_id, owner_name, owner_phone, owner_avatar, property_name, title, description, price, location, gender, max_occupancy, amenities, images, is_verified, is_premium, boost_expiry, boost_status, boost_period, latitude, longitude, ecocash_number, full_until, is_priority_verification')
                     .single();
 
                 if (error) throw error;

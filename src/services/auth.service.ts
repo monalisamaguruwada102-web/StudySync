@@ -125,7 +125,7 @@ export const authService = {
             try {
                 const { data: profile, error } = await supabase
                     .from('profiles')
-                    .select('*')
+                    .select('id, email, name, role, verification_status, avatar, id_document_url, bio, phone_number, student_id_verified, boost_credits')
                     .eq('id', userId)
                     .maybeSingle();
 
@@ -210,7 +210,7 @@ export const authService = {
         if (IS_SUPABASE_CONFIGURED) {
             const { data, error } = await supabase
                 .from('profiles')
-                .select('*')
+                .select('id, email, name, role, verification_status, avatar, id_document_url, bio, phone_number, student_id_verified, boost_credits')
                 .eq('verification_status', 'pending');
 
             if (error) throw error;

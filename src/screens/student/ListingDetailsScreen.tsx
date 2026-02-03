@@ -19,26 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import * as Linking from 'expo-linking';
 import { useTranslation } from 'react-i18next';
-import {
-    Share as ShareIcon,
-    ArrowLeft,
-    Phone,
-    Star,
-    Lock,
-    ShieldCheck,
-    X,
-    Heart,
-    MapPin,
-    Users,
-    Waves,
-    Shield,
-    MessageCircle,
-    Eye,
-    Camera,
-    Check,
-    Flag,
-    Share2,
-} from 'lucide-react-native';
+import { ChevronLeft, Send, Phone, Video, Info, User, Plus, MessageCircle, ArrowLeft, Share2, Flag, MapPin, Heart, Shield, ShieldCheck, Star, Users, Waves, Check, X, Eye, Lock, ChevronRight } from 'lucide-react-native';
 
 import { Spacing } from '../../theme/Theme';
 import { useTheme } from '../../context/ThemeContext';
@@ -71,7 +52,7 @@ export const ListingDetailsScreen = () => {
     const [comment, setComment] = useState('');
     const [selectedImages, setSelectedImages] = useState<string[]>([]);
     const [submittingReview, setSubmittingReview] = useState(false);
-    const [isBookingModalVisible, setBookingModalVisible] = useState(false);
+    const [bookingModalVisible, setBookingModalVisible] = useState(false);
     const [bookingLoading, setBookingLoading] = useState(false);
     const [chatLoading, setChatLoading] = useState(false);
     const [reviews, setReviews] = useState<any[]>([]);
@@ -295,95 +276,46 @@ export const ListingDetailsScreen = () => {
                     { text: 'Sign In', onPress: () => navigation.navigate('Login') }
                 ]
             );
-            setBookingModalVisible(false);
             return;
         }
 
-        setBookingLoading(true);
-        try {
-            const booking = await bookingsService.createBooking({
-                listingId: listing.id,
-                studentId: user.id,
-                ownerId: listing.ownerId,
-                totalPrice: listing.price,
-                listingTitle: listing.propertyName || listing.title,
-                studentName: user.name || 'Anonymous Student',
-                studentPhone: user.phone || '',
-                ownerPhone: listing.ownerPhone || '',
-            });
-
-            if (booking.id.startsWith('queued_')) {
-                Alert.alert(
-                    'Offline: Booking Queued',
-                    'You are currently offline. Your booking request has been queued and will be sent automatically once you are back online.',
-                    [{ text: 'OK', onPress: () => navigation.navigate('MyBookings') }]
-                );
-                return;
-            }
-
-            await notificationService.scheduleLocalNotification(
-                'Request Sent',
-                `Your booking request for ${listing.propertyName || 'the property'} has been sent to the owner.`
-            );
-
-            setBookingModalVisible(false);
-
-            // WhatsApp Manual Payment Flow
-            const rawPhone = listing.ownerPhone || '0771234567';
-            const phone = rawPhone.replace(/\D/g, '');
-            const formattedPhone = phone.startsWith('0') ? '263' + phone.substring(1) : phone;
-
-            const paymentInstructions = (listing.ecocashNumber)
-                ? `\n\n💳 *Payment Details:*\nEcocash: ${listing.ecocashNumber}\nAccount: ${listing.ownerName || 'Property Owner'}`
-                : '';
-
-            const message = `Hi! I just sent a booking request via Off Rez Connect.\n\n` +
-                `🏠 *Property:* ${listing.propertyName || listing.title}\n` +
-                `💰 *Price:* $${listing.price}\n` +
-                `🔖 *Reference:* ${booking.id.substring(0, 8).toUpperCase()}` +
-                paymentInstructions +
-                `\n\nI'm ready to complete the payment. Please let me know the next steps.`;
-
-            const whatsappUrl = `whatsapp://send?phone=${formattedPhone}&text=${encodeURIComponent(message)}`;
-
-            Alert.alert(
-                'Booking Request Sent!',
-                'Your request has been recorded. To secure your room faster, we will now open WhatsApp so you can send the payment confirmation to the owner.',
-                [
-                    {
-                        text: 'Continue to WhatsApp',
-                        onPress: () => {
-                            Linking.canOpenURL(whatsappUrl).then(supported => {
-                                if (supported) {
-                                    Linking.openURL(whatsappUrl).catch(() => {
-                                        Linking.openURL(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`).catch(() => {
-                                            Alert.alert('Error', 'Unable to open WhatsApp or Browser.');
-                                        });
-                                    });
-                                } else {
-                                    Linking.openURL(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`).catch(() => {
-                                        Alert.alert('Error', 'Unable to open browser.');
-                                    });
-                                }
-                                navigation.navigate('MyBookings');
-                            }).catch(() => {
-                                Alert.alert('Error', 'Something went wrong while trying to open WhatsApp.');
-                                navigation.navigate('MyBookings');
+        Alert.alert(
+            'Request Booking',
+            'Would you like to send a booking request to the owner? Once approved, you can complete payment to secure your room.',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Send Request',
+                    onPress: async () => {
+                        setBookingLoading(true);
+                        try {
+                            await bookingsService.createBooking({
+                                listingId: listing.id,
+                                studentId: user.id,
+                                ownerId: listing.ownerId,
+                                totalPrice: listing.price,
+                                listingTitle: listing.propertyName || listing.title,
+                                studentName: user.name || 'Anonymous Student',
+                                studentPhone: user.phone || '',
+                                ownerPhone: listing.ownerPhone || '',
+                                status: 'pending'
                             });
+
+                            Alert.alert(
+                                'Request Sent! 🚀',
+                                'Your request has been sent to the owner. You will be notified once they approve it, after which you can proceed to pay.',
+                                [{ text: 'View My Bookings', onPress: () => navigation.navigate('MyBookings') }, { text: 'OK' }]
+                            );
+                        } catch (error: any) {
+                            console.error('[ListingDetails] Booking Error:', error);
+                            Alert.alert('Request Failed', error.message || 'Something went wrong while sending your request.');
+                        } finally {
+                            setBookingLoading(false);
                         }
                     }
-                ]
-            );
-        } catch (error: any) {
-            console.error('[ListingDetails] Booking Error:', error);
-            const errorMessage = error.message || error.details || error.hint || 'Unknown error';
-            Alert.alert(
-                'Booking Failed',
-                `We couldn't send your request. \n\nError: ${errorMessage}\n\nPlease check your internet connection or try again later.`
-            );
-        } finally {
-            setBookingLoading(false);
-        }
+                }
+            ]
+        );
     };
 
     return (
@@ -459,8 +391,9 @@ export const ListingDetailsScreen = () => {
                         </View>
                         <View style={styles.listingPriceContainer}>
                             <Text style={[styles.priceText, { color: colors.primary }]}>${listing.price}</Text>
-                            <Text style={[styles.priceUnit, { color: colors.textLight }]}>per semester</Text>
+                            <Text style={[styles.priceUnit, { color: colors.textLight }]}>per month</Text>
                         </View>
+
                     </View>
 
                     <View style={[styles.divider, { backgroundColor: colors.border }]} />
@@ -504,6 +437,7 @@ export const ListingDetailsScreen = () => {
                         </View>
                     </View>
 
+                    {/* Reviews */}
                     <View style={styles.section}>
                         <View style={styles.sectionHeader}>
                             <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('listing.reviews')}</Text>
@@ -568,7 +502,7 @@ export const ListingDetailsScreen = () => {
                                                     key={idx}
                                                     source={{ uri: img }}
                                                     style={styles.reviewThumbnail}
-                                                    fadeDuration={300}
+                                                    transition={300}
                                                 />
                                             ))}
                                         </ScrollView>
@@ -624,11 +558,18 @@ export const ListingDetailsScreen = () => {
 
             <View style={[styles.bottomActions, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
                 <TouchableOpacity
-                    style={[styles.payBtn, { backgroundColor: colors.secondary }, shadows.strong]}
-                    onPress={() => setBookingModalVisible(true)}
+                    style={[styles.payBtn, { backgroundColor: colors.secondary }, shadows.strong, bookingLoading && { opacity: 0.8 }]}
+                    onPress={handleCreateBooking}
+                    disabled={bookingLoading}
                 >
-                    <Lock size={20} color={colors.white} />
-                    <Text style={styles.payBtnText}>Secure Room</Text>
+                    {bookingLoading ? (
+                        <ActivityIndicator size="small" color={colors.white} />
+                    ) : (
+                        <>
+                            <Send size={20} color={colors.white} />
+                            <Text style={styles.payBtnText}>Request to Book</Text>
+                        </>
+                    )}
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={[styles.chatBtn, { backgroundColor: colors.white, borderColor: colors.primary, borderWidth: 1 }, shadows.soft]}
@@ -771,74 +712,8 @@ export const ListingDetailsScreen = () => {
                 </View>
             </Modal>
 
-            {/* Booking Confirmation Modal */}
-            <Modal
-                visible={isBookingModalVisible}
-                animationType="fade"
-                transparent={true}
-                onRequestClose={() => setBookingModalVisible(false)}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={[styles.confirmModalContent, { backgroundColor: colors.surface }]}>
-                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
-                            <View style={styles.confirmHeader}>
-                                <View style={[styles.confirmIconBox, { backgroundColor: colors.primary + '20' }]}>
-                                    <ShieldCheck size={32} color={colors.primary} />
-                                </View>
-                                <View style={{ flex: 1 }}>
-                                    <Text style={[styles.confirmTitle, { color: colors.text }]}>Secure Your Stay</Text>
-                                    <Text style={[styles.confirmSub, { color: colors.textLight }]}>
-                                        Requesting to book: {listing.propertyName || listing.title}
-                                    </Text>
-                                </View>
-                            </View>
-
-                            {/* Manual Payment Instructions */}
-                            <View style={[styles.paymentInstructionCard, { backgroundColor: isDark ? colors.background : '#F8FAFC' }]}>
-                                <Text style={[styles.paymentInstructionTitle, { color: colors.text }]}>Manual Payment Instructions</Text>
-
-                                <View style={styles.instructionDetailRow}>
-                                    <Text style={[styles.instDetailLabel, { color: colors.textLight }]}>EcoCash Number</Text>
-                                    <Text style={[styles.instDetailVal, { color: colors.primary }]}>{listing.ecocashNumber || '0789 932 832'}</Text>
-                                </View>
-                                <View style={styles.instructionDetailRow}>
-                                    <Text style={[styles.instDetailLabel, { color: colors.textLight }]}>Account Name</Text>
-                                    <Text style={[styles.instDetailVal, { color: colors.text }]}>{listing.ownerName || 'Property Owner'}</Text>
-                                </View>
-                                <View style={styles.instructionDetailRow}>
-                                    <Text style={[styles.instDetailLabel, { color: colors.textLight }]}>Amount to Pay</Text>
-                                    <Text style={[styles.instDetailVal, { color: colors.text, fontWeight: '800' }]}>${listing.price}</Text>
-                                </View>
-
-                                <View style={[styles.instructionNote, { backgroundColor: colors.primary + '10' }]}>
-                                    <Text style={[styles.instructionNoteText, { color: colors.textLight }]}>
-                                        1. Pay ${listing.price} to the EcoCash number above.{"\n"}
-                                        2. Click "Confirm & Pay" below to send request.{"\n"}
-                                        3. Send proof via WhatsApp for instant approval.
-                                    </Text>
-                                </View>
-                            </View>
-
-                            <View style={styles.confirmActions}>
-                                <TouchableOpacity
-                                    style={[styles.cancelBtn, { borderColor: colors.border }]}
-                                    onPress={() => setBookingModalVisible(false)}
-                                >
-                                    <Text style={[styles.cancelBtnText, { color: colors.textLight }]}>Cancel</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    style={[styles.confirmBtn, { backgroundColor: colors.primary }]}
-                                    onPress={handleCreateBooking}
-                                    disabled={bookingLoading}
-                                >
-                                    <Text style={styles.confirmBtnText}>{bookingLoading ? 'Processing...' : 'Confirm & Pay'}</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </ScrollView>
-                    </View>
-                </View>
-            </Modal>
-        </View >
+            {/* Booking Confirmation modal removed in favor of direct alert for 'Request to Book' flow */}
+        </View>
     );
 };
 
@@ -868,100 +743,6 @@ const styles = StyleSheet.create({
     headerRight: {
         flexDirection: 'row',
     },
-    checkIcon: {
-        width: 14,
-        height: 14,
-        borderRadius: 7,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 6
-    },
-    submitBar: {
-        padding: 16,
-        paddingBottom: Platform.OS === 'ios' ? 34 : 16,
-        borderTopWidth: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: '#fff',
-    },
-    totalLabel: {
-        fontSize: 12,
-        marginBottom: 4,
-    },
-    totalAmount: {
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    confirmModalContent: {
-        padding: 24,
-        borderRadius: 16,
-        width: '90%',
-        maxWidth: 400,
-    },
-    confirmHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    confirmIconBox: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 16,
-    },
-    confirmTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 4,
-    },
-    confirmSub: {
-        fontSize: 14,
-        opacity: 0.7,
-    },
-    confirmDetailBox: {
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 24,
-    },
-    confirmDetailRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    confirmDetailLabel: {
-        fontSize: 14,
-        opacity: 0.7,
-    },
-    confirmDetailVal: {
-        fontSize: 16,
-        fontWeight: '600',
-    },
-    miniDivider: {
-        height: 1,
-        marginVertical: 12,
-        opacity: 0.1,
-        backgroundColor: '#000',
-    },
-    confirmActions: {
-        flexDirection: 'row',
-        gap: 12,
-    },
-    cancelBtn: {
-        flex: 1,
-        paddingVertical: 14,
-        borderRadius: 12,
-        borderWidth: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    cancelBtnText: {
-        fontSize: 16,
-        fontWeight: '600',
-    },
     roundBtn: {
         width: 44,
         height: 44,
@@ -980,6 +761,11 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'flex-start',
         marginBottom: 10,
+    },
+    propertyNameRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 4,
     },
     propertyName: {
         fontSize: 26,
@@ -1044,55 +830,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: Spacing.m,
     },
-    ratingRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    ratingText: {
-        fontSize: 16,
-        fontWeight: '700',
-        marginLeft: 4,
-    },
-    reviewCount: {
-        fontSize: 14,
-        marginLeft: 4,
-    },
-    reviewItem: {
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-    },
-    reviewHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 4,
-    },
-    reviewerName: {
-        fontWeight: '700',
-        fontSize: 15,
-    },
-    starsRow: {
-        flexDirection: 'row',
-    },
-    reviewComment: {
-        fontSize: 14,
-        lineHeight: 20,
-    },
-    noReviews: {
-        fontStyle: 'italic',
-        fontSize: 14,
-    },
-    writeReviewBtn: {
-        marginTop: 16,
-        paddingVertical: 12,
-        borderRadius: 12,
-        borderWidth: 1,
-        alignItems: 'center',
-        borderStyle: 'dashed',
-    },
-    writeReviewText: {
-        fontWeight: '700',
-    },
     overviewGrid: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -1131,6 +868,64 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         fontSize: 14,
     },
+    ratingRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    ratingText: {
+        fontSize: 16,
+        fontWeight: '700',
+        marginLeft: 4,
+    },
+    reviewCount: {
+        fontSize: 14,
+        marginLeft: 4,
+    },
+    reviewItem: {
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+    },
+    reviewHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 4,
+    },
+    reviewerName: {
+        fontWeight: '700',
+        fontSize: 15,
+    },
+    starsRow: {
+        flexDirection: 'row',
+    },
+    reviewComment: {
+        fontSize: 14,
+        lineHeight: 20,
+    },
+    reviewThumbnail: {
+        width: 80,
+        height: 80,
+        borderRadius: 12,
+        marginRight: 10,
+    },
+    reviewImages: {
+        marginTop: 12,
+    },
+    noReviews: {
+        fontStyle: 'italic',
+        fontSize: 14,
+    },
+    writeReviewBtn: {
+        marginTop: 16,
+        paddingVertical: 12,
+        borderRadius: 12,
+        borderWidth: 1,
+        alignItems: 'center',
+        borderStyle: 'dashed',
+    },
+    writeReviewText: {
+        fontWeight: '700',
+    },
     ownerCard: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -1167,109 +962,151 @@ const styles = StyleSheet.create({
         bottom: 0,
         left: 0,
         right: 0,
-        padding: Spacing.l,
-        paddingBottom: Platform.OS === 'ios' ? 34 : Spacing.l,
+        padding: 20,
+        paddingBottom: Platform.OS === 'ios' ? 34 : 20,
         flexDirection: 'row',
         borderTopWidth: 1,
     },
     payBtn: {
-        flex: 1.2,
+        flex: 2,
         height: 56,
         borderRadius: 18,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 8,
+        marginRight: 10,
     },
     payBtnText: {
         color: 'white',
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: '800',
-        marginLeft: 6,
+        marginLeft: 8,
     },
     chatBtn: {
-        flex: 0.9,
+        width: 56,
         height: 56,
         borderRadius: 18,
-        flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
     },
     chatBtnText: {
-        color: 'white',
-        fontSize: 13,
-        fontWeight: '800',
-        marginLeft: 4,
-    },
-    paymentInstructionCard: {
-        padding: 16,
-        borderRadius: 16,
-        marginBottom: 20,
-    },
-    paymentInstructionTitle: {
-        fontSize: 16,
-        fontWeight: '800',
-        marginBottom: 12,
-    },
-    instructionDetailRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    instDetailLabel: {
-        fontSize: 13,
-        fontWeight: '500',
-    },
-    instDetailVal: {
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: '700',
-    },
-    instructionNote: {
-        padding: 12,
-        borderRadius: 12,
-        marginTop: 12,
-    },
-    instructionNoteText: {
-        fontSize: 11,
-        lineHeight: 16,
-    },
-    propertyNameRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 4,
+        marginTop: 2,
     },
     modalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: 'rgba(0,0,0,0.6)',
         justifyContent: 'flex-end',
     },
     modalContent: {
-        height: '60%',
-        borderTopLeftRadius: 32,
-        borderTopRightRadius: 32,
-        padding: 24,
+        borderTopLeftRadius: 36,
+        borderTopRightRadius: 36,
+        padding: 28,
+        maxHeight: '80%',
     },
     modalHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 24,
+        marginBottom: 8,
     },
     modalTitle: {
         fontSize: 24,
-        fontWeight: '800',
+        fontWeight: '900',
     },
+    paymentSubtitle: {
+        fontSize: 14,
+        marginBottom: 20,
+    },
+    paymentOption: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        borderRadius: 16,
+        borderWidth: 1,
+        marginBottom: 12,
+    },
+    optionIconContainer: {
+        width: 48,
+        height: 48,
+        borderRadius: 12,
+        backgroundColor: 'rgba(0,0,0,0.03)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+    },
+    optionContent: {
+        flex: 1,
+    },
+    optionTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+    },
+    optionSubtitle: {
+        fontSize: 12,
+    },
+    processingOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(255,255,255,0.8)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 10,
+        borderRadius: 32,
+    },
+    processingText: {
+        marginTop: 12,
+        fontWeight: '700',
+    },
+    // Review/Confirmation Modal specific styles
     starsSelection: {
         flexDirection: 'row',
         justifyContent: 'center',
         marginVertical: 10,
+    },
+    subRatingsSection: {
+        marginTop: 24,
+    },
+    subRatingRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    subRatingName: {
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    subStarsRow: {
+        flexDirection: 'row',
     },
     inputLabel: {
         fontSize: 14,
         fontWeight: '700',
         marginBottom: 8,
         marginLeft: 4,
+    },
+    photoPicker: {
+        marginTop: 12,
+    },
+    photoThumbContainer: {
+        marginRight: 12,
+        position: 'relative',
+    },
+    photoThumb: {
+        width: 100,
+        height: 100,
+        borderRadius: 16,
+    },
+    checkOverlay: {
+        position: 'absolute',
+        top: 8,
+        right: 8,
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     reviewInput: {
         borderRadius: 16,
@@ -1289,6 +1126,92 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 18,
         fontWeight: '800',
+    },
+    confirmModalContent: {
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        padding: 24,
+        width: '100%',
+    },
+    confirmIconBox: {
+        width: 64,
+        height: 64,
+        borderRadius: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+    },
+    confirmHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 24,
+    },
+    confirmTitle: {
+        fontSize: 22,
+        fontWeight: '800',
+    },
+    confirmSub: {
+        fontSize: 14,
+        marginTop: 2,
+    },
+    paymentInstructionCard: {
+        padding: 20,
+        borderRadius: 20,
+        marginBottom: 24,
+    },
+    paymentInstructionTitle: {
+        fontSize: 17,
+        fontWeight: '700',
+        marginBottom: 16,
+    },
+    instructionDetailRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 12,
+    },
+    instDetailLabel: {
+        fontSize: 14,
+    },
+    instDetailVal: {
+        fontSize: 15,
+        fontWeight: '700',
+    },
+    instructionNote: {
+        padding: 14,
+        borderRadius: 16,
+        marginTop: 8,
+    },
+    instructionNoteText: {
+        fontSize: 13,
+        lineHeight: 20,
+    },
+    confirmActions: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    confirmBtn: {
+        flex: 2,
+        height: 56,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    cancelBtn: {
+        flex: 1,
+        height: 56,
+        borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 1,
+    },
+    cancelBtnText: {
+        fontSize: 16,
+        fontWeight: '700',
+    },
+    confirmBtnText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: '700',
     },
     subRatingStats: {
         padding: 20,
@@ -1323,63 +1246,5 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         textAlign: 'right',
     },
-    reviewImages: {
-        marginTop: 12,
-    },
-    reviewThumbnail: {
-        width: 80,
-        height: 80,
-        borderRadius: 12,
-        marginRight: 10,
-    },
-    subRatingsSection: {
-        marginTop: 24,
-    },
-    subRatingRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 10,
-    },
-    subRatingName: {
-        fontSize: 14,
-        fontWeight: '600',
-    },
-    subStarsRow: {
-        flexDirection: 'row',
-    },
-    photoPicker: {
-        marginTop: 12,
-    },
-    photoThumbContainer: {
-        marginRight: 12,
-        position: 'relative',
-    },
-    photoThumb: {
-        width: 100,
-        height: 100,
-        borderRadius: 16,
-    },
-    checkOverlay: {
-        position: 'absolute',
-        top: 8,
-        right: 8,
-        width: 20,
-        height: 20,
-        borderRadius: 10,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    confirmBtn: {
-        paddingHorizontal: 24,
-        paddingVertical: 12,
-        borderRadius: 8,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    confirmBtnText: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
 });
+

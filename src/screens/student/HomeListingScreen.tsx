@@ -11,6 +11,7 @@ import {
     Alert,
     Modal,
     Dimensions,
+    FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Filter, Bell, Map as MapIcon, Sparkles, X, Check, TrendingUp } from 'lucide-react-native';
@@ -40,7 +41,6 @@ export const HomeListingScreen = () => {
     const colors = isDark ? Theme.Dark.Colors : Theme.Light.Colors;
     const shadows = isDark ? Theme.Dark.Shadows : Theme.Light.Shadows;
 
-    const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeCategory, setActiveCategory] = useState('All');
     const [selectedLandmark, setSelectedLandmark] = useState<Landmark | null>(null);
@@ -93,28 +93,24 @@ export const HomeListingScreen = () => {
         }
     }, [user]);
 
-    useEffect(() => {
-        applyFilters(listings, activeCategory, searchQuery, selectedLandmark);
-    }, [listings, activeCategory, searchQuery, filterGender, filterVerified, maxPrice, selectedLandmark]);
-
-    const applyFilters = (data: Listing[], category: string, query: string, landmark: Landmark | null = null) => {
-        let result = [...data];
+    const filteredListings = React.useMemo(() => {
+        let result = [...listings];
 
         // Category
-        if (category === 'Girls Only') {
+        if (activeCategory === 'Girls Only') {
             result = result.filter(l => l.gender === 'female');
-        } else if (category === 'Verified') {
+        } else if (activeCategory === 'Verified') {
             result = result.filter(l => l.isVerified);
-        } else if (category !== 'All') {
-            result = result.filter(l => l.location.toLowerCase().includes(category.toLowerCase()));
+        } else if (activeCategory !== 'All') {
+            result = result.filter(l => l.location.toLowerCase().includes(activeCategory.toLowerCase()));
         }
 
         // Search Query
-        if (query) {
+        if (searchQuery) {
             result = result.filter(item =>
-                item.title.toLowerCase().includes(query.toLowerCase()) ||
-                item.location.toLowerCase().includes(query.toLowerCase()) ||
-                (item.propertyName && item.propertyName.toLowerCase().includes(query.toLowerCase()))
+                item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                item.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (item.propertyName && item.propertyName.toLowerCase().includes(searchQuery.toLowerCase()))
             );
         }
 
@@ -137,8 +133,8 @@ export const HomeListingScreen = () => {
         }
 
         // Proximity Logic
-        let targetLandmark = landmark;
-        const nearMatch = query.toLowerCase().match(/near\s+(.+)/);
+        let targetLandmark = selectedLandmark;
+        const nearMatch = searchQuery.toLowerCase().match(/near\s+(.+)/);
         if (nearMatch) {
             const found = findLandmarkByName(nearMatch[1]);
             if (found) targetLandmark = found;
@@ -157,13 +153,12 @@ export const HomeListingScreen = () => {
                 return l;
             });
 
-            // Auto-sort by distance if landmark is explicitly selected but no other sort is set
             if (sortBy === 'default' || sortBy === 'distance') {
                 result.sort((a, b) => ((a as any).distanceSort || 999) - ((b as any).distanceSort || 999));
             }
         }
 
-        // Apply Sorting (Override if needed)
+        // Apply Sorting
         if (sortBy === 'price_asc') {
             result.sort((a, b) => a.price - b.price);
         } else if (sortBy === 'price_desc') {
@@ -172,17 +167,15 @@ export const HomeListingScreen = () => {
             result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
         }
 
-        setFilteredListings(result);
-    };
+        return result;
+    }, [listings, activeCategory, searchQuery, filterGender, filterVerified, maxPrice, selectedLandmark, selectedAmenities, sortBy]);
 
     const handleSearch = (query: string) => {
         setSearchQuery(query);
-        applyFilters(listings, activeCategory, query, selectedLandmark);
     };
 
     const handleCategoryPress = (category: string) => {
         setActiveCategory(category);
-        applyFilters(listings, category, searchQuery);
     };
 
     const resetFilters = () => {
@@ -312,7 +305,6 @@ export const HomeListingScreen = () => {
                         <TouchableOpacity
                             style={[styles.applyBtn, { backgroundColor: colors.primary }]}
                             onPress={() => {
-                                applyFilters(listings, activeCategory, searchQuery);
                                 setIsFilterVisible(false);
                             }}
                         >
@@ -352,9 +344,168 @@ export const HomeListingScreen = () => {
                     <Text style={{ marginTop: 16, color: colors.textLight, fontSize: 16 }}>Finding the best homes for you...</Text>
                 </View>
             ) : (
-                <ScrollView
+                <FlatList
+                    data={filteredListings}
+                    keyExtractor={(item) => item.id}
+                    renderItem={({ item }) => <PropertyCard listing={item} />}
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={styles.scrollContent}
+                    ListHeaderComponent={
+                        <>
+                            <View style={styles.searchSection}>
+                                <View style={[styles.searchBar, { backgroundColor: colors.surface }, shadows.soft]}>
+                                    <Search size={20} color={colors.textLight} />
+                                    <TextInput
+                                        style={[styles.searchInput, { color: colors.text }]}
+                                        placeholder={t('common.search')}
+                                        placeholderTextColor={colors.textLight}
+                                        value={searchQuery}
+                                        onChangeText={handleSearch}
+                                    />
+                                </View>
+                                <TouchableOpacity
+                                    style={[styles.filterBtn, { backgroundColor: colors.primary }, shadows.strong]}
+                                    onPress={() => setIsFilterVisible(true)}
+                                >
+                                    <Filter size={20} color={colors.white} />
+                                </TouchableOpacity>
+                            </View>
+
+                            <View style={styles.categoryContainer}>
+                                <View style={styles.sectionHeaderRow}>
+                                    <Text style={[styles.miniTitle, { color: colors.text }]}>Nearby Landmarks</Text>
+                                </View>
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
+                                    {LANDMARKS.map((landmark) => (
+                                        <TouchableOpacity
+                                            key={landmark.id}
+                                            onPress={() => {
+                                                if (selectedLandmark?.id === landmark.id) {
+                                                    setSelectedLandmark(null);
+                                                } else {
+                                                    setSelectedLandmark(landmark);
+                                                    setSearchQuery(`near ${landmark.name}`);
+                                                }
+                                            }}
+                                            style={[
+                                                styles.landmarkTab,
+                                                { backgroundColor: colors.surface },
+                                                selectedLandmark?.id === landmark.id && { backgroundColor: colors.secondary },
+                                                shadows.soft
+                                            ]}
+                                        >
+                                            <MapIcon size={14} color={selectedLandmark?.id === landmark.id ? colors.white : colors.secondary} />
+                                            <Text style={[
+                                                styles.categoryText,
+                                                { marginLeft: 6, color: selectedLandmark?.id === landmark.id ? colors.white : colors.text }
+                                            ]}>
+                                                {landmark.id === 'uz' ? 'UZ' : landmark.name}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </ScrollView>
+                            </View>
+
+                            <View style={styles.categoryContainer}>
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
+                                    {categories.map((cat) => (
+                                        <TouchableOpacity
+                                            key={cat}
+                                            onPress={() => handleCategoryPress(cat)}
+                                            style={[
+                                                styles.categoryTab,
+                                                { backgroundColor: colors.surface },
+                                                activeCategory === cat && { backgroundColor: colors.primary },
+                                                shadows.soft
+                                            ]}
+                                        >
+                                            <Text style={[
+                                                styles.categoryText,
+                                                { color: activeCategory === cat ? colors.white : colors.textLight }
+                                            ]}>
+                                                {cat}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </ScrollView>
+                            </View>
+
+                            <View style={styles.filterBar}>
+                                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterBarScroll}>
+                                    <TouchableOpacity
+                                        style={[styles.sortBadge, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                                        onPress={() => {
+                                            const next: any = {
+                                                default: 'price_asc',
+                                                price_asc: 'price_desc',
+                                                price_desc: 'rating',
+                                                rating: selectedLandmark ? 'distance' : 'default',
+                                                distance: 'default'
+                                            };
+                                            setSortBy(next[sortBy] || 'default');
+                                        }}
+                                    >
+                                        <TrendingUp size={14} color={colors.primary} />
+                                        <Text style={[styles.filterBadgeText, { color: colors.text }]}>
+                                            Sort: {sortBy.replace('_', ' ')}
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                    {filterGender !== 'all' && (
+                                        <View style={[styles.activeFilterBadge, { backgroundColor: colors.primaryLight }]}>
+                                            <Text style={[styles.filterBadgeText, { color: colors.primary }]}>{filterGender}</Text>
+                                            <TouchableOpacity onPress={() => setFilterGender('all')}>
+                                                <X size={14} color={colors.primary} style={{ marginLeft: 4 }} />
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
+
+                                    {maxPrice < 100 && (
+                                        <View style={[styles.activeFilterBadge, { backgroundColor: colors.primaryLight }]}>
+                                            <Text style={[styles.filterBadgeText, { color: colors.primary }]}>Under ${maxPrice}</Text>
+                                            <TouchableOpacity onPress={() => setMaxPrice(100)}>
+                                                <X size={14} color={colors.primary} style={{ marginLeft: 4 }} />
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
+
+                                    {selectedAmenities.map(a => (
+                                        <View key={a} style={[styles.activeFilterBadge, { backgroundColor: colors.primaryLight }]}>
+                                            <Text style={[styles.filterBadgeText, { color: colors.primary }]}>{a}</Text>
+                                            <TouchableOpacity onPress={() => setSelectedAmenities(selectedAmenities.filter(item => item !== a))}>
+                                                <X size={14} color={colors.primary} style={{ marginLeft: 4 }} />
+                                            </TouchableOpacity>
+                                        </View>
+                                    ))}
+                                </ScrollView>
+                            </View>
+
+                            <View style={[styles.listingsSection, { marginBottom: 16 }]}>
+                                <View style={styles.sectionHeader}>
+                                    <Text style={[styles.sectionTitle, { color: colors.text }]}>Listed Properties</Text>
+                                    <TouchableOpacity>
+                                        <Text style={[styles.seeAll, { color: colors.primary }]}>See All</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </>
+                    }
+                    ListEmptyComponent={
+                        <View style={styles.emptyState}>
+                            <Sparkles size={48} color={isDark ? colors.border : '#e2e8f0'} />
+                            <Text style={[styles.emptyText, { color: colors.textLight }]}>No listings found matching your criteria.</Text>
+                            <TouchableOpacity
+                                style={[styles.clearSearch, { backgroundColor: colors.primaryLight }]}
+                                onPress={() => {
+                                    handleCategoryPress('All');
+                                    resetFilters();
+                                }}
+                            >
+                                <Text style={[styles.clearSearchText, { color: colors.primary }]}>Clear all filters</Text>
+                            </TouchableOpacity>
+                        </View>
+                    }
+                    ListFooterComponent={<View style={{ height: 40 }} />}
                     refreshControl={
                         <RefreshControl
                             refreshing={loading || isRefetching}
@@ -363,167 +514,7 @@ export const HomeListingScreen = () => {
                             tintColor={colors.primary}
                         />
                     }
-                >
-                    <View style={styles.searchSection}>
-                        <View style={[styles.searchBar, { backgroundColor: colors.surface }, shadows.soft]}>
-                            <Search size={20} color={colors.textLight} />
-                            <TextInput
-                                style={[styles.searchInput, { color: colors.text }]}
-                                placeholder={t('common.search')}
-                                placeholderTextColor={colors.textLight}
-                                value={searchQuery}
-                                onChangeText={handleSearch}
-                            />
-                        </View>
-                        <TouchableOpacity
-                            style={[styles.filterBtn, { backgroundColor: colors.primary }, shadows.strong]}
-                            onPress={() => setIsFilterVisible(true)}
-                        >
-                            <Filter size={20} color={colors.white} />
-                        </TouchableOpacity>
-                    </View>
-
-                    <View style={styles.categoryContainer}>
-                        <View style={styles.sectionHeaderRow}>
-                            <Text style={[styles.miniTitle, { color: colors.text }]}>Nearby Landmarks</Text>
-                        </View>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
-                            {LANDMARKS.map((landmark) => (
-                                <TouchableOpacity
-                                    key={landmark.id}
-                                    onPress={() => {
-                                        if (selectedLandmark?.id === landmark.id) {
-                                            setSelectedLandmark(null);
-                                        } else {
-                                            setSelectedLandmark(landmark);
-                                            setSearchQuery(`near ${landmark.name}`);
-                                        }
-                                    }}
-                                    style={[
-                                        styles.landmarkTab,
-                                        { backgroundColor: colors.surface },
-                                        selectedLandmark?.id === landmark.id && { backgroundColor: colors.secondary },
-                                        shadows.soft
-                                    ]}
-                                >
-                                    <MapIcon size={14} color={selectedLandmark?.id === landmark.id ? colors.white : colors.secondary} />
-                                    <Text style={[
-                                        styles.categoryText,
-                                        { marginLeft: 6, color: selectedLandmark?.id === landmark.id ? colors.white : colors.text }
-                                    ]}>
-                                        {landmark.id === 'uz' ? 'UZ' : landmark.name}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
-                        </ScrollView>
-                    </View>
-
-                    <View style={styles.categoryContainer}>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
-                            {categories.map((cat) => (
-                                <TouchableOpacity
-                                    key={cat}
-                                    onPress={() => handleCategoryPress(cat)}
-                                    style={[
-                                        styles.categoryTab,
-                                        { backgroundColor: colors.surface },
-                                        activeCategory === cat && { backgroundColor: colors.primary },
-                                        shadows.soft
-                                    ]}
-                                >
-                                    <Text style={[
-                                        styles.categoryText,
-                                        { color: activeCategory === cat ? colors.white : colors.textLight }
-                                    ]}>
-                                        {cat}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
-                        </ScrollView>
-                    </View>
-
-                    {/* Active Filters / Sorting Row */}
-                    <View style={styles.filterBar}>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterBarScroll}>
-                            <TouchableOpacity
-                                style={[styles.sortBadge, { backgroundColor: colors.surface, borderColor: colors.border }]}
-                                onPress={() => {
-                                    const next: any = {
-                                        default: 'price_asc',
-                                        price_asc: 'price_desc',
-                                        price_desc: 'rating',
-                                        rating: selectedLandmark ? 'distance' : 'default',
-                                        distance: 'default'
-                                    };
-                                    setSortBy(next[sortBy] || 'default');
-                                }}
-                            >
-                                <TrendingUp size={14} color={colors.primary} />
-                                <Text style={[styles.filterBadgeText, { color: colors.text }]}>
-                                    Sort: {sortBy.replace('_', ' ')}
-                                </Text>
-                            </TouchableOpacity>
-
-                            {filterGender !== 'all' && (
-                                <View style={[styles.activeFilterBadge, { backgroundColor: colors.primaryLight }]}>
-                                    <Text style={[styles.filterBadgeText, { color: colors.primary }]}>{filterGender}</Text>
-                                    <TouchableOpacity onPress={() => setFilterGender('all')}>
-                                        <X size={14} color={colors.primary} style={{ marginLeft: 4 }} />
-                                    </TouchableOpacity>
-                                </View>
-                            )}
-
-                            {maxPrice < 100 && (
-                                <View style={[styles.activeFilterBadge, { backgroundColor: colors.primaryLight }]}>
-                                    <Text style={[styles.filterBadgeText, { color: colors.primary }]}>Under ${maxPrice}</Text>
-                                    <TouchableOpacity onPress={() => setMaxPrice(100)}>
-                                        <X size={14} color={colors.primary} style={{ marginLeft: 4 }} />
-                                    </TouchableOpacity>
-                                </View>
-                            )}
-
-                            {selectedAmenities.map(a => (
-                                <View key={a} style={[styles.activeFilterBadge, { backgroundColor: colors.primaryLight }]}>
-                                    <Text style={[styles.filterBadgeText, { color: colors.primary }]}>{a}</Text>
-                                    <TouchableOpacity onPress={() => setSelectedAmenities(selectedAmenities.filter(item => item !== a))}>
-                                        <X size={14} color={colors.primary} style={{ marginLeft: 4 }} />
-                                    </TouchableOpacity>
-                                </View>
-                            ))}
-                        </ScrollView>
-                    </View>
-
-                    <View style={styles.listingsSection}>
-                        <View style={styles.sectionHeader}>
-                            <Text style={[styles.sectionTitle, { color: colors.text }]}>Listed Properties</Text>
-                            <TouchableOpacity>
-                                <Text style={[styles.seeAll, { color: colors.primary }]}>See All</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        {filteredListings.length > 0 ? (
-                            filteredListings.map((item) => (
-                                <PropertyCard key={item.id} listing={item} />
-                            ))
-                        ) : (
-                            <View style={styles.emptyState}>
-                                <Sparkles size={48} color={isDark ? colors.border : '#e2e8f0'} />
-                                <Text style={[styles.emptyText, { color: colors.textLight }]}>No listings found matching your criteria.</Text>
-                                <TouchableOpacity
-                                    style={[styles.clearSearch, { backgroundColor: colors.primaryLight }]}
-                                    onPress={() => {
-                                        handleCategoryPress('All');
-                                        resetFilters();
-                                    }}
-                                >
-                                    <Text style={[styles.clearSearchText, { color: colors.primary }]}>Clear all filters</Text>
-                                </TouchableOpacity>
-                            </View>
-                        )}
-                    </View>
-
-                    <View style={{ height: 40 }} />
-                </ScrollView >
+                />
             )}
             <FilterModal />
         </SafeAreaView >
