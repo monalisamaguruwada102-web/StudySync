@@ -46,6 +46,12 @@ export const navGroups = [
         ]
     },
     {
+        title: "Visual Map",
+        items: [
+            { icon: Database, label: 'Knowledge Graph', path: '/knowledge-graph', gradient: 'from-cyan-500 to-blue-500' },
+        ]
+    },
+    {
         title: "System",
         items: [
             { icon: Settings, label: 'Settings', path: '/settings', gradient: 'from-slate-500 to-gray-500' },

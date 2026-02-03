@@ -10,6 +10,8 @@ import { getLeague } from '../utils/gamification';
 import AnimatedBadge from '../components/ui/AnimatedBadge';
 import HelpModal from '../components/dashboard/HelpModal';
 import KnowledgeGraph from '../components/analytics/KnowledgeGraph';
+import JourneyMap from '../components/dashboard/JourneyMap';
+import FocusRadar from '../components/dashboard/FocusRadar';
 import {
     Clock,
     Layers,
@@ -21,7 +23,8 @@ import {
     Flame,
     Target,
     Brain,
-    HelpCircle
+    HelpCircle,
+    Map
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import {
@@ -213,32 +216,39 @@ const Dashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
-                {/* Visual Data Map Placeholder (Heatmap) */}
-                <Card title="Study Intensity" className="lg:col-span-2">
-                    <Heatmap logs={logs} />
+                {/* Visual Journey Map (Replaces simple Heatmap) */}
+                <Card
+                    title="My Learning Journey"
+                    className="lg:col-span-2 min-h-[400px]"
+                    HeaderAction={
+                        <div className="flex items-center gap-2 text-[10px] font-bold text-primary-500 bg-primary-50 dark:bg-primary-900/20 px-2 py-1 rounded-lg uppercase tracking-wider">
+                            <Map size={14} />
+                            <span>Campaign Mode</span>
+                        </div>
+                    }
+                >
+                    <JourneyMap />
                 </Card>
 
-                {/* Achievement Badges & Knowledge Graph */}
+                {/* Focus Profile & Badges */}
                 <div className="space-y-6">
-                    <Card title="Knowledge Map" HeaderAction={<Brain size={18} className="text-primary-500" />}>
-                        <div className="py-2">
-                            <KnowledgeGraph modules={modules} logs={logs} />
-                            <div className="mt-4 flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                <span>Coverage</span>
-                                <span className="text-primary-500">{((modules.length * 100) / 10).toFixed(0)}%</span>
-                            </div>
+                    <Card title="Focus DNA" HeaderAction={<Brain size={18} className="text-purple-500" />}>
+                        <div className="h-64">
+                            <FocusRadar />
+                        </div>
+                        <div className="mt-2 text-center text-xs text-slate-400">
+                            Analysis based on study patterns
                         </div>
                     </Card>
 
-                    <div className="space-y-4">
-                        <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-500 ml-2">Recent Badges</h3>
+                    <Card title="Achievements">
                         <div className="grid grid-cols-2 gap-4">
                             <AnimatedBadge name="Early Bird" icon={Zap} color="primary" />
                             <AnimatedBadge name="Persistence" icon={Flame} color="purple" />
                             <AnimatedBadge name="Scholar" icon={Target} color="gold" />
                             <AnimatedBadge name="Focus King" icon={Award} color="green" />
                         </div>
-                    </div>
+                    </Card>
                 </div>
             </div>
 
