@@ -204,7 +204,6 @@ const createCollectionService = (collectionName) => {
 };
 
 export const moduleService = createCollectionService("modules");
-export const moduleService = createCollectionService("modules");
 
 export const studyLogService = {
     ...createCollectionService("study_logs"),
