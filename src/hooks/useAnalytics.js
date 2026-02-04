@@ -18,6 +18,12 @@ export const useAnalytics = (logs, modules, tasks) => {
         // 1. Total Hours
         const totalHours = logs.reduce((acc, log) => acc + parseFloat(log.hours || 0), 0);
 
+        // 1.1 Today's Hours
+        const todayStr = new Date().toISOString().split('T')[0];
+        const todayHours = logs
+            .filter(log => (log.date || log.createdAt)?.split('T')[0] === todayStr)
+            .reduce((acc, log) => acc + parseFloat(log.hours || 0), 0);
+
         // 2. Active Modules
         const activeModules = modules.length;
 
@@ -26,22 +32,27 @@ export const useAnalytics = (logs, modules, tasks) => {
 
         // 4. Module Progress Data
         const moduleData = modules.map(mod => {
-            const modLogs = logs.filter(log => log.moduleId === mod.id);
-            const modHours = modLogs.reduce((acc, log) => acc + parseFloat(log.hours || 0), 0);
+            const modHours = parseFloat(mod.totalHoursStudied || 0);
+            const remaining = Math.max(0, parseFloat(mod.targetHours || 0) - modHours);
             return {
+                id: mod.id,
                 name: mod.name,
                 hours: modHours,
+                remaining: remaining.toFixed(1),
                 target: mod.targetHours,
                 progress: mod.targetHours > 0 ? (modHours / mod.targetHours) * 100 : 0
             };
         });
 
+        // 4.1 Total Remaining
+        const totalRemaining = moduleData.reduce((acc, m) => acc + parseFloat(m.remaining), 0);
+
         // 5. Weekly Trend
+        // ... (existing weekly trend logic)
         const now = new Date();
         const weekStart = startOfWeek(now);
         const weekEnd = endOfWeek(now);
 
-        // Last 7 days trend
         const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const weeklyTrend = days.map((day, index) => {
             const dayLogs = logs.filter(log => {
@@ -55,6 +66,7 @@ export const useAnalytics = (logs, modules, tasks) => {
         });
 
         // 6. Streak tracking (Real Logic)
+        // ... (existing streak logic)
         const sortedDates = [...new Set(logs.map(log => {
             const date = log.date || log.createdAt;
             return date ? new Date(date).toISOString().split('T')[0] : null;
@@ -65,7 +77,6 @@ export const useAnalytics = (logs, modules, tasks) => {
             const today = new Date().toISOString().split('T')[0];
             const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 
-            // Check if user studied today or yesterday to continue streak
             if (sortedDates[0] === today || sortedDates[0] === yesterday) {
                 streak = 1;
                 for (let i = 0; i < sortedDates.length - 1; i++) {
@@ -79,12 +90,12 @@ export const useAnalytics = (logs, modules, tasks) => {
         }
 
         // 7. Achievement Detection
+        // ... (existing badges)
         const badges = [];
         if (streak >= 3) badges.push({ name: 'Persistence', icon: 'Flame', color: 'purple' });
         if (totalHours >= 10) badges.push({ name: 'Scholar', icon: 'Target', color: 'gold' });
         if (tasks.filter(t => t.status === 'Completed').length >= 5) badges.push({ name: 'Focus King', icon: 'Award', color: 'green' });
 
-        // Early Bird: Study before 8 AM
         const hasEarlySession = logs.some(log => {
             const date = log.date ? new Date(log.date) : null;
             return date && date.getHours() < 8;
@@ -93,6 +104,8 @@ export const useAnalytics = (logs, modules, tasks) => {
 
         return {
             totalHours,
+            todayHours,
+            totalRemaining,
             activeModules,
             pendingTasks,
             weeklyProgress: modules.length > 0 ? (moduleData.reduce((acc, m) => acc + m.progress, 0) / modules.length) : 0,

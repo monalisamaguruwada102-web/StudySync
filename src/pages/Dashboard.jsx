@@ -174,11 +174,18 @@ const Dashboard = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
                 <StatCard
-                    icon={<Clock className="text-blue-500" />}
-                    label="Total Hours"
-                    value={stats.totalHours.toFixed(1)}
-                    trend="+12% from last week"
+                    icon={<Target className="text-primary-500" />}
+                    label="Today's Goal"
+                    value={`${stats.todayHours.toFixed(1)} / ${(user?.settings?.dailyStudyTarget || 2)}h`}
+                    trend="Daily progress"
                     onClick={() => navigate('/logs')}
+                />
+                <StatCard
+                    icon={<Clock className="text-blue-500" />}
+                    label="Remaining Study"
+                    value={`${stats.totalRemaining.toFixed(1)}h`}
+                    trend="To complete targets"
+                    onClick={() => navigate('/modules')}
                 />
                 <StatCard
                     icon={<Layers className="text-purple-500" />}
@@ -186,13 +193,6 @@ const Dashboard = () => {
                     value={stats.activeModules}
                     trend="Currently enrolled"
                     onClick={() => navigate('/modules')}
-                />
-                <StatCard
-                    icon={<Calendar className="text-orange-500" />}
-                    label="Pending Tasks"
-                    value={stats.pendingTasks}
-                    trend="Next due tomorrow"
-                    onClick={() => navigate('/kanban')}
                 />
                 <StatCard
                     icon={<Award className="text-pink-500" />}

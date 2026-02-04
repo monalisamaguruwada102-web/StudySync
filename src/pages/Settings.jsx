@@ -141,10 +141,27 @@ const Settings = () => {
                             <Card title="General Preferences" HeaderAction={<HardDrive size={18} className="text-primary-500" />}>
                                 <div className="space-y-6">
                                     <div className="p-4 bg-primary-500/5 border border-primary-500/10 rounded-2xl">
-                                        <h4 className="text-sm font-black text-primary-500 uppercase tracking-widest mb-1">User Information</h4>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400">Settings for your local study profile.</p>
+                                        <h4 className="text-sm font-black text-primary-500 uppercase tracking-widest mb-1">Study Goals</h4>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">Set your daily study objectives.</p>
                                     </div>
-                                    <p className="text-center py-10 text-slate-400 text-sm italic">General settings coming soon...</p>
+                                    <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800/50">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-3 rounded-xl bg-primary-500/20 text-primary-500">
+                                                <Target size={20} />
+                                            </div>
+                                            <div>
+                                                <h5 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">Daily Target (Hours)</h5>
+                                                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Averages 2h per day</p>
+                                            </div>
+                                        </div>
+                                        <input
+                                            type="number"
+                                            step="0.5"
+                                            className="w-20 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1 text-center font-bold outline-none focus:ring-2 focus:ring-primary-500/20"
+                                            value={user?.settings?.dailyStudyTarget || 2}
+                                            onChange={(e) => saveUserSetting('dailyStudyTarget', parseFloat(e.target.value))}
+                                        />
+                                    </div>
                                 </div>
                             </Card>
                         )}

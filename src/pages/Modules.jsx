@@ -141,7 +141,7 @@ const Modules = () => {
                                     <div className="flex justify-between items-end">
                                         <div className="flex items-center gap-2 text-primary-600 dark:text-primary-400 font-semibold">
                                             <Target size={16} />
-                                            <span>{mod.targetHours}h Target</span>
+                                            <span>{Math.max(0, mod.targetHours - (mod.totalHoursStudied || 0)).toFixed(1)}h Remaining</span>
                                         </div>
                                         <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{progress}%</span>
                                     </div>

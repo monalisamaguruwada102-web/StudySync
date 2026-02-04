@@ -127,9 +127,11 @@ const JourneyMap = () => {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <div className={`p-1 rounded-md ${item.isActive ? 'bg-primary-500/10 text-primary-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
-                                        <Star size={12} />
+                                        <Target size={12} />
                                     </div>
-                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{item.mod.targetHours}h Target</span>
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                        {Math.max(0, parseFloat(item.mod.targetHours || 0) - item.totalStudied).toFixed(1)}h Remaining
+                                    </span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <div className={`p-1 rounded-md ${item.isActive ? 'bg-primary-500/10 text-primary-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
