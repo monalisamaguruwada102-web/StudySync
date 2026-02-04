@@ -83,10 +83,10 @@ const Modules = () => {
         }
     };
 
-    const calculateProgress = (moduleId, target) => {
+    const calculateProgress = (mod) => {
+        const target = mod.targetHours;
         if (!target || target === 0) return 0;
-        const modLogs = logs.filter(log => log.moduleId === moduleId);
-        const total = modLogs.reduce((acc, log) => acc + parseFloat(log.hours || 0), 0);
+        const total = parseFloat(mod.totalHoursStudied || 0);
         return Math.min((total / target) * 100, 100).toFixed(0);
     };
 
@@ -108,7 +108,7 @@ const Modules = () => {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {modules.map((mod) => {
-                        const progress = calculateProgress(mod.id, mod.targetHours);
+                        const progress = calculateProgress(mod);
                         return (
                             <Card key={mod.id} className="group relative overflow-hidden transition-all hover:shadow-lg hover:border-primary-100">
                                 <div className="flex justify-between items-start mb-4">

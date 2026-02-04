@@ -27,6 +27,13 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         checkAuth();
+
+        const handleAuthUpdate = () => {
+            checkAuth();
+        };
+
+        window.addEventListener('study-sync-auth', handleAuthUpdate);
+        return () => window.removeEventListener('study-sync-auth', handleAuthUpdate);
     }, []);
 
     const value = useMemo(() => ({

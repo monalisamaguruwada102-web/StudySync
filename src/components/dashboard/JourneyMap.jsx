@@ -18,9 +18,7 @@ const JourneyMap = () => {
 
         return ordered.map((mod, index) => {
             const modTasks = tasks.filter(t => t.moduleId === mod.id);
-            const modLogs = logs.filter(l => l.moduleId === mod.id);
-
-            const totalStudied = modLogs.reduce((sum, l) => sum + parseFloat(l.hours || 0), 0);
+            const totalStudied = parseFloat(mod.totalHoursStudied || 0);
             const isCompleted = modTasks.length > 0 && modTasks.every(t => t.status === 'Completed');
 
             let isActive = false;

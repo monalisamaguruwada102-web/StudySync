@@ -32,7 +32,7 @@ const ModuleDetail = () => {
 
     const stats = useMemo(() => {
         if (!module) return { progress: 0, hours: 0, completedTasks: 0 };
-        const total = logs.reduce((acc, log) => acc + parseFloat(log.hours || 0), 0);
+        const total = parseFloat(module.totalHoursStudied || 0);
         const completed = tasks.filter(t => t.status === 'Completed').length;
         const progress = module.targetHours > 0 ? (total / module.targetHours) * 100 : 0;
         return {
