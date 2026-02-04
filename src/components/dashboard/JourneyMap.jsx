@@ -2,13 +2,14 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Lock, Star, ChevronRight } from 'lucide-react';
 import { useFirestore } from '../../hooks/useFirestore';
-import { moduleService, taskService } from '../../services/firestoreService';
+import { moduleService, taskService, studyLogService } from '../../services/firestoreService';
 import { useNavigate } from 'react-router-dom';
 
 const JourneyMap = () => {
     const navigate = useNavigate();
     const { data: modules } = useFirestore(moduleService.getAll);
     const { data: tasks } = useFirestore(taskService.getAll);
+    const { data: logs } = useFirestore(studyLogService.getAll);
 
     const timelineData = useMemo(() => {
         let firstIncompleteFound = false;
@@ -17,6 +18,9 @@ const JourneyMap = () => {
 
         return ordered.map((mod, index) => {
             const modTasks = tasks.filter(t => t.moduleId === mod.id);
+            const modLogs = logs.filter(l => l.moduleId === mod.id);
+
+            const totalStudied = modLogs.reduce((sum, l) => sum + parseFloat(l.hours || 0), 0);
             const isCompleted = modTasks.length > 0 && modTasks.every(t => t.status === 'Completed');
 
             let isActive = false;
@@ -29,9 +33,9 @@ const JourneyMap = () => {
                 isLocked = true;
             }
 
-            return { mod, id: mod.id, isCompleted, isActive, isLocked, index };
+            return { mod, id: mod.id, isCompleted, isActive, isLocked, index, totalStudied };
         });
-    }, [modules, tasks]);
+    }, [modules, tasks, logs]);
 
     if (modules.length === 0) {
         return (
@@ -128,15 +132,34 @@ const JourneyMap = () => {
                                     </div>
                                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{item.mod.targetHours}h Target</span>
                                 </div>
+                                <div className="flex items-center gap-2">
+                                    <div className={`p-1 rounded-md ${item.isActive ? 'bg-primary-500/10 text-primary-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                                        <Clock size={12} />
+                                    </div>
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{item.totalStudied.toFixed(1)}h Studied</span>
+                                </div>
                             </div>
 
                             {/* Mini Progress Bar */}
-                            <div className="mt-4 h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${(tasks.filter(t => t.moduleId === item.id && t.status === 'Completed').length / Math.max(1, tasks.filter(t => t.moduleId === item.id).length)) * 100}%` }}
-                                    className={`h-full rounded-full ${item.isCompleted ? 'bg-green-500' : 'bg-primary-500'}`}
-                                />
+                            <div className="mt-4 flex gap-1">
+                                <div className="h-1.5 flex-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                    <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${(tasks.filter(t => t.moduleId === item.id && t.status === 'Completed').length / Math.max(1, tasks.filter(t => t.moduleId === item.id).length)) * 100}%` }}
+                                        className={`h-full rounded-full ${item.isCompleted ? 'bg-green-500' : 'bg-primary-500'}`}
+                                    />
+                                </div>
+                                <div className="h-1.5 flex-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                    <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${Math.min(100, (item.totalStudied / Math.max(1, item.mod.targetHours)) * 100)}%` }}
+                                        className="h-full rounded-full bg-blue-500"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex justify-between mt-1 px-1">
+                                <span className="text-[8px] font-black text-slate-400 uppercase">Tasks</span>
+                                <span className="text-[8px] font-black text-slate-400 uppercase">Hours</span>
                             </div>
                         </motion.div>
                     </motion.div>

@@ -86,6 +86,7 @@ const createCollectionService = (collectionName) => {
 
                 if (error) throw error;
                 dataCache.remove(collectionName);
+                window.dispatchEvent(new CustomEvent('study-sync-update', { detail: { collection: collectionName } }));
                 return mapFromSupabase(result);
             } else {
                 throw new Error('Supabase not configured for cloud persistence');
@@ -106,6 +107,7 @@ const createCollectionService = (collectionName) => {
 
                 if (error) throw error;
                 dataCache.remove(collectionName);
+                window.dispatchEvent(new CustomEvent('study-sync-update', { detail: { collection: collectionName } }));
                 return mapFromSupabase(result);
             }
         },
@@ -122,6 +124,7 @@ const createCollectionService = (collectionName) => {
 
                 if (error) throw error;
                 dataCache.remove(collectionName);
+                window.dispatchEvent(new CustomEvent('study-sync-update', { detail: { collection: collectionName } }));
             }
         },
         getAll: async (callback) => {

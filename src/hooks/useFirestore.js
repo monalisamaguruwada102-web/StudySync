@@ -19,15 +19,22 @@ export const useFirestore = (serviceMethod, ...args) => {
     };
 
     useEffect(() => {
+        const handleUpdate = () => {
+            fetchData();
+        };
+
+        window.addEventListener('study-sync-update', handleUpdate);
+
         const unsubscribe = serviceMethod(...args, (items) => {
             setData(items);
             setLoading(false);
         });
 
         return () => {
+            window.removeEventListener('study-sync-update', handleUpdate);
             if (typeof unsubscribe === 'function') unsubscribe();
         };
-    }, [serviceMethod, ...args]);
+    }, [serviceMethod, JSON.stringify(args)]);
 
     return { data, loading, error, refresh: fetchData };
 };

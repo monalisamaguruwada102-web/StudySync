@@ -156,7 +156,7 @@ const DeepAnalytics = () => {
                                         cx={node.x} cy={node.y}
                                         r={node.type === 'user' ? 25 : node.type === 'module' ? 12 : 6}
                                         className={`${node.type === 'user' ? 'fill-primary-600 shadow-xl' :
-                                                node.type === 'module' ? 'fill-primary-400 dark:fill-primary-500' : 'fill-slate-300 dark:fill-slate-600'
+                                            node.type === 'module' ? 'fill-primary-400 dark:fill-primary-500' : 'fill-slate-300 dark:fill-slate-600'
                                             }`}
                                     />
                                     <text
@@ -192,6 +192,27 @@ const DeepAnalytics = () => {
                 {modules.map(mod => {
                     const modTasks = tasks.filter(t => t.moduleId === mod.id);
                     const completed = modTasks.filter(t => t.status === 'Completed').length;
+
+                    // Improved Mastery Velocity calculation
+                    // Weighted average of activity: (Tasks Done * 0.4) + (Study Hours * 0.6)
+                    // Comparing last 7 days vs previous 7 days
+                    const modLogs = logs.filter(l => l.moduleId === mod.id);
+                    const now = new Date();
+                    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+                    const recentHours = modLogs
+                        .filter(l => new Date(l.date) >= oneWeekAgo)
+                        .reduce((sum, l) => sum + parseFloat(l.hours || 0), 0);
+
+                    const previousHours = modLogs
+                        .filter(l => new Date(l.date) >= twoWeeksAgo && new Date(l.date) < oneWeekAgo)
+                        .reduce((sum, l) => sum + parseFloat(l.hours || 0), 0);
+
+                    const velocity = previousHours === 0
+                        ? (recentHours > 0 ? 100 : 0)
+                        : Math.round(((recentHours - previousHours) / previousHours) * 100);
+
                     const progress = modTasks.length > 0 ? (completed / modTasks.length) * 100 : 0;
 
                     return (
@@ -199,7 +220,9 @@ const DeepAnalytics = () => {
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center text-xs">
                                     <span className="text-slate-500">Mastery Velocity</span>
-                                    <span className="font-bold text-primary-500">+{Math.round(progress)}% this week</span>
+                                    <span className={`font-bold ${velocity >= 0 ? 'text-primary-500' : 'text-red-500'}`}>
+                                        {velocity >= 0 ? '+' : ''}{velocity}% this week
+                                    </span>
                                 </div>
                                 <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden">
                                     <div

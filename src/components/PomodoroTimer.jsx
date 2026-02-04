@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, RotateCcw, Coffee, BookOpen } from 'lucide-react';
 import Button from './ui/Button';
-import { pomodoroService, studyLogService } from '../services/firestoreService';
+import { pomodoroService, studyLogService, moduleService } from '../services/firestoreService';
 import { useAuth } from '../context/AuthContext';
+import { useFirestore } from '../hooks/useFirestore';
 
 const PomodoroTimer = () => {
     const { refreshAuth } = useAuth();
+    const { data: modules } = useFirestore(moduleService.getAll);
     const [minutes, setMinutes] = useState(0);
     const [seconds, setSeconds] = useState(0);
     const [isActive, setIsActive] = useState(false);
     const [mode, setMode] = useState('study'); // 'study' or 'break'
+    const [selectedModule, setSelectedModule] = useState('general');
     const MAX_MINUTES = 60;
 
     const timerRef = useRef(null);
@@ -52,7 +55,7 @@ const PomodoroTimer = () => {
                     date: new Date().toISOString().split('T')[0],
                     topic: 'Pomodoro Focus Session',
                     hours: (minutes / 60) + (seconds / 3600),
-                    moduleId: 'general' // Default or could be selected
+                    moduleId: selectedModule
                 });
 
                 await refreshAuth(); // Update XP bar
@@ -97,6 +100,22 @@ const PomodoroTimer = () => {
                     <RotateCcw size={14} />
                 </button>
             </div>
+
+            {/* Module Selector */}
+            {mode === 'study' && !isActive && (
+                <div className="mb-3">
+                    <select
+                        value={selectedModule}
+                        onChange={(e) => setSelectedModule(e.target.value)}
+                        className="w-full text-[10px] font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-1 text-slate-600 dark:text-slate-400 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                    >
+                        <option value="general">Global - No Module</option>
+                        {modules.map(mod => (
+                            <option key={mod.id} value={mod.id}>{mod.name}</option>
+                        ))}
+                    </select>
+                </div>
+            )}
 
             <div className="text-3xl font-mono font-bold text-slate-800 dark:text-slate-100 mb-4 text-center tabular-nums">
                 {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
