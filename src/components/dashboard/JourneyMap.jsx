@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Lock, Star, ChevronRight, Clock } from 'lucide-react';
+import { Check, Lock, Star, ChevronRight, Clock, Target } from 'lucide-react';
 import { useFirestore } from '../../hooks/useFirestore';
 import { moduleService, taskService, studyLogService } from '../../services/firestoreService';
 import { useNavigate } from 'react-router-dom';
