@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Lock, MapPin, Star } from 'lucide-react';
+import { Check, Lock, Star, ChevronRight } from 'lucide-react';
 import { useFirestore } from '../../hooks/useFirestore';
 import { moduleService, taskService } from '../../services/firestoreService';
 import { useNavigate } from 'react-router-dom';
@@ -10,16 +10,12 @@ const JourneyMap = () => {
     const { data: modules } = useFirestore(moduleService.getAll);
     const { data: tasks } = useFirestore(taskService.getAll);
 
-    // Sort modules by creation date
-    const orderedModules = useMemo(() => {
-        return [...modules].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
-    }, [modules]);
-
-    // Generate Path Points (Winding Snake Layout)
-    const points = useMemo(() => {
+    const timelineData = useMemo(() => {
         let firstIncompleteFound = false;
 
-        return orderedModules.map((mod, index) => {
+        const ordered = [...modules].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+
+        return ordered.map((mod, index) => {
             const modTasks = tasks.filter(t => t.moduleId === mod.id);
             const isCompleted = modTasks.length > 0 && modTasks.every(t => t.status === 'Completed');
 
@@ -33,135 +29,119 @@ const JourneyMap = () => {
                 isLocked = true;
             }
 
-            const row = Math.floor(index / 3);
-            const isReverse = row % 2 === 1;
-            const col = index % 3;
-            const x = isReverse ? 90 - (col * 40) : 10 + (col * 40);
-            const y = 50 + (row * 120);
-
-            return { x, y, mod, id: mod.id, isCompleted, isActive, isLocked };
+            return { mod, id: mod.id, isCompleted, isActive, isLocked, index };
         });
-    }, [orderedModules, tasks]);
+    }, [modules, tasks]);
 
-    const pathData = useMemo(() => {
-        if (points.length === 0) return '';
-
-        let d = `M ${points[0].x} ${points[0].y}`;
-
-        for (let i = 0; i < points.length - 1; i++) {
-            const current = points[i];
-            const next = points[i + 1];
-
-            // Simple straight lines for now, or curves
-            const midY = (current.y + next.y) / 2;
-
-            // Bezier curve for smoother path
-            d += ` C ${current.x} ${midY}, ${next.x} ${midY}, ${next.x} ${next.y}`;
-        }
-
-        return d;
-    }, [points]);
+    if (modules.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center mb-4">
+                    <Star size={32} className="opacity-20" />
+                </div>
+                <p className="font-bold uppercase tracking-widest text-xs">No learning data found</p>
+            </div>
+        );
+    }
 
     return (
-        <div className="relative w-full h-full min-h-[500px] bg-[#1a1b26] rounded-3xl overflow-hidden p-8 flex items-center justify-center">
-            {/* Background Texture */}
-            <div className="absolute inset-0 opacity-10"
-                style={{
-                    backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
-                    backgroundSize: '40px 40px'
-                }}
-            />
+        <div className="relative p-2">
+            {/* The Timeline Line */}
+            <div className="absolute left-10 top-0 bottom-0 w-1 bg-slate-100 dark:bg-slate-800/50 rounded-full" />
 
-            <div className="relative w-full max-w-2xl h-[600px] overflow-y-auto no-scrollbar">
-                <svg className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-visible">
-                    {/* Path Shadow */}
-                    <path
-                        d={pathData}
-                        fill="none"
-                        stroke="rgba(0,0,0,0.3)"
-                        strokeWidth="12"
-                        strokeLinecap="round"
-                    />
-                    {/* Main Path */}
-                    <path
-                        d={pathData}
-                        fill="none"
-                        stroke="url(#pathGradient)"
-                        strokeWidth="6"
-                        strokeLinecap="round"
-                        strokeDasharray="10 10"
-                        className="animate-[dash_20s_linear_infinite]"
-                    />
-                    <defs>
-                        <linearGradient id="pathGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="#6366f1" />
-                            <stop offset="50%" stopColor="#ec4899" />
-                            <stop offset="100%" stopColor="#22c55e" />
-                        </linearGradient>
-                    </defs>
-                </svg>
-
-                {points.map((point, index) => {
-                    const { isCompleted, isActive, isLocked } = point;
-
-                    return (
-                        <motion.div
-                            key={point.id}
-                            className="absolute flex flex-col items-center justify-center -translate-x-1/2 -translate-y-1/2"
-                            style={{ left: `${point.x}%`, top: `${point.y}px` }}
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{ delay: index * 0.1 }}
-                        >
+            <div className="space-y-12 relative z-10">
+                {timelineData.map((item, idx) => (
+                    <motion.div
+                        key={item.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.1 }}
+                        className="flex items-start gap-8 group"
+                    >
+                        {/* Status Icon Orb */}
+                        <div className="relative flex-shrink-0 mt-2">
                             <motion.button
-                                whileHover={{ scale: 1.1, y: -5 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => navigate(`/modules/${point.mod.id}`)}
+                                whileHover={!item.isLocked ? { scale: 1.1 } : {}}
+                                whileTap={!item.isLocked ? { scale: 0.95 } : {}}
+                                onClick={() => !item.isLocked && navigate(`/modules/${item.id}`)}
                                 className={`
-                                    w-16 h-16 rounded-2xl rotate-45 flex items-center justify-center shadow-xl z-10 relative
-                                    transition-all duration-300
-                                    ${isActive
-                                        ? 'bg-gradient-to-br from-primary-500 to-purple-600 shadow-primary-500/50'
-                                        : isCompleted
-                                            ? 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-green-500/40'
-                                            : 'bg-slate-700 border-2 border-slate-600'
+                                    w-20 h-20 rounded-3xl flex items-center justify-center shadow-2xl relative z-10
+                                    transition-all duration-500
+                                    ${item.isActive
+                                        ? 'bg-gradient-to-br from-primary-500 via-indigo-600 to-purple-600 ring-4 ring-primary-500/20'
+                                        : item.isCompleted
+                                            ? 'bg-gradient-to-br from-green-500 to-emerald-600'
+                                            : 'bg-slate-200 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700'
                                     }
                                 `}
                             >
-                                <div className="-rotate-45 text-white">
-                                    {isCompleted ? <Check size={24} strokeWidth={4} /> :
-                                        isActive ? <Star size={24} fill="currentColor" className="animate-pulse" /> :
-                                            <Lock size={20} className="text-slate-400" />}
+                                <div className="text-white">
+                                    {item.isCompleted ? <Check size={32} strokeWidth={3} /> :
+                                        item.isActive ? <Star size={32} fill="white" className="animate-pulse" /> :
+                                            <Lock size={28} className="text-slate-400 dark:text-slate-600" />}
                                 </div>
 
-                                {/* Ripple Effect for Active */}
-                                {isActive && (
-                                    <div className="absolute inset-0 rounded-2xl bg-primary-500/30 animate-ping -z-10" />
+                                {/* Active Pulse */}
+                                {item.isActive && (
+                                    <div className="absolute inset-0 rounded-3xl bg-primary-500/40 animate-ping -z-10" />
                                 )}
                             </motion.button>
 
-                            {/* Label */}
-                            <div className={`
-                                mt-4 px-3 py-1.5 rounded-lg backdrop-blur-md shadow-lg border text-xs font-bold whitespace-nowrap z-20
-                                ${isActive
-                                    ? 'bg-primary-500 text-white border-primary-400'
-                                    : 'bg-white/90 text-slate-800 border-white/50'
+                            {/* Connector Line Fill for Completed */}
+                            {idx < timelineData.length - 1 && item.isCompleted && (
+                                <div className="absolute left-1/2 -bottom-12 w-1 h-12 bg-green-500 -translate-x-1/2 -z-10" />
+                            )}
+                        </div>
+
+                        {/* Content Card */}
+                        <motion.div
+                            onClick={() => !item.isLocked && navigate(`/modules/${item.id}`)}
+                            className={`
+                                flex-1 p-6 rounded-[2rem] border transition-all duration-300 group-hover:shadow-xl cursor-pointer
+                                ${item.isActive
+                                    ? 'bg-white dark:bg-slate-900 border-primary-500 shadow-lg shadow-primary-500/10'
+                                    : 'bg-white/50 dark:bg-slate-900/30 border-slate-200 dark:border-slate-800'
                                 }
-                            `}>
-                                {point.mod.name}
+                            `}
+                        >
+                            <div className="flex items-center justify-between mb-2">
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${item.isActive ? 'text-primary-500' : 'text-slate-400'}`}>
+                                    {item.isCompleted ? 'Module Mastery' : item.isActive ? 'Active Mission' : 'Upcoming Stage'}
+                                </span>
+                                <ChevronRight size={16} className={`transition-transform group-hover:translate-x-1 ${item.isActive ? 'text-primary-500' : 'text-slate-400'}`} />
+                            </div>
+
+                            <h3 className={`text-xl font-black mb-2 tracking-tight ${item.isLocked ? 'text-slate-400' : 'text-slate-900 dark:text-slate-100'}`}>
+                                {item.mod.name}
+                            </h3>
+
+                            <div className="flex flex-wrap gap-4 mt-4">
+                                <div className="flex items-center gap-2">
+                                    <div className={`p-1 rounded-md ${item.isActive ? 'bg-primary-500/10 text-primary-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                                        <Check size={12} />
+                                    </div>
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{tasks.filter(t => t.moduleId === item.id && t.status === 'Completed').length} Tasks Done</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className={`p-1 rounded-md ${item.isActive ? 'bg-primary-500/10 text-primary-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                                        <Star size={12} />
+                                    </div>
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{item.mod.targetHours}h Target</span>
+                                </div>
+                            </div>
+
+                            {/* Mini Progress Bar */}
+                            <div className="mt-4 h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${(tasks.filter(t => t.moduleId === item.id && t.status === 'Completed').length / Math.max(1, tasks.filter(t => t.moduleId === item.id).length)) * 100}%` }}
+                                    className={`h-full rounded-full ${item.isCompleted ? 'bg-green-500' : 'bg-primary-500'}`}
+                                />
                             </div>
                         </motion.div>
-                    );
-                })}
+                    </motion.div>
+                ))}
             </div>
-
-            <style jsx>{`
-                @keyframes dash {
-                    to {
-                        stroke-dashoffset: -1000;
-                    }
-                }
-            `}</style>
         </div>
     );
 };

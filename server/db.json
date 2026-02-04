@@ -11,6 +11,12 @@
       "password": "$2b$10$1A8q/9vTzMc5sfmVdn8hzuVZk41Ict4CV06Ipztb9IaL1YZWR8W0S",
       "id": "1769561085649",
       "createdAt": "2026-01-28T00:45:00.000Z"
+    },
+    {
+      "email": "andrewmaposa27@gmail.com",
+      "password": "$2b$10$B81YDknsPmNqcvVbNi/SYeV0Udw3oRAVoPNQ5TGYo7oJZYBXUMkmK",
+      "id": "1738640325000",
+      "createdAt": "2026-02-03T19:38:45.000Z"
     }
   ],
   "modules": [

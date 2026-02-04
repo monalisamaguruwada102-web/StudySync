@@ -23,6 +23,7 @@ const DeepAnalytics = React.lazy(() => import('./pages/DeepAnalytics'));
 const Settings = React.lazy(() => import('./pages/Settings'));
 const StudyGroups = React.lazy(() => import('./pages/StudyGroups'));
 const DeepFocus = React.lazy(() => import('./pages/DeepFocus'));
+const ModuleDetail = React.lazy(() => import('./pages/ModuleDetail'));
 
 // Loading Screen Component
 const LoadingScreen = () => (
