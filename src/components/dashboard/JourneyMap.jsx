@@ -51,16 +51,16 @@ const JourneyMap = () => {
     return (
         <div className="relative p-2">
             {/* The Timeline Line */}
-            <div className="absolute left-10 top-0 bottom-0 w-1 bg-slate-100 dark:bg-slate-800/50 rounded-full" />
+            <div className="absolute left-9 top-0 bottom-0 w-1 bg-slate-100 dark:bg-slate-800/50 rounded-full" />
 
-            <div className="space-y-12 relative z-10">
+            <div className="space-y-10 relative z-10">
                 {timelineData.map((item, idx) => (
                     <motion.div
                         key={item.id}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.1 }}
-                        className="flex items-start gap-8 group"
+                        className="flex items-start gap-6 group"
                     >
                         {/* Status Icon Orb */}
                         <div className="relative flex-shrink-0 mt-2">
@@ -69,7 +69,7 @@ const JourneyMap = () => {
                                 whileTap={!item.isLocked ? { scale: 0.95 } : {}}
                                 onClick={() => !item.isLocked && navigate(`/modules/${item.id}`)}
                                 className={`
-                                    w-20 h-20 rounded-3xl flex items-center justify-center shadow-2xl relative z-10
+                                    w-14 h-14 rounded-2xl flex items-center justify-center shadow-2xl relative z-10
                                     transition-all duration-500
                                     ${item.isActive
                                         ? 'bg-gradient-to-br from-primary-500 via-indigo-600 to-purple-600 ring-4 ring-primary-500/20'
@@ -80,46 +80,47 @@ const JourneyMap = () => {
                                 `}
                             >
                                 <div className="text-white">
-                                    {item.isCompleted ? <Check size={32} strokeWidth={3} /> :
-                                        item.isActive ? <Star size={32} fill="white" className="animate-pulse" /> :
-                                            <Lock size={28} className="text-slate-400 dark:text-slate-600" />}
+                                    {item.isCompleted ? <Check size={24} strokeWidth={3} /> :
+                                        item.isActive ? <Star size={24} fill="white" className="animate-pulse" /> :
+                                            <Lock size={20} className="text-slate-400 dark:text-slate-600" />}
                                 </div>
 
                                 {/* Active Pulse */}
                                 {item.isActive && (
-                                    <div className="absolute inset-0 rounded-3xl bg-primary-500/40 animate-ping -z-10" />
+                                    <div className="absolute inset-0 rounded-2xl bg-primary-500/40 animate-ping -z-10" />
                                 )}
                             </motion.button>
 
                             {/* Connector Line Fill for Completed */}
                             {idx < timelineData.length - 1 && item.isCompleted && (
-                                <div className="absolute left-1/2 -bottom-12 w-1 h-12 bg-green-500 -translate-x-1/2 -z-10" />
+                                <div className="absolute left-1/2 -bottom-10 w-1 h-10 bg-green-500 -translate-x-1/2 -z-10" />
                             )}
                         </div>
 
                         {/* Content Card */}
                         <motion.div
+                            whileHover={!item.isLocked ? { scale: 1.02, x: 5 } : {}}
                             onClick={() => !item.isLocked && navigate(`/modules/${item.id}`)}
                             className={`
-                                flex-1 p-6 rounded-[2rem] border transition-all duration-300 group-hover:shadow-xl cursor-pointer
+                                flex-1 p-4 rounded-3xl border transition-all duration-300 group-hover:shadow-xl cursor-pointer
                                 ${item.isActive
                                     ? 'bg-white dark:bg-slate-900 border-primary-500 shadow-lg shadow-primary-500/10'
                                     : 'bg-white/50 dark:bg-slate-900/30 border-slate-200 dark:border-slate-800'
                                 }
                             `}
                         >
-                            <div className="flex items-center justify-between mb-2">
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${item.isActive ? 'text-primary-500' : 'text-slate-400'}`}>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <span className={`text-[9px] font-black uppercase tracking-widest ${item.isActive ? 'text-primary-500' : 'text-slate-400'}`}>
                                     {item.isCompleted ? 'Module Mastery' : item.isActive ? 'Active Mission' : 'Upcoming Stage'}
                                 </span>
-                                <ChevronRight size={16} className={`transition-transform group-hover:translate-x-1 ${item.isActive ? 'text-primary-500' : 'text-slate-400'}`} />
+                                <ChevronRight size={14} className={`transition-transform group-hover:translate-x-1 ${item.isActive ? 'text-primary-500' : 'text-slate-400'}`} />
                             </div>
 
-                            <h3 className={`text-xl font-black mb-2 tracking-tight ${item.isLocked ? 'text-slate-400' : 'text-slate-900 dark:text-slate-100'}`}>
+                            <h3 className={`text-lg font-black mb-1 tracking-tight ${item.isLocked ? 'text-slate-400' : 'text-slate-900 dark:text-slate-100'}`}>
                                 {item.mod.name}
                             </h3>
 
-                            <div className="flex flex-wrap gap-4 mt-4">
+                            <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3">
                                 <div className="flex items-center gap-2">
                                     <div className={`p-1 rounded-md ${item.isActive ? 'bg-primary-500/10 text-primary-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
                                         <Check size={12} />
