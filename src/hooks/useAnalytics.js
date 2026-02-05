@@ -31,16 +31,19 @@ export const useAnalytics = (logs, modules, tasks) => {
         const pendingTasks = tasks.filter(task => task.status === "Pending").length;
 
         // 4. Module Progress Data
-        const moduleData = modules.map(mod => {
-            const modHours = parseFloat(mod.totalHoursStudied || 0);
+        const moduleData = modules.map((mod, index) => {
+            const modLogs = logs.filter(l => l.moduleId === mod.id);
+            const modHours = modLogs.reduce((acc, log) => acc + parseFloat(log.hours || 0), 0);
             const remaining = Math.max(0, parseFloat(mod.targetHours || 0) - modHours);
+
             return {
                 id: mod.id,
                 name: mod.name,
                 hours: modHours,
                 remaining: remaining.toFixed(1),
                 target: mod.targetHours,
-                progress: mod.targetHours > 0 ? (modHours / mod.targetHours) * 100 : 0
+                progress: mod.targetHours > 0 ? (modHours / mod.targetHours) * 100 : 0,
+                index // Useful for color assignment
             };
         });
 

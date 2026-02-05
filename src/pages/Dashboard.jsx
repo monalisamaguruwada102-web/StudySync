@@ -41,6 +41,7 @@ import {
 } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { motion } from 'framer-motion';
+import { getModuleColor } from '../utils/colors';
 
 ChartJS.register(
     CategoryScale,
@@ -99,13 +100,7 @@ const Dashboard = () => {
             {
                 label: 'Hours per Module',
                 data: stats.moduleData.map(m => m.hours),
-                backgroundColor: [
-                    '#3b82f6',
-                    '#60a5fa',
-                    '#93c5fd',
-                    '#bfdbfe',
-                    '#dbeafe',
-                ],
+                backgroundColor: stats.moduleData.map((m, i) => getModuleColor(m.id, i)),
                 borderWidth: 0,
             },
         ],

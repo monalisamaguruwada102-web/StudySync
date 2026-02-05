@@ -92,6 +92,22 @@ const createCollectionService = (collectionName) => {
                 throw new Error('Supabase not configured for cloud persistence');
             }
         },
+        getById: async (id) => {
+            if (USE_SUPABASE) {
+                const userId = getUserId();
+                if (!userId) throw new Error("User not authenticated");
+
+                const { data, error } = await supabase
+                    .from(collectionName)
+                    .select('*')
+                    .eq('id', id)
+                    .eq('user_id', userId)
+                    .single();
+
+                if (error) throw error;
+                return mapFromSupabase(data);
+            }
+        },
         update: async (id, data) => {
             if (USE_SUPABASE) {
                 const userId = getUserId();

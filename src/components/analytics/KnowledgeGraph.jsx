@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Brain, Target } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getModuleColor } from '../../utils/colors';
 
 const KnowledgeGraph = ({ modules = [], logs = [] }) => {
     const navigate = useNavigate();
@@ -13,7 +14,7 @@ const KnowledgeGraph = ({ modules = [], logs = [] }) => {
             name: m.name,
             x: 150 + Math.cos(i * (Math.PI * 2 / modules.length)) * 100,
             y: 150 + Math.sin(i * (Math.PI * 2 / modules.length)) * 100,
-            color: i % 2 === 0 ? '#6366f1' : '#ec4899',
+            color: getModuleColor(m.id, i),
             mastery: Math.min(100, (logs.filter(l => l.moduleId === m.id).length * 10))
         }));
     }, [modules, logs]);

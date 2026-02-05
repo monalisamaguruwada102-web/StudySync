@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Info, ZoomIn, ZoomOut, Expand } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { getModuleColor } from '../utils/colors';
 
 const KnowledgeGraph = () => {
     const navigate = useNavigate();
@@ -30,7 +31,7 @@ const KnowledgeGraph = () => {
                 name: mod.name,
                 type: 'module',
                 val: 20, // Size
-                color: isDarkMode ? '#6366f1' : '#4f46e5' // Primary Indigo
+                color: getModuleColor(mod.id)
             });
         });
 
@@ -187,8 +188,8 @@ const KnowledgeGraph = () => {
                             <div className="flex items-start justify-between mb-3">
                                 <div>
                                     <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${selectedNode.type === 'module' ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400' :
-                                            selectedNode.type === 'task' ? 'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400' :
-                                                'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
+                                        selectedNode.type === 'task' ? 'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400' :
+                                            'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
                                         }`}>
                                         {selectedNode.type}
                                     </span>

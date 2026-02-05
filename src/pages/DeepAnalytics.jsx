@@ -20,6 +20,7 @@ import {
     Circle,
     Boxes
 } from 'lucide-react';
+import { getModuleColor } from '../utils/colors';
 
 const DeepAnalytics = () => {
     const { data: modules } = useFirestore(moduleService.getAll);
@@ -58,7 +59,7 @@ const DeepAnalytics = () => {
             const x = 400 + 150 * Math.cos(angle);
             const y = 300 + 150 * Math.sin(angle);
 
-            nodes.push({ id: mod.id, type: 'module', label: mod.name, x, y });
+            nodes.push({ id: mod.id, type: 'module', label: mod.name, x, y, color: getModuleColor(mod.id, modIdx) });
             links.push({ source: 'user', target: mod.id });
 
             // Notes for this module
@@ -155,9 +156,9 @@ const DeepAnalytics = () => {
                                     <circle
                                         cx={node.x} cy={node.y}
                                         r={node.type === 'user' ? 25 : node.type === 'module' ? 12 : 6}
-                                        className={`${node.type === 'user' ? 'fill-primary-600 shadow-xl' :
-                                            node.type === 'module' ? 'fill-primary-400 dark:fill-primary-500' : 'fill-slate-300 dark:fill-slate-600'
-                                            }`}
+                                        fill={node.type === 'user' ? 'var(--color-primary-600)' :
+                                            node.type === 'module' ? node.color : 'var(--color-slate-300)'}
+                                        className={node.type === 'user' ? 'shadow-xl' : ''}
                                     />
                                     <text
                                         x={node.x} y={node.y + (node.type === 'user' ? 45 : node.type === 'module' ? 25 : 15)}
@@ -226,8 +227,8 @@ const DeepAnalytics = () => {
                                 </div>
                                 <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden">
                                     <div
-                                        className="h-full bg-primary-500 rounded-full transition-all duration-1000"
-                                        style={{ width: `${progress}%` }}
+                                        className="h-full rounded-full transition-all duration-1000"
+                                        style={{ width: `${progress}%`, backgroundColor: getModuleColor(mod.id) }}
                                     />
                                 </div>
                                 <div className="flex items-center gap-2 text-[10px] text-slate-400">
