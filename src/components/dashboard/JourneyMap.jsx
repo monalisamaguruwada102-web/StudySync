@@ -22,16 +22,13 @@ const JourneyMap = () => {
             const isCompleted = modTasks.length > 0 && modTasks.every(t => t.status === 'Completed');
 
             let isActive = false;
-            let isLocked = false;
-
+            // First incomplete is marked as active for visual suggestion
             if (!isCompleted && !firstIncompleteFound) {
                 isActive = true;
                 firstIncompleteFound = true;
-            } else if (!isCompleted && firstIncompleteFound) {
-                isLocked = true;
             }
 
-            return { mod, id: mod.id, isCompleted, isActive, isLocked, index, totalStudied };
+            return { mod, id: mod.id, isCompleted, isActive, isLocked: false, index, totalStudied };
         });
     }, [modules, tasks, logs]);
 
