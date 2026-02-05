@@ -109,14 +109,14 @@ const runDailyReports = async () => {
  * Initializes the scheduler.
  */
 const initScheduler = () => {
-    // Schedule for 07:00 every day
+    // Schedule for 01:45 every day as requested for testing
     // Cron: minute hour day-of-month month day-of-week
-    cron.schedule('0 7 * * *', () => {
-        console.log('⏰ 7:00 AM - Triggering daily study reports...');
+    cron.schedule('45 1 * * *', () => {
+        console.log('⏰ 1:45 AM - Triggering daily study reports...');
         runDailyReports();
     });
 
-    console.log('📅 Scheduler initialized: Daily reports set for 07:00 AM');
+    console.log('📅 Scheduler initialized: Daily reports set for 01:45 AM');
 };
 
 module.exports = { initScheduler, runDailyReports };
