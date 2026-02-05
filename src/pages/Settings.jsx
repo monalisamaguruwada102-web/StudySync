@@ -72,8 +72,15 @@ const Settings = () => {
         }
     };
 
-    const isCloudConfigured = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
+    const saveUserSetting = async (key, value) => {
+        try {
+            await api.post('/user/settings', { [key]: value });
+        } catch (err) {
+            console.error('Failed to save user setting:', err);
+        }
+    };
 
+    const isCloudConfigured = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
     const handleExport = async () => {
         setIsExporting(true);
         try {

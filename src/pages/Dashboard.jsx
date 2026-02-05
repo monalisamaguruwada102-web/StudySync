@@ -24,8 +24,10 @@ import {
     Target,
     Brain,
     HelpCircle,
-    Map
+    Map,
+    Cloud
 } from 'lucide-react';
+import api from '../services/api';
 import { useTheme } from '../context/ThemeContext';
 import {
     Chart as ChartJS,
