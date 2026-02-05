@@ -22,9 +22,11 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 import ThemeSelector from '../components/ThemeSelector';
 
 const Settings = () => {
+    const { user } = useAuth();
     const { isDarkMode, toggleDarkMode, theme, toggleTheme } = useTheme();
     const [isExporting, setIsExporting] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
