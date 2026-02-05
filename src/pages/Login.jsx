@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../services/authService';
+import { login, register } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
-import { GraduationCap, Lock, ArrowRight, User, Mail, Monitor, Smartphone, Download, HelpCircle } from 'lucide-react';
+import { GraduationCap, Lock, ArrowRight, User, Mail, Monitor, Smartphone, Download, HelpCircle, UserPlus, LogIn } from 'lucide-react';
 
 const Login = () => {
+    const [isRegisterMode, setIsRegisterMode] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -17,14 +19,23 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+
+        if (isRegisterMode && password !== confirmPassword) {
+            return setError("Passwords do not match");
+        }
+
         setLoading(true);
 
         try {
-            await login(email, password);
+            if (isRegisterMode) {
+                await register(email, password);
+            } else {
+                await login(email, password);
+            }
             await refreshAuth();
             navigate('/');
         } catch (err) {
-            setError(err.response?.data?.error || 'Failed to log in. Please check your credentials.');
+            setError(err.response?.data?.error || `Failed to ${isRegisterMode ? 'register' : 'log in'}. Please check your credentials.`);
             setLoading(false);
         }
     };
@@ -38,6 +49,23 @@ const Login = () => {
                     </div>
                     <h1 className="text-4xl font-bold text-white mb-2 tracking-tight drop-shadow-md">StudySync</h1>
                     <p className="text-slate-200 text-lg font-light">Your Personal Study Companion</p>
+                </div>
+
+                <div className="flex gap-2 mb-4 p-1 bg-white/5 backdrop-blur-sm rounded-2xl">
+                    <button
+                        onClick={() => { setIsRegisterMode(false); setError(''); }}
+                        className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${!isRegisterMode ? 'bg-white text-primary-600 shadow-xl' : 'text-slate-300 hover:text-white'}`}
+                    >
+                        <LogIn size={16} />
+                        Sign In
+                    </button>
+                    <button
+                        onClick={() => { setIsRegisterMode(true); setError(''); }}
+                        className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${isRegisterMode ? 'bg-white text-primary-600 shadow-xl' : 'text-slate-300 hover:text-white'}`}
+                    >
+                        <UserPlus size={16} />
+                        Register
+                    </button>
                 </div>
 
                 <Card className="!p-8 shadow-2xl border border-white/20 bg-white/10 backdrop-blur-xl rounded-3xl text-white">
@@ -73,6 +101,20 @@ const Login = () => {
                                     required
                                 />
                             </div>
+
+                            {isRegisterMode && (
+                                <div className="relative group animate-in slide-in-from-top-2 duration-300">
+                                    <Lock className="absolute left-4 top-[14px] text-slate-300 group-focus-within:text-white transition-colors" size={20} />
+                                    <input
+                                        type="password"
+                                        placeholder="Confirm Password"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-400/50 focus:border-transparent transition-all hover:bg-white/10"
+                                        required
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         <div className="space-y-3">
@@ -82,13 +124,10 @@ const Login = () => {
                                 disabled={loading}
                             >
                                 <span className="flex items-center justify-center gap-2">
-                                    {loading ? 'Processing...' : 'Continue'}
+                                    {loading ? 'Processing...' : isRegisterMode ? 'Create Account' : 'Sign In'}
                                     {!loading && <ArrowRight size={18} />}
                                 </span>
                             </Button>
-                            <p className="text-center text-xs text-slate-400 mt-4">
-                                New users will be automatically registered.
-                            </p>
                         </div>
                     </form>
                 </Card>

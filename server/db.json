@@ -17,6 +17,15 @@
       "password": "$2b$10$B81YDknsPmNqcvVbNi/SYeV0Udw3oRAVoPNQ5TGYo7oJZYBXUMkmK",
       "id": "1738640325000",
       "createdAt": "2026-02-03T19:38:45.000Z"
+    },
+    {
+      "email": "test_verified_ps@example.com",
+      "password": "$2b$10$wi/zg/EITv6YqLcacJhX7.glCgm3c.EAeMzkhHOrPz9T78vQX.fy.",
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "id": "1770285120974",
+      "createdAt": "2026-02-05T09:52:00.975Z"
     }
   ],
   "modules": [

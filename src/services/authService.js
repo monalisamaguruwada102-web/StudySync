@@ -8,6 +8,14 @@ export const login = async (email, password) => {
     return user;
 };
 
+export const register = async (email, password) => {
+    const response = await api.post('/auth/register', { email, password });
+    const { token, user } = response.data;
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+    return user;
+};
+
 export const logout = async () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');

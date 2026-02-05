@@ -134,34 +134,43 @@ const authenticateToken = (req, res, next) => {
 
 // --- AUTH ROUTES ---
 
+app.post('/api/auth/register', async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    const existingUser = db.find('users', u => u.email === email);
+    if (existingUser) {
+        return res.status(400).json({ error: 'User already exists with this email' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = db.insert('users', {
+        email,
+        password: hashedPassword,
+        xp: 0,
+        level: 1,
+        badges: []
+    });
+
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
+    const { password: _, ...userWithoutPassword } = user;
+    res.status(201).json({ token, user: userWithoutPassword });
+});
+
 app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
 
-    // Whitelist check removed for public access
-    // const allowedUsers = ['joshuamujakari15@gmail.com', 'monalisamaguruwada@gmail.com'];
-    // if (!allowedUsers.includes(email)) {
-    //     return res.status(403).json({ error: 'Access denied. Please contact system administrator.' });
-    // }
-
-    let user = db.find('users', u => u.email === email);
-
-    const settings = db.getSettings();
+    const user = db.find('users', u => u.email === email);
 
     if (!user) {
-        // If no owner set, this is the first user
-        if (!settings.owner) {
-            const hashedPassword = await bcrypt.hash(password, 10);
-            user = db.insert('users', { email, password: hashedPassword });
-            db.updateSettings({ owner: { uid: user.id, email: user.email } });
-        } else {
-            // Allow new users to sign up even if owner exists (Multi-user capability)
-            const hashedPassword = await bcrypt.hash(password, 10);
-            user = db.insert('users', { email, password: hashedPassword });
-        }
-    } else {
-        const validPassword = await bcrypt.compare(password, user.password);
-        if (!validPassword) return res.status(401).json({ error: 'Invalid credentials' });
+        return res.status(401).json({ error: 'Invalid credentials' });
     }
+
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) return res.status(401).json({ error: 'Invalid credentials' });
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
     const { password: _, ...userWithoutPassword } = user;
