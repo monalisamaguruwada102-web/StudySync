@@ -78,6 +78,33 @@ const Dashboard = () => {
     const { data: logs } = useFirestore(studyLogService.getAll);
     const { data: tasks } = useFirestore(taskService.getAll);
     const [isHelpOpen, setIsHelpOpen] = React.useState(false);
+    const [cloudEvents, setCloudEvents] = React.useState([]);
+    const [isSyncingCloud, setIsSyncingCloud] = React.useState(false);
+
+    const fetchCloudEvents = async () => {
+        try {
+            const settingsRes = await api.get('/user/settings');
+            const url = settingsRes.data.calendar_sync_url;
+            if (!url) return;
+
+            setIsSyncingCloud(true);
+            const response = await api.post('/sync/calendar', { url });
+            // Get only upcoming events, limit to 4
+            const upcoming = response.data
+                .filter(e => new Date(e.start) >= new Date())
+                .sort((a, b) => new Date(a.start) - new Date(b.start))
+                .slice(0, 4);
+            setCloudEvents(upcoming);
+        } catch (error) {
+            console.error('Failed to fetch cloud events:', error);
+        } finally {
+            setIsSyncingCloud(false);
+        }
+    };
+
+    React.useEffect(() => {
+        fetchCloudEvents();
+    }, []);
 
     const stats = useAnalytics(logs, modules, tasks);
     const league = useMemo(() => getLeague(user?.level || 1), [user?.level]);
@@ -246,6 +273,37 @@ const Dashboard = () => {
                             )}
                         </div>
                     </Card>
+
+                    {/* Cloud Schedule Card */}
+                    {cloudEvents.length > 0 && (
+                        <Card
+                            title="Cloud Schedule"
+                            HeaderAction={<Cloud size={18} className={`text-blue-500 ${isSyncingCloud ? 'animate-pulse' : ''}`} />}
+                        >
+                            <div className="space-y-3">
+                                {cloudEvents.map(event => (
+                                    <div key={event.id} className="p-3 bg-blue-500/5 border border-blue-500/10 rounded-2xl hover:bg-blue-500/10 transition-colors cursor-default">
+                                        <div className="flex items-start justify-between gap-2">
+                                            <div className="min-w-0">
+                                                <h4 className="text-[11px] font-black text-slate-800 dark:text-slate-100 truncate uppercase tracking-wider">{event.title}</h4>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    <span className="text-[9px] font-bold text-blue-500 uppercase tracking-widest">
+                                                        {new Date(event.start).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                                                    </span>
+                                                    <span className="text-[9px] font-medium text-slate-400">
+                                                        {new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shrink-0">
+                                                <Calendar size={12} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </Card>
+                    )}
                 </div>
             </div>
 

@@ -24,11 +24,13 @@ const Tasks = () => {
 
     const handleNotionImport = async () => {
         let token = null;
+        let databaseId = null;
         try {
             const res = await api.get('/user/settings');
             token = res.data.notion_api_token;
+            databaseId = res.data.notion_database_id;
         } catch (e) {
-            console.error("Failed to fetch Notion token from cloud");
+            console.error("Failed to fetch Notion settings from cloud");
         }
 
         if (!token) {
@@ -38,9 +40,9 @@ const Tasks = () => {
 
         setIsImporting(true);
         try {
-            await api.post('/sync/notion-tasks', { token });
+            const response = await api.post('/sync/notion-tasks', { token, databaseId });
             await refresh();
-            alert('Notion tasks imported successfully!');
+            alert(response.data.message || 'Notion tasks imported successfully!');
         } catch (error) {
             console.error('Notion import error:', error);
             alert('Failed to import tasks from Notion.');

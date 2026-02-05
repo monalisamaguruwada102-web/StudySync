@@ -343,6 +343,39 @@ app.post('/api/admin/import', authenticateToken, jsonUpload.single('file'), asyn
 
 // --- SYNC ROUTES ---
 
+// Test Calendar Connection
+app.post('/api/sync/test-calendar', authenticateToken, async (req, res) => {
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ error: 'Calendar URL is required' });
+    try {
+        await ical.fromURL(url);
+        res.json({ message: 'Success! Calendar connection established.' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to connect: ' + error.message });
+    }
+});
+
+// Test Notion Connection
+app.post('/api/sync/test-notion', authenticateToken, async (req, res) => {
+    const { token, databaseId } = req.body;
+    if (!token) return res.status(400).json({ error: 'Notion token is required' });
+    try {
+        const endpoint = databaseId
+            ? `https://api.notion.com/v1/databases/${databaseId}`
+            : 'https://api.notion.com/v1/search';
+
+        await axios.get(endpoint, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Notion-Version': '2022-06-28'
+            }
+        });
+        res.json({ message: 'Success! Notion connection established.' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to connect: ' + (error.response?.data?.message || error.message) });
+    }
+});
+
 // Google Calendar iCal Sync
 app.post('/api/sync/calendar', authenticateToken, async (req, res) => {
     const { url } = req.body;
@@ -383,28 +416,49 @@ app.post('/api/sync/notion-tasks', authenticateToken, async (req, res) => {
     if (!token) return res.status(400).json({ error: 'Notion token is required' });
 
     try {
-        // Fetch tasks from Notion (using Search or Query Database)
-        // For simplicity, we search for 'Pages' which are often used as tasks
-        const response = await axios.post('https://api.notion.com/v1/search', {
-            filter: { property: 'object', value: 'page' },
-            sort: { direction: 'descending', timestamp: 'last_edited_time' }
-        }, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Notion-Version': '2022-06-28',
-                'Content-Type': 'application/json'
-            }
-        });
+        let items = [];
+        if (databaseId) {
+            // Query specific database
+            const response = await axios.post(`https://api.notion.com/v1/databases/${databaseId}/query`, {}, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Notion-Version': '2022-06-28',
+                    'Content-Type': 'application/json'
+                }
+            });
+            items = response.data.results;
+        } else {
+            // Search all pages
+            const response = await axios.post('https://api.notion.com/v1/search', {
+                filter: { property: 'object', value: 'page' },
+                sort: { direction: 'descending', timestamp: 'last_edited_time' }
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Notion-Version': '2022-06-28',
+                    'Content-Type': 'application/json'
+                }
+            });
+            items = response.data.results;
+        }
 
-        const tasks = response.data.results.map(page => {
+        const tasks = items.map(page => {
             const titleProperty = Object.values(page.properties).find(p => p.type === 'title');
-            const title = titleProperty ? titleProperty.title[0]?.plain_text : 'Untitled Notion Task';
+            const title = titleProperty?.title[0]?.plain_text || 'Untitled Notion Task';
+
+            // Try to find a date property
+            const dateProperty = Object.values(page.properties).find(p => p.type === 'date');
+            const deadline = dateProperty?.date?.start || page.last_edited_time;
+
+            // Try to find status
+            const statusProperty = Object.values(page.properties).find(p => p.type === 'status' || p.type === 'select');
+            const status = statusProperty?.status?.name || statusProperty?.select?.name || 'In Progress';
 
             return {
                 title: title,
-                status: 'In Progress',
+                status: status === 'Done' ? 'Completed' : 'Pending',
                 priority: 'Medium',
-                deadline: page.last_edited_time,
+                dueDate: deadline ? new Date(deadline).toISOString().split('T')[0] : null,
                 description: `Imported from Notion: ${page.url}`,
                 userId: req.user.id,
                 source: 'Notion'
@@ -414,14 +468,19 @@ app.post('/api/sync/notion-tasks', authenticateToken, async (req, res) => {
         // Insert into database
         const importedTasks = [];
         for (const task of tasks) {
-            const saved = db.insert('tasks', task);
-            importedTasks.push(saved);
+            // Check for duplicates by title and source
+            const existing = db.get('tasks').find(t => t.title === task.title && t.source === 'Notion' && t.userId === req.user.id);
+            if (!existing) {
+                const saved = db.insert('tasks', task);
+                importedTasks.push(saved);
+            }
         }
 
-        res.json({ message: `Successfully imported ${importedTasks.length} tasks`, tasks: importedTasks });
+        res.json({ message: `Successfully imported ${importedTasks.length} new tasks`, tasks: importedTasks });
     } catch (error) {
         console.error('Notion sync error:', error.response?.data || error.message);
-        res.status(500).json({ error: 'Failed to import from Notion: ' + (error.response?.data?.message || error.message) });
+        const errorMsg = error.response?.data?.message || error.message;
+        res.status(500).json({ error: 'Failed to import from Notion: ' + errorMsg });
     }
 });
 

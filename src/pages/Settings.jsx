@@ -38,6 +38,9 @@ const Settings = () => {
     const [activeTab, setActiveTab] = useState('general'); // 'general', 'appearance', 'integrations', 'system'
     const [calendarUrl, setCalendarUrl] = useState('');
     const [notionToken, setNotionToken] = useState('');
+    const [notionDatabaseId, setNotionDatabaseId] = useState('');
+    const [autoSyncCalendar, setAutoSyncCalendar] = useState(false);
+    const [testStatus, setTestStatus] = useState({ type: '', message: '', loading: false });
 
     React.useEffect(() => {
         const fetchSettings = async () => {
@@ -45,6 +48,8 @@ const Settings = () => {
                 const response = await api.get('/user/settings');
                 setCalendarUrl(response.data.calendar_sync_url || '');
                 setNotionToken(response.data.notion_api_token || '');
+                setNotionDatabaseId(response.data.notion_database_id || '');
+                setAutoSyncCalendar(response.data.auto_sync_calendar || false);
             } catch (err) {
                 console.error('Failed to fetch user settings:', err);
             }
@@ -52,11 +57,18 @@ const Settings = () => {
         fetchSettings();
     }, []);
 
-    const saveUserSetting = async (key, value) => {
+    const testConnection = async (type) => {
+        setTestStatus({ type, message: 'Testing...', loading: true });
         try {
-            await api.post('/user/settings', { [key]: value });
+            const endpoint = type === 'calendar' ? '/sync/test-calendar' : '/sync/test-notion';
+            const payload = type === 'calendar'
+                ? { url: calendarUrl }
+                : { token: notionToken, databaseId: notionDatabaseId };
+
+            const res = await api.post(endpoint, payload);
+            setTestStatus({ type, message: res.data.message, loading: false });
         } catch (err) {
-            console.error('Failed to save user setting:', err);
+            setTestStatus({ type, message: err.response?.data?.error || 'Connection failed', loading: false });
         }
     };
 
@@ -228,6 +240,34 @@ const Settings = () => {
                                                     }}
                                                     className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-primary-500/20"
                                                 />
+                                                <button
+                                                    onClick={() => testConnection('calendar')}
+                                                    disabled={testStatus.loading || !calendarUrl}
+                                                    className="px-4 py-2 bg-primary-500/10 text-primary-500 hover:bg-primary-500 hover:text-white rounded-xl text-xs font-black transition-all disabled:opacity-50"
+                                                >
+                                                    {testStatus.loading && testStatus.type === 'calendar' ? '...' : 'TEST'}
+                                                </button>
+                                            </div>
+                                            {testStatus.type === 'calendar' && (
+                                                <p className={`text-[10px] font-bold ${testStatus.message.includes('Success') ? 'text-green-500' : 'text-red-500'}`}>
+                                                    {testStatus.message}
+                                                </p>
+                                            )}
+                                            <div className="flex items-center gap-2 mt-2">
+                                                <input
+                                                    type="checkbox"
+                                                    id="autoSync"
+                                                    checked={autoSyncCalendar}
+                                                    onChange={(e) => {
+                                                        const val = e.target.checked;
+                                                        setAutoSyncCalendar(val);
+                                                        saveUserSetting('auto_sync_calendar', val);
+                                                    }}
+                                                    className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                                                />
+                                                <label htmlFor="autoSync" className="text-xs text-slate-500 font-bold uppercase tracking-widest cursor-pointer">
+                                                    Auto-sync on Startup
+                                                </label>
                                             </div>
                                             <p className="text-[10px] text-slate-400 font-medium">
                                                 Copy the "Secret address in iCal format" from your Google Calendar settings.
@@ -250,7 +290,7 @@ const Settings = () => {
                                                     {notionToken ? 'Configured' : 'Not Connected'}
                                                 </div>
                                             </div>
-                                            <div className="flex gap-2">
+                                            <div className="space-y-2">
                                                 <input
                                                     type="password"
                                                     placeholder="Enter Notion API Token"
@@ -260,9 +300,34 @@ const Settings = () => {
                                                         setNotionToken(val);
                                                         saveUserSetting('notion_api_token', val);
                                                     }}
-                                                    className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-primary-500/20"
+                                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-primary-500/20"
                                                 />
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Enter Database ID (Optional - imports all items if empty)"
+                                                        value={notionDatabaseId}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            setNotionDatabaseId(val);
+                                                            saveUserSetting('notion_database_id', val);
+                                                        }}
+                                                        className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-primary-500/20"
+                                                    />
+                                                    <button
+                                                        onClick={() => testConnection('notion')}
+                                                        disabled={testStatus.loading || !notionToken}
+                                                        className="px-4 py-2 bg-slate-900 dark:bg-slate-700 text-white hover:bg-black rounded-xl text-xs font-black transition-all disabled:opacity-50"
+                                                    >
+                                                        {testStatus.loading && testStatus.type === 'notion' ? '...' : 'TEST'}
+                                                    </button>
+                                                </div>
                                             </div>
+                                            {testStatus.type === 'notion' && (
+                                                <p className={`text-[10px] font-bold ${testStatus.message.includes('Success') ? 'text-green-500' : 'text-red-500'}`}>
+                                                    {testStatus.message}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
                                 </Card>
