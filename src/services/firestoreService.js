@@ -235,32 +235,10 @@ export const studyLogService = {
             await updateUserXP(xp);
             // Trigger Sidebar XP Update
             window.dispatchEvent(new CustomEvent('study-sync-auth'));
-
-            // Persist Total Hours to Module
-            if (data.moduleId && data.moduleId !== 'general') {
-                const mod = await moduleService.getById(data.moduleId);
-                if (mod) {
-                    const newTotal = parseFloat(mod.totalHoursStudied || 0) + parseFloat(data.hours);
-                    await moduleService.update(mod.id, { totalHoursStudied: newTotal });
-                }
-            }
         }
         return result;
     },
-    delete: async (id) => {
-        // Fetch log first to know what to subtract
-        const log = await studyLogService.getById(id);
-        const result = await createCollectionService("study_logs").delete(id);
-
-        if (log && log.hours && log.moduleId && log.moduleId !== 'general') {
-            const mod = await moduleService.getById(log.moduleId);
-            if (mod) {
-                const newTotal = Math.max(0, parseFloat(mod.totalHoursStudied || 0) - parseFloat(log.hours));
-                await moduleService.update(mod.id, { totalHoursStudied: newTotal });
-            }
-        }
-        return result;
-    }
+    const result = await createCollectionService("study_logs").delete(id);
 };
 
 export const taskService = {
