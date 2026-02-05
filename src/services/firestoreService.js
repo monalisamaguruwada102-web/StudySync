@@ -60,22 +60,16 @@ const mapToSupabase = (item) => {
     return newItem;
 };
 
-const getUserId = () => {
-    try {
-        const userStr = localStorage.getItem('user');
-        if (!userStr) return null;
-        const user = JSON.parse(userStr);
-        return user?.id || null;
-    } catch (e) {
-        return null;
-    }
+const getUserId = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user?.id || null;
 };
 
 const createCollectionService = (collectionName) => {
     return {
         add: async (data) => {
             if (USE_SUPABASE) {
-                const userId = getUserId();
+                const userId = await getUserId();
                 if (!userId) throw new Error("User not authenticated");
 
                 const payload = { ...mapToSupabase(data), user_id: userId };
@@ -96,7 +90,7 @@ const createCollectionService = (collectionName) => {
         },
         getById: async (id) => {
             if (USE_SUPABASE) {
-                const userId = getUserId();
+                const userId = await getUserId();
                 if (!userId) throw new Error("User not authenticated");
 
                 const { data, error } = await supabase
@@ -112,7 +106,7 @@ const createCollectionService = (collectionName) => {
         },
         update: async (id, data) => {
             if (USE_SUPABASE) {
-                const userId = getUserId();
+                const userId = await getUserId();
                 if (!userId) throw new Error("User not authenticated");
 
                 const { data: result, error } = await supabase
@@ -131,7 +125,7 @@ const createCollectionService = (collectionName) => {
         },
         delete: async (id) => {
             if (USE_SUPABASE) {
-                const userId = getUserId();
+                const userId = await getUserId();
                 if (!userId) throw new Error("User not authenticated");
 
                 const { error } = await supabase
@@ -148,7 +142,7 @@ const createCollectionService = (collectionName) => {
         getAll: async (callback) => {
             if (USE_SUPABASE) {
                 try {
-                    const userId = getUserId();
+                    const userId = await getUserId();
                     if (!userId) {
                         callback([]);
                         return () => { };
@@ -197,7 +191,7 @@ const createCollectionService = (collectionName) => {
         getByField: async (fieldName, value, callback) => {
             if (USE_SUPABASE) {
                 try {
-                    const userId = getUserId();
+                    const userId = await getUserId();
                     if (!userId) {
                         callback([]);
                         return () => { };
@@ -288,7 +282,7 @@ export const pomodoroService = {
 
 export const getAnalyticsData = async () => {
     if (USE_SUPABASE) {
-        const userId = getUserId();
+        const userId = await getUserId();
         if (!userId) return { logs: [], modules: [] };
 
         const [logsRes, modulesRes] = await Promise.all([

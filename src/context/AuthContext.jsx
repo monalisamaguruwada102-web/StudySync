@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
-import { getCurrentUser, isUserAuthorized } from "../services/authService";
+import { getCurrentUser } from "../services/authService";
+import { supabase } from "../services/supabase";
 
 const AuthContext = createContext();
 
@@ -8,40 +9,43 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [authorized, setAuthorized] = useState(false);
 
     const checkAuth = async () => {
-        setLoading(true);
         const currentUser = await getCurrentUser();
-
-        if (currentUser) {
-            setUser(currentUser);
-            const isAuth = await isUserAuthorized(currentUser);
-            setAuthorized(isAuth);
-        } else {
-            setUser(null);
-            setAuthorized(false);
-        }
+        setUser(currentUser);
         setLoading(false);
     };
 
     useEffect(() => {
         checkAuth();
 
+        // Supabase Auth State Listener
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                checkAuth();
+            } else if (event === 'SIGNED_OUT') {
+                setUser(null);
+            }
+        });
+
         const handleAuthUpdate = () => {
             checkAuth();
         };
 
         window.addEventListener('study-sync-auth', handleAuthUpdate);
-        return () => window.removeEventListener('study-sync-auth', handleAuthUpdate);
+
+        return () => {
+            subscription.unsubscribe();
+            window.removeEventListener('study-sync-auth', handleAuthUpdate);
+        };
     }, []);
 
     const value = useMemo(() => ({
         user,
-        authorized,
+        authorized: !!user,
         loading,
         refreshAuth: checkAuth
-    }), [user, authorized, loading]);
+    }), [user, loading]);
 
     return (
         <AuthContext.Provider value={value}>
