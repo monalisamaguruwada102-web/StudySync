@@ -231,10 +231,11 @@ const Dashboard = () => {
                     title="My Learning Journey"
                     className="lg:col-span-2 min-h-[400px]"
                     HeaderAction={
-                        <div className="flex items-center gap-2 text-[10px] font-bold text-primary-500 bg-primary-50 dark:bg-primary-900/20 px-2 py-1 rounded-lg uppercase tracking-wider">
-                            <Map size={14} />
-                            <span>Campaign Mode</span>
-                        </div>
+                        <button className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-br from-primary-500 to-indigo-600 hover:from-primary-600 hover:to-indigo-700 text-white rounded-xl shadow-lg shadow-primary-500/20 transition-all active:scale-95 group overflow-hidden relative">
+                            <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <Map size={14} className="relative z-10" />
+                            <span className="text-[10px] font-black uppercase tracking-widest relative z-10">View Map</span>
+                        </button>
                     }
                 >
                     <JourneyMap />

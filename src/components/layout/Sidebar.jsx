@@ -112,9 +112,11 @@ const Sidebar = ({ isOpen, onClose }) => {
                 <div className="flex-1 overflow-y-auto min-h-0 px-4 pb-4 space-y-6 relative z-10 custom-scrollbar lg:hidden">
                     {navGroups.map((group, groupIndex) => (
                         <div key={group.title}>
-                            <h3 className="px-3 mb-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                                {group.title}
-                            </h3>
+                            <div className="px-1 mb-4">
+                                <h3 className="inline-flex items-center px-3 py-1 bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-md rounded-full text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] border border-slate-200/30 dark:border-white/5 shadow-sm">
+                                    {group.title}
+                                </h3>
+                            </div>
                             <div className="space-y-1">
                                 {group.items.map((item) => (
                                     <NavLink
@@ -122,25 +124,32 @@ const Sidebar = ({ isOpen, onClose }) => {
                                         to={item.path}
                                         onClick={() => onClose && onClose()}
                                         className={({ isActive }) => `
-                                            flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300
+                                            flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-500
                                             group relative overflow-hidden
                                             ${isActive
-                                                ? 'bg-gradient-to-r from-primary-500/10 to-purple-500/10 dark:from-primary-500/20 dark:to-purple-500/20 text-primary-600 dark:text-primary-400 font-bold shadow-sm shadow-primary-500/10'
-                                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-slate-200 font-medium'
+                                                ? 'bg-gradient-to-br from-white to-slate-50 dark:from-slate-800/40 dark:to-slate-900/40 text-primary-600 dark:text-primary-400 font-black shadow-xl shadow-primary-500/10 border border-primary-500/20'
+                                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 font-bold hover:bg-white/50 dark:hover:bg-white/5 border border-transparent'
                                             }
                                         `}
                                     >
                                         {({ isActive }) => (
                                             <>
+                                                {/* Premium hover glow */}
+                                                <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                                 {/* Icon */}
                                                 <div className={`
-                                                    relative z-10 transition-transform duration-300 group-hover:scale-110
-                                                    ${isActive ? `text-transparent bg-gradient-to-r ${item.gradient} bg-clip-text` : 'opacity-70 group-hover:opacity-100'}
+                                                    relative z-10 p-2 rounded-xl transition-all duration-500
+                                                    ${isActive
+                                                        ? `bg-gradient-to-br ${item.gradient} text-white shadow-lg shadow-primary-500/30 scale-110`
+                                                        : 'bg-slate-100/50 dark:bg-slate-800/50 group-hover:scale-110'
+                                                    }
                                                 `}>
-                                                    <item.icon size={18} />
+                                                    <item.icon size={16} strokeWidth={isActive ? 2.5 : 2} />
                                                 </div>
 
-                                                <span className="relative z-10 text-sm tracking-tight capitalize">{item.label}</span>
+                                                <span className={`relative z-10 text-xs tracking-wide uppercase font-black transition-colors duration-300 ${isActive ? 'text-slate-900 dark:text-white' : 'group-hover:text-slate-900 dark:group-hover:text-white'}`}>
+                                                    {item.label}
+                                                </span>
 
                                                 {/* Active Indicator */}
                                                 {isActive && (
