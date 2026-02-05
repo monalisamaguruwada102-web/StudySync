@@ -15,23 +15,32 @@ const Modules = () => {
     const { data: logs } = useFirestore(studyLogService.getAll);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentModule, setCurrentModule] = useState(null);
-    const [formData, setFormData] = useState({ name: '', description: '', targetHours: '' });
+    const [formData, setFormData] = useState({ name: '', description: '', targetHours: '', totalHoursStudied: '' });
     const [isGenerating, setIsGenerating] = useState(null); // moduleId being processed
 
     const handleOpenModal = (mod = null) => {
         if (mod) {
             setCurrentModule(mod);
-            setFormData({ name: mod.name, description: mod.description, targetHours: mod.targetHours });
+            setFormData({
+                name: mod.name,
+                description: mod.description,
+                targetHours: mod.targetHours,
+                totalHoursStudied: mod.totalHoursStudied || 0
+            });
         } else {
             setCurrentModule(null);
-            setFormData({ name: '', description: '', targetHours: '' });
+            setFormData({ name: '', description: '', targetHours: '', totalHoursStudied: '' });
         }
         setIsModalOpen(true);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const data = { ...formData, targetHours: parseFloat(formData.targetHours) || 0 };
+        const data = {
+            ...formData,
+            targetHours: parseFloat(formData.targetHours) || 0,
+            totalHoursStudied: parseFloat(formData.totalHoursStudied) || 0
+        };
 
         if (currentModule) {
             await moduleService.update(currentModule.id, data);
@@ -199,6 +208,13 @@ const Modules = () => {
                         value={formData.targetHours}
                         onChange={(e) => setFormData({ ...formData, targetHours: e.target.value })}
                         required
+                    />
+                    <Input
+                        label="Current Studied Hours (Legacy/Existing)"
+                        type="number"
+                        placeholder="e.g. 10"
+                        value={formData.totalHoursStudied}
+                        onChange={(e) => setFormData({ ...formData, totalHoursStudied: e.target.value })}
                     />
                 </form>
             </Modal>

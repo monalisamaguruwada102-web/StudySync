@@ -16,6 +16,7 @@ const mapFromSupabase = (item) => {
     if (newItem.pdf_path) { newItem.pdfPath = newItem.pdf_path; delete newItem.pdf_path; }
     if (newItem.audio_path) { newItem.audioPath = newItem.audio_path; delete newItem.audio_path; }
     if (newItem.audio_episodes) { newItem.audioEpisodes = newItem.audio_episodes; delete newItem.audio_episodes; }
+    if (newItem.total_hours_studied) { newItem.totalHoursStudied = newItem.total_hours_studied; delete newItem.total_hours_studied; }
     if (newItem.due_date) { newItem.dueDate = newItem.due_date; delete newItem.due_date; }
     if (newItem.start_time) { newItem.startTime = newItem.start_time; delete newItem.start_time; }
     if (newItem.end_time) { newItem.endTime = newItem.end_time; delete newItem.end_time; }
@@ -42,6 +43,7 @@ const mapToSupabase = (item) => {
     if ('pdfPath' in newItem) { newItem.pdf_path = newItem.pdfPath; delete newItem.pdfPath; }
     if ('audioPath' in newItem) { newItem.audio_path = newItem.audioPath; delete newItem.audioPath; }
     if ('audioEpisodes' in newItem) { newItem.audio_episodes = newItem.audioEpisodes; delete newItem.audioEpisodes; }
+    if ('totalHoursStudied' in newItem) { newItem.total_hours_studied = newItem.totalHoursStudied; delete newItem.totalHoursStudied; }
     if ('dueDate' in newItem) { newItem.due_date = newItem.dueDate; delete newItem.dueDate; }
     if ('startTime' in newItem) { newItem.start_time = newItem.startTime; delete newItem.startTime; }
     if ('endTime' in newItem) { newItem.end_time = newItem.endTime; delete newItem.endTime; }
