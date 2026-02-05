@@ -63,12 +63,23 @@ export const useAnalytics = (logs, modules, tasks) => {
         const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const weeklyTrend = days.map((day, index) => {
             const dayLogs = logs.filter(log => {
-                const logDate = log.date ? new Date(log.date) : null;
+                const logDate = log.date ? new Date(log.date) : (log.createdAt ? new Date(log.createdAt) : null);
                 return logDate && logDate.getDay() === index && isWithinInterval(logDate, { start: weekStart, end: weekEnd });
             });
+
+            // Breakdown by module
+            const moduleHours = {};
+            modules.forEach(m => {
+                const hours = dayLogs
+                    .filter(l => l.moduleId === m.id)
+                    .reduce((acc, l) => acc + parseFloat(l.hours || 0), 0);
+                if (hours > 0) moduleHours[m.id] = hours;
+            });
+
             return {
                 day,
-                hours: dayLogs.reduce((acc, log) => acc + parseFloat(log.hours || 0), 0)
+                hours: dayLogs.reduce((acc, log) => acc + parseFloat(log.hours || 0), 0),
+                moduleHours
             };
         });
 

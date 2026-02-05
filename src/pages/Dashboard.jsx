@@ -113,14 +113,12 @@ const Dashboard = () => {
 
     const barData = {
         labels: stats.weeklyTrend.map(d => d.day),
-        datasets: [
-            {
-                label: 'Study Hours',
-                data: stats.weeklyTrend.map(d => d.hours),
-                backgroundColor: '#3b82f6',
-                borderRadius: 8,
-            },
-        ],
+        datasets: modules.map((mod, i) => ({
+            label: mod.name,
+            data: stats.weeklyTrend.map(d => d.moduleHours[mod.id] || 0),
+            backgroundColor: getModuleColor(mod.id, i),
+            borderRadius: 4,
+        })),
     };
 
     const doughnutData = {
@@ -329,11 +327,13 @@ const Dashboard = () => {
                                 },
                                 scales: {
                                     y: {
+                                        stacked: true,
                                         beginAtZero: true,
                                         grid: { color: isDarkMode ? '#334155' : '#f1f5f9' },
                                         ticks: { color: isDarkMode ? '#94a3b8' : '#64748b' }
                                     },
                                     x: {
+                                        stacked: true,
                                         grid: { display: false },
                                         ticks: { color: isDarkMode ? '#94a3b8' : '#64748b' }
                                     }
