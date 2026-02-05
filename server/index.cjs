@@ -9,7 +9,6 @@ const multer = require('multer');
 const ical = require('node-ical');
 const axios = require('axios');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const scheduler = require('./scheduler.cjs');
 require('dotenv').config();
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -609,29 +608,10 @@ app.use((req, res) => {
     res.status(404).send('Not Found');
 });
 
-// --- ADMIN TEST EMAIL ---
-app.post('/api/admin/test-email', authenticateToken, async (req, res) => {
-    try {
-        console.log(`🧪 Triggering test email for ${req.user.email}...`);
-        // We use the same runDailyReports logic but filtered for just this user
-        // Or for simplicity, we just trigger the full process for now if it's a small app
-        // But better to just run it for the requester.
-
-        // For testing purposes, we'll just run the scheduler's runDailyReports function
-        // which will process all users. In a production app, we'd filter.
-        await scheduler.runDailyReports();
-
-        res.json({ message: 'Test email process triggered. Check server logs for details.' });
-    } catch (error) {
-        console.error('Test email error:', error);
-        res.status(500).json({ error: 'Failed to trigger test email: ' + error.message });
-    }
-});
 
 // START SERVER
 const server = app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
-    scheduler.initScheduler();
 });
 
 // Graceful shutdown handling
