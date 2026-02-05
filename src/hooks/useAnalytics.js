@@ -32,8 +32,7 @@ export const useAnalytics = (logs, modules, tasks) => {
 
         // 4. Module Progress Data
         const moduleData = modules.map((mod, index) => {
-            const modLogs = logs.filter(l => l.moduleId === mod.id);
-            const modHours = modLogs.reduce((acc, log) => acc + parseFloat(log.hours || 0), 0);
+            const modHours = parseFloat(mod.totalHoursStudied || 0);
             const remaining = Math.max(0, parseFloat(mod.targetHours || 0) - modHours);
 
             return {
