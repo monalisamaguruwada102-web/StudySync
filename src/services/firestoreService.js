@@ -235,6 +235,15 @@ export const studyLogService = {
             await updateUserXP(xp);
             // Trigger Sidebar XP Update
             window.dispatchEvent(new CustomEvent('study-sync-auth'));
+
+            // Persist Total Hours to Module
+            if (data.moduleId && data.moduleId !== 'general') {
+                const mod = await moduleService.getById(data.moduleId);
+                if (mod) {
+                    const newTotal = parseFloat(mod.totalHoursStudied || 0) + parseFloat(data.hours);
+                    await moduleService.update(mod.id, { totalHoursStudied: newTotal });
+                }
+            }
         }
         return result;
     }
