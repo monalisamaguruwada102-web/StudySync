@@ -58,12 +58,12 @@ class DataCache {
      * Set cached data for a collection
      */
     set(collection, data) {
+        const key = this.getCacheKey(collection);
+        const cacheData = {
+            data,
+            timestamp: Date.now()
+        };
         try {
-            const key = this.getCacheKey(collection);
-            const cacheData = {
-                data,
-                timestamp: Date.now()
-            };
             localStorage.setItem(key, JSON.stringify(cacheData));
         } catch (error) {
             console.error('Error writing cache:', error);

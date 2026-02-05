@@ -16,13 +16,16 @@ import {
     Palette,
     Cloud,
     ExternalLink,
-    CheckCircle2
+    CheckCircle2,
+    Target,
+    Music
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
+import ThemeSelector from '../components/ThemeSelector';
 
 const Settings = () => {
-    const { isDarkMode, toggleTheme } = useTheme();
+    const { isDarkMode, toggleDarkMode, theme, toggleTheme } = useTheme();
     const [isExporting, setIsExporting] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
     const [importStatus, setImportStatus] = useState(null); // 'success', 'error', 'pending'
@@ -167,27 +170,9 @@ const Settings = () => {
                         )}
 
                         {activeTab === 'appearance' && (
-                            <Card title="Appearance" HeaderAction={<Palette size={18} className="text-primary-500" />}>
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800/50">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`p-3 rounded-xl ${isDarkMode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-orange-500/20 text-orange-500'}`}>
-                                                {isDarkMode ? <Moon size={20} /> : <Sun size={20} />}
-                                            </div>
-                                            <div>
-                                                <h5 className="text-sm font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">Theme Mode</h5>
-                                                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">{isDarkMode ? 'Dark Mode Active' : 'Light Mode Active'}</p>
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={toggleTheme}
-                                            className={`relative w-14 h-7 rounded-full transition-all duration-300 ${isDarkMode ? 'bg-primary-600 shadow-[0_0_15px_rgba(99,102,241,0.4)]' : 'bg-slate-300'}`}
-                                        >
-                                            <div className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-300 ${isDarkMode ? 'translate-x-7' : ''}`} />
-                                        </button>
-                                    </div>
-                                </div>
-                            </Card>
+                            <div className="space-y-6">
+                                <ThemeSelector />
+                            </div>
                         )}
 
                         {activeTab === 'integrations' && (
