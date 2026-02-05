@@ -27,7 +27,10 @@ import ThemeSelector from '../components/ThemeSelector';
 
 const Settings = () => {
     const { user } = useAuth();
-    const { isDarkMode, toggleDarkMode, theme, toggleTheme } = useTheme();
+    const themeContext = useTheme();
+
+    // Diagnostic logging for ReferenceError debugging
+    console.debug('Settings: user state:', user);
     const [isExporting, setIsExporting] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
     const [importStatus, setImportStatus] = useState(null); // 'success', 'error', 'pending'
