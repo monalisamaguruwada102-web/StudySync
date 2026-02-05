@@ -48,56 +48,333 @@
   ],
   "modules": [
     {
-      "name": "DATABASE ADMIN",
-      "description": "HARD AND INCLUDE PRACTICAL",
-      "targetHours": 800,
-      "id": "1769560786039",
-      "createdAt": "2026-01-28T00:39:46.040Z"
-    },
-    {
-      "name": "NETWORK ADMIN",
-      "description": "HARD",
-      "targetHours": 700,
-      "id": "1769560812850",
-      "createdAt": "2026-01-28T00:40:12.852Z"
-    },
-    {
+      "id": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
       "name": "OOP",
-      "description": "HARDEST AND PRACTICALS ",
+      "description": "HARDEST",
       "targetHours": 1000,
-      "id": "1769560879409",
-      "createdAt": "2026-01-28T00:41:19.409Z"
+      "userId": "1769561085648",
+      "createdAt": "2026-01-29T19:58:18.602842+00:00"
     },
     {
+      "id": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
       "name": "SOFTWARE ENGINEERING",
-      "description": "SIMPLE",
-      "targetHours": 400,
-      "id": "1769560924908",
-      "createdAt": "2026-01-28T00:42:04.908Z"
+      "description": "MODERATE ",
+      "targetHours": 750,
+      "userId": "1769561085648",
+      "createdAt": "2026-01-29T20:02:24.706128+00:00"
     },
     {
-      "name": "HARDWARE ADMIN",
+      "id": "2d9fa95b-6ac5-47a7-8ccf-94006949e057",
+      "name": "NETWORK ADMIN",
+      "description": "HARD ",
+      "targetHours": 750,
+      "userId": "1769561085648",
+      "createdAt": "2026-01-29T20:08:51.896907+00:00"
+    },
+    {
+      "id": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
+      "name": "C#",
+      "description": "HARD",
+      "targetHours": 1200,
+      "userId": "1769561085648",
+      "createdAt": "2026-01-29T21:38:43.914103+00:00"
+    },
+    {
+      "id": "91772215-06b6-48fd-b980-1d0327a15a4e",
+      "name": "COMPUTER NETWORK",
+      "description": "HARD",
+      "targetHours": 900,
+      "userId": "1769561085649",
+      "createdAt": "2026-01-30T05:51:00.974877+00:00"
+    },
+    {
+      "id": "d4373f87-e53f-4148-84f8-a211f2b648c7",
+      "name": "ESD",
+      "description": "EASY",
+      "targetHours": 500,
+      "userId": "1769561085649",
+      "createdAt": "2026-01-30T05:51:15.038554+00:00"
+    },
+    {
+      "id": "b85660b3-7849-47d1-a384-3421a40b1f7b",
+      "name": "COMPUTER SECURITY",
       "description": "MODERATE ",
-      "targetHours": 450,
-      "id": "1769560958856",
-      "createdAt": "2026-01-28T00:42:38.856Z"
+      "targetHours": 700,
+      "userId": "1769561085649",
+      "createdAt": "2026-01-30T05:51:51.915828+00:00"
+    },
+    {
+      "id": "01ff51d7-be9d-4fdb-8218-6b9aacb5257f",
+      "name": "C++",
+      "description": "PROGRAMMING ",
+      "targetHours": 1000,
+      "userId": "1769561085649",
+      "createdAt": "2026-01-30T05:52:16.548937+00:00"
+    },
+    {
+      "id": "54d3897e-f954-4942-95cf-3e1c6059f95a",
+      "name": "MACHINE OPERATION",
+      "description": "HARDEST",
+      "targetHours": 700,
+      "userId": "1738640325000",
+      "createdAt": "2026-02-04T21:26:27.498259+00:00"
+    },
+    {
+      "id": "f52b0bbb-80e5-4fcd-87ea-5f10e5779dc3",
+      "name": "HARDWARE ADMIN ",
+      "description": "EASY",
+      "targetHours": 600,
+      "userId": "1769561085648",
+      "createdAt": "2026-01-29T20:03:08.471326+00:00"
+    },
+    {
+      "id": "d4e65677-e3b6-4443-b7e0-c073f9dc8e3a",
+      "name": "DATABASE MANAGEMENT SYSTEM",
+      "description": "MODERATE ",
+      "targetHours": 800,
+      "userId": "1769561085649",
+      "createdAt": "2026-01-30T05:50:32.600053+00:00"
+    },
+    {
+      "id": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
+      "name": "DATABASE ADMIN",
+      "description": "HARD",
+      "targetHours": 800,
+      "userId": "1769561085648",
+      "createdAt": "2026-01-29T19:52:11.826717+00:00"
     }
   ],
   "studyLogs": [
     {
-      "date": "2026-01-27",
-      "moduleId": "1769560879409",
-      "topic": "BASICS",
+      "id": "32ffc0eb-e91c-4744-a88a-2d5321e976d0",
+      "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
       "hours": 0.25,
-      "id": "1769561040592",
-      "createdAt": "2026-01-28T00:44:00.592Z"
+      "date": "2026-02-01",
+      "topic": "Evolution of C#",
+      "userId": "1769561085648",
+      "createdAt": "2026-02-01T17:47:57.948041+00:00"
+    },
+    {
+      "id": "e721ee1a-6ca2-4069-8922-29539d18ceb9",
+      "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
+      "hours": 0.15,
+      "date": "2026-02-01",
+      "topic": "DATA ENTRY",
+      "userId": "1769561085648",
+      "createdAt": "2026-02-01T18:12:21.803357+00:00"
+    },
+    {
+      "id": "5beb2e2b-49e2-4374-89a1-3a092cfcf265",
+      "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
+      "hours": 0.31,
+      "date": "2026-02-02",
+      "topic": "OOP COMPONENT 1 .1",
+      "userId": "1769561085648",
+      "createdAt": "2026-02-02T22:19:10.96805+00:00"
+    },
+    {
+      "id": "f184becd-2a0a-4327-a1e0-1383f9980a0a",
+      "moduleId": "b85660b3-7849-47d1-a384-3421a40b1f7b",
+      "hours": 26.23,
+      "date": "2026-02-02",
+      "topic": "Identify security requirements",
+      "userId": "1769561085649",
+      "createdAt": "2026-02-02T22:41:23.88085+00:00"
+    },
+    {
+      "id": "19a3839b-38cf-43de-a2ae-b80efde54edd",
+      "moduleId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
+      "hours": 1,
+      "date": "2026-02-03",
+      "topic": "LEARNING OUTCOME 1",
+      "userId": "1769561085648",
+      "createdAt": "2026-02-03T17:50:50.06458+00:00"
+    },
+    {
+      "id": "261dd85e-201f-4007-be81-f01c808b0703",
+      "moduleId": "b85660b3-7849-47d1-a384-3421a40b1f7b",
+      "hours": 21.19,
+      "date": "2026-02-04",
+      "topic": " identify security requirements",
+      "userId": "1769561085649",
+      "createdAt": "2026-02-04T19:22:52.14423+00:00"
+    },
+    {
+      "id": "edcdff99-ce9d-4424-a1b8-23865ab19dfa",
+      "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
+      "hours": 1,
+      "date": "2026-02-04",
+      "topic": "DESIGN DATABASE OUTCOME ONE ",
+      "userId": "1769561085648",
+      "createdAt": "2026-02-04T19:47:34.188613+00:00"
+    },
+    {
+      "id": "55aad989-0c3b-46ce-b71d-fa4463e32b97",
+      "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
+      "hours": 1,
+      "date": "2026-02-04",
+      "topic": "DESIGN DATABASE OUTCOME ONE ",
+      "userId": "1769561085648",
+      "createdAt": "2026-02-04T19:47:41.528757+00:00"
+    },
+    {
+      "id": "52c5b54c-6c63-420b-a24c-2db831dfa027",
+      "moduleId": "f52b0bbb-80e5-4fcd-87ea-5f10e5779dc3",
+      "hours": 0.15,
+      "date": "2026-02-05",
+      "topic": "LEARNING OUTCOME 1",
+      "userId": "1769561085648",
+      "createdAt": "2026-02-04T22:39:27.997517+00:00"
+    },
+    {
+      "id": "fe167234-7c7f-4acc-8d02-8c99e1462ffb",
+      "moduleId": "d4e65677-e3b6-4443-b7e0-c073f9dc8e3a",
+      "hours": 0.09,
+      "date": "2026-02-04",
+      "topic": "describe business information systems",
+      "userId": "1769561085649",
+      "createdAt": "2026-02-04T22:42:41.800292+00:00"
     }
   ],
-  "tasks": [],
-  "notes": [],
+  "tasks": [
+    {
+      "id": "033958c0-4cfe-4033-a774-840846354ae4",
+      "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
+      "title": "OOP THEORY 1",
+      "priority": "Medium",
+      "status": "In Progress",
+      "dueDate": "2026-02-14T00:00:00+00:00",
+      "userId": "1769561085648",
+      "createdAt": "2026-02-01T18:07:58.722371+00:00"
+    }
+  ],
+  "notes": [
+    {
+      "id": "c346fa14-1580-4331-a052-7480b99a27ff",
+      "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
+      "title": "DATABASE MAIN NOTES",
+      "content": "",
+      "resourceLink": "",
+      "pdfPath": "https://pocuggehxeuheqzgixsx.supabase.co/storage/v1/object/public/notes-files/pdf_1769896788141_Database_Administration_(BG)_095554.pdf",
+      "userId": "1769561085648",
+      "createdAt": "2026-01-31T11:59:31.162372+00:00"
+    },
+    {
+      "id": "ceec4a88-3c57-4fab-9387-c878194982a0",
+      "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
+      "title": "OOP MAIN NOTES",
+      "content": "",
+      "resourceLink": "",
+      "pdfPath": "https://pocuggehxeuheqzgixsx.supabase.co/storage/v1/object/public/notes-files/pdf_1769896843518_Object_Oriented_Programming_(BG)_095743.pdf",
+      "userId": "1769561085648",
+      "createdAt": "2026-01-31T12:00:25.54617+00:00"
+    },
+    {
+      "id": "53738374-90dc-43d5-aa96-d860f3a0f226",
+      "moduleId": "f52b0bbb-80e5-4fcd-87ea-5f10e5779dc3",
+      "title": "HARDWARE  ADMIN",
+      "content": "",
+      "resourceLink": "",
+      "pdfPath": "https://pocuggehxeuheqzgixsx.supabase.co/storage/v1/object/public/notes-files/pdf_1769897147232_hardware_administratian_(BG)_095711.pdf",
+      "userId": "1769561085648",
+      "createdAt": "2026-01-31T12:05:30.251182+00:00"
+    },
+    {
+      "id": "2f0bd282-c62c-4dcb-9c48-4ca84db6276a",
+      "moduleId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
+      "title": "SOFTWARE ENGINEERING NOTES",
+      "content": "",
+      "resourceLink": "",
+      "pdfPath": "https://pocuggehxeuheqzgixsx.supabase.co/storage/v1/object/public/notes-files/pdf_1769897179965_SOFTWARE_ENGINEERIG_(BG).pdf",
+      "userId": "1769561085648",
+      "createdAt": "2026-01-31T12:06:02.747293+00:00"
+    }
+  ],
   "grades": [],
-  "flashcardDecks": [],
-  "flashcards": [],
+  "flashcardDecks": [
+    {
+      "id": "ded9f0b8-d466-4186-90ea-4f508f26692a",
+      "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
+      "name": "AI: OOP",
+      "description": "Auto-generated flashcards for OOP",
+      "userId": "1769561085648",
+      "createdAt": "2026-01-29T19:59:49.535088+00:00"
+    },
+    {
+      "id": "415ab09c-0c99-41da-92ca-b00188611bc2",
+      "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
+      "name": "STRUCTURE OF A C# PROGRAMM",
+      "description": null,
+      "userId": "1769561085648",
+      "createdAt": "2026-02-02T22:29:05.562316+00:00"
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "678c491f-4584-4416-ba3c-f3750c78e946",
+      "deckId": "ded9f0b8-d466-4186-90ea-4f508f26692a",
+      "question": "How does this apply to real-world scenarios?",
+      "answer": "Through the practical implementation steps mentioned in the conclusion.",
+      "level": 2,
+      "createdAt": "2026-01-29T19:59:50.534844+00:00"
+    },
+    {
+      "id": "3f649d50-aee5-4b03-b8b9-38fc6d2176f5",
+      "deckId": "ded9f0b8-d466-4186-90ea-4f508f26692a",
+      "question": "What is the most critical definition in this text?",
+      "answer": "The technical term defined in the first paragraph of your notes.",
+      "level": 1,
+      "createdAt": "2026-01-29T19:59:50.241425+00:00"
+    },
+    {
+      "id": "50dead90-7521-4b91-ba3d-9667e455d0c1",
+      "deckId": "ded9f0b8-d466-4186-90ea-4f508f26692a",
+      "question": "Main concept of OOP?",
+      "answer": "The primary framework discussed in your study materials.",
+      "level": 2,
+      "createdAt": "2026-01-29T19:59:49.901983+00:00"
+    },
+    {
+      "id": "c3a197bb-bfbb-4b15-b196-b061f9a9f5e1",
+      "deckId": "415ab09c-0c99-41da-92ca-b00188611bc2",
+      "question": "WHAT IS AN IDE",
+      "answer": "AN IDE IS AN INTERGRATED ENVIRONMENT THAT HELPS US OR MAKES US MAKE OUR PROGRAMS FROM A VARIETY OF LANGAUGES LIKE JAVA AND EXAMPLES ARE VS code ",
+      "level": 2,
+      "createdAt": "2026-02-02T23:03:16.975792+00:00"
+    },
+    {
+      "id": "4d57490a-3e96-49c5-a19e-5bbbda68a881",
+      "deckId": "415ab09c-0c99-41da-92ca-b00188611bc2",
+      "question": "TWO TYPES OF C# ERRORS ",
+      "answer": "RUN TIME ERROR AND COMPILE ERROR",
+      "level": 2,
+      "createdAt": "2026-02-02T23:04:30.319917+00:00"
+    },
+    {
+      "id": "1473bd65-93e1-44ca-862f-1b59441f9ced",
+      "deckId": "415ab09c-0c99-41da-92ca-b00188611bc2",
+      "question": "WHAT IS ERROR HANDLING IN C#",
+      "answer": "ERROR HANDLING IS A WAY OF IDENTIFIYING A CERTAIN ERROR IN A PROGRAM AND A WAY TO FIX IT ",
+      "level": 2,
+      "createdAt": "2026-02-02T23:06:04.319614+00:00"
+    },
+    {
+      "id": "b2c4d3b4-4bb8-4a66-b2dc-17a447dff802",
+      "deckId": "415ab09c-0c99-41da-92ca-b00188611bc2",
+      "question": "DESCRIBE THE PROCESS OF ERROR HANDLING USING TRY BLOCK ",
+      "answer": "THE TRY BLOCK COMES FIRST BEFORE THE CATCH BLOCK APPEARS ,IT CONTAINS THE CODE THAT MAY LEAD TO AN ERROR  try {\nint numerator=10;\nint denominator=0;\nint result=10/0;\nConsole.WriteLine(\"Result: {0}\", result);",
+      "level": 2,
+      "createdAt": "2026-02-02T23:14:01.349367+00:00"
+    },
+    {
+      "id": "2c2651e4-849a-4e89-9202-f17646d12ab8",
+      "deckId": "415ab09c-0c99-41da-92ca-b00188611bc2",
+      "question": "STATE COMPONENTS OF A C# PROGRAMM",
+      "answer": "\nCOMMENTS \nMAIN() METHODE\nNAMESPACE\nMETHODE BODY STATEMENT \nUSING DERECTIVES\nCLASS DEFINATION",
+      "level": 3,
+      "createdAt": "2026-02-02T23:01:14.491711+00:00"
+    }
+  ],
   "calendarEvents": [],
   "pomodoroSessions": [],
   "settings": {
