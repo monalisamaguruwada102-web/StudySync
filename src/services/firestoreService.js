@@ -237,8 +237,7 @@ export const studyLogService = {
             window.dispatchEvent(new CustomEvent('study-sync-auth'));
         }
         return result;
-    },
-    const result = await createCollectionService("study_logs").delete(id);
+    }
 };
 
 export const taskService = {
