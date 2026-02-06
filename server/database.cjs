@@ -42,7 +42,22 @@ const readDB = () => {
             return initialState;
         }
         const data = fs.readFileSync(DB_PATH, 'utf8');
-        return JSON.parse(data);
+        const parsed = JSON.parse(data);
+
+        // Ensure all collections from initialState exist (schema migration)
+        let modified = false;
+        Object.keys(initialState).forEach(key => {
+            if (parsed[key] === undefined) {
+                parsed[key] = initialState[key];
+                modified = true;
+            }
+        });
+
+        if (modified) {
+            fs.writeFileSync(DB_PATH, JSON.stringify(parsed, null, 2));
+        }
+
+        return parsed;
     } catch (error) {
         console.error('❌ Error reading database:', error.message);
         // Try to restore from latest backup

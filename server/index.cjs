@@ -232,17 +232,23 @@ app.get('/api/conversations', authenticateToken, async (req, res) => {
     try {
         let conversations = await supabasePersistence.getConversations(req.user.id);
         const users = db.get('users');
+        const localConversations = db.get('conversations') || [];
+        const userLocalConvs = localConversations.filter(c =>
+            c.participants && c.participants.includes(req.user.id)
+        );
 
-        // Fallback to local DB if Supabase not configured or failed
+        let mergedConversations;
         if (!conversations) {
-            const localConversations = db.get('conversations') || [];
-            conversations = localConversations.filter(c =>
-                c.participants && c.participants.includes(req.user.id)
-            );
+            mergedConversations = userLocalConvs;
+        } else {
+            // Merge cloud and local, using IDs and groupIds to de-duplicate
+            const cloudIds = new Set(conversations.map(c => c.id));
+            const localOnly = userLocalConvs.filter(c => !cloudIds.has(c.supabaseId) && !cloudIds.has(c.id));
+            mergedConversations = [...conversations, ...localOnly];
         }
 
         // Enrich with participant/group details
-        const enriched = await Promise.all(conversations.map(async (conv) => {
+        const enriched = await Promise.all(mergedConversations.map(async (conv) => {
             if (conv.type === 'group' || (conv.type === 'group' && (conv.groupId || conv.group_id))) {
                 const groupId = conv.group_id || conv.groupId;
                 // Try fetching group from Supabase first
@@ -285,30 +291,36 @@ app.get('/api/conversations', authenticateToken, async (req, res) => {
 app.get('/api/messages/:conversationId', authenticateToken, async (req, res) => {
     try {
         let conversation;
+        const localConversations = db.get('conversations') || [];
+
         // Search Supabase first
         const allUserConvs = await supabasePersistence.getConversations(req.user.id);
         if (allUserConvs) {
             conversation = allUserConvs.find(c => c.id === req.params.conversationId);
         }
 
-        // Fallback to local
+        // Fallback or Merge check with local
         if (!conversation) {
-            const conversations = db.get('conversations');
-            conversation = conversations.find(c => c.id === req.params.conversationId);
+            conversation = localConversations.find(c => c.id === req.params.conversationId);
         }
 
         if (!conversation || !conversation.participants.includes(req.user.id)) {
             return res.status(403).json({ error: 'Unauthorized or conversation not found' });
         }
 
-        // Get messages
-        let messages = await supabasePersistence.getMessages(req.params.conversationId);
-        if (!messages) {
-            const localMessages = db.get('messages') || [];
-            messages = localMessages.filter(m => m.conversationId === req.params.conversationId);
-        }
+        // Get messages from both sources and merge
+        const cloudMessages = await supabasePersistence.getMessages(req.params.conversationId) || [];
+        const localMessages = (db.get('messages') || []).filter(m => m.conversationId === req.params.conversationId);
 
-        res.json(messages);
+        // De-duplicate: If a local message has a supabaseId that is in cloudMessages, ignore the local one
+        const cloudIds = new Set(cloudMessages.map(m => m.id));
+        const localOnly = localMessages.filter(m => !cloudIds.has(m.supabaseId) && !cloudIds.has(m.id));
+
+        const mergedMessages = [...cloudMessages, ...localOnly].sort((a, b) =>
+            new Date(a.timestamp || a.createdAt) - new Date(b.timestamp || b.createdAt)
+        );
+
+        res.json(mergedMessages);
     } catch (error) {
         console.error('Error in /api/messages:', error);
         res.status(500).json({ error: 'Failed to fetch messages' });
@@ -336,35 +348,36 @@ app.post('/api/groups/create', authenticateToken, async (req, res) => {
         inviteCode
     });
 
-    // Fallback to local
-    if (!group) {
-        group = db.insert('groups', {
-            name,
-            description: description || '',
-            createdBy: req.user.id,
-            members: [req.user.id],
-            inviteCode
-        });
-    }
+    // Dual-write: Always save to local DB as well
+    const localGroup = db.insert('groups', {
+        name,
+        description: description || '',
+        createdBy: req.user.id,
+        members: [req.user.id],
+        inviteCode,
+        supabaseId: group?.id
+    });
+
+    if (!group) group = localGroup;
 
     // Create a conversation for this group
-    let conversation = await supabasePersistence.createConversation({
+    const convData = {
         type: 'group',
         groupId: group.id,
         participants: [req.user.id],
         lastMessage: 'Group created',
         lastMessageTime: new Date().toISOString()
+    };
+
+    let conversation = await supabasePersistence.createConversation(convData);
+
+    // Dual-write: Always save to local DB
+    const localConv = db.insert('conversations', {
+        ...convData,
+        supabaseId: conversation?.id
     });
 
-    if (!conversation) {
-        conversation = db.insert('conversations', {
-            type: 'group',
-            groupId: group.id,
-            participants: [req.user.id],
-            lastMessage: 'Group created',
-            lastMessageTime: new Date().toISOString()
-        });
-    }
+    if (!conversation) conversation = localConv;
 
     res.json({ group, conversation });
 });
@@ -445,21 +458,22 @@ app.post('/api/conversations/direct', authenticateToken, async (req, res) => {
         }
 
         // Create new conversation
-        let conversation = await supabasePersistence.createConversation({
+        const convData = {
             type: 'direct',
             participants: [req.user.id, otherUserId],
             lastMessage: '',
             lastMessageTime: new Date().toISOString()
+        };
+
+        let conversation = await supabasePersistence.createConversation(convData);
+
+        // Always save locally for persistence
+        const localConv = db.insert('conversations', {
+            ...convData,
+            supabaseId: conversation?.id
         });
 
-        if (!conversation) {
-            conversation = db.insert('conversations', {
-                type: 'direct',
-                participants: [req.user.id, otherUserId],
-                lastMessage: '',
-                lastMessageTime: new Date().toISOString()
-            });
-        }
+        if (!conversation) conversation = localConv;
 
         res.json(conversation);
     } catch (error) {
@@ -489,12 +503,15 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
         // 1. Insert message into Supabase
         let message = await supabasePersistence.insertMessage(messageData);
 
-        // 2. Fallback to local DB if Supabase failed
-        if (!message) {
-            message = db.insert('messages', messageData);
-        }
+        // 2. Always write to local DB for persistence
+        const localMessage = db.insert('messages', {
+            ...messageData,
+            supabaseId: message?.id
+        });
 
-        // 3. Update conversation's last message
+        if (!message) message = localMessage;
+
+        // 3. Update conversation's last message (Dual-update)
         const lastMessageTime = new Date().toISOString();
         const convUpdates = {
             lastMessage: content.substring(0, 50),
