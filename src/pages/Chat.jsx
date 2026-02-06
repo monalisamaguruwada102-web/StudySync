@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MessageCircle, Send, Share2, Users, Plus, Search, X, Copy, Check, FileText, Brain, Youtube, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useChat from '../hooks/useChat';
@@ -27,6 +28,9 @@ const Chat = () => {
     const [showResourceShare, setShowResourceShare] = useState(false);
     const [showGroupModal, setShowGroupModal] = useState(false);
     const [showJoinGroup, setShowJoinGroup] = useState(false);
+    const [showResourceViewer, setShowResourceViewer] = useState(false);
+    const [selectedResourceData, setSelectedResourceData] = useState(null);
+    const [viewerLoading, setViewerLoading] = useState(false);
     const [users, setUsers] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [groupName, setGroupName] = useState('');
@@ -121,6 +125,34 @@ const Chat = () => {
         navigator.clipboard.writeText(code);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    const navigate = useNavigate();
+
+    // Handle opening a shared resource
+    const handleOpenResource = async (resource) => {
+        setViewerLoading(true);
+        setShowResourceViewer(true);
+        setSelectedResourceData(null); // Reset while loading
+
+        try {
+            let endpoint = '';
+            switch (resource.type) {
+                case 'note': endpoint = `/notes/${resource.resourceId}`; break;
+                case 'flashcard': endpoint = `/flashcardDecks/${resource.resourceId}`; break;
+                case 'tutorial': endpoint = `/tutorials/${resource.resourceId}`; break;
+                default: throw new Error('Unknown resource type');
+            }
+
+            const response = await api.get(endpoint);
+            setSelectedResourceData({ ...response.data, type: resource.type });
+        } catch (error) {
+            console.error('Error fetching resource details:', error);
+            alert('Failed to load resource details. It might have been deleted.');
+            setShowResourceViewer(false);
+        } finally {
+            setViewerLoading(false);
+        }
     };
 
     // Format timestamp
@@ -298,6 +330,7 @@ const Chat = () => {
                                             key={msg.id || idx}
                                             message={msg}
                                             isOwn={msg.senderId === currentUser.id}
+                                            handleOpenResource={handleOpenResource}
                                         />
                                     ))
                                 )}
@@ -416,12 +449,21 @@ const Chat = () => {
                     }
                 }}
             />
+
+            {/* Resource Viewer Modal */}
+            <ResourceViewerModal
+                isOpen={showResourceViewer}
+                onClose={() => setShowResourceViewer(false)}
+                resource={selectedResourceData}
+                loading={viewerLoading}
+                onNavigate={(path) => navigate(path)}
+            />
         </div>
     );
 };
 
 // Message Bubble Component
-const MessageBubble = ({ message, isOwn }) => {
+const MessageBubble = ({ message, isOwn, handleOpenResource }) => {
     return (
         <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -443,7 +485,10 @@ const MessageBubble = ({ message, isOwn }) => {
                         }`}
                 >
                     {message.sharedResource ? (
-                        <ResourceCard resource={message.sharedResource} />
+                        <ResourceCard
+                            resource={message.sharedResource}
+                            onClick={() => handleOpenResource(message.sharedResource)}
+                        />
                     ) : (
                         <p className="text-[13px] leading-relaxed break-words">{message.content}</p>
                     )}
@@ -460,7 +505,7 @@ const MessageBubble = ({ message, isOwn }) => {
 };
 
 // Resource Card Component (for shared items)
-const ResourceCard = ({ resource }) => {
+const ResourceCard = ({ resource, onClick }) => {
     const getTypeStyles = (type) => {
         switch (type) {
             case 'note': return { icon: <FileText size={14} />, color: 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-900/10' };
@@ -476,9 +521,7 @@ const ResourceCard = ({ resource }) => {
         <motion.div
             whileHover={{ y: -2 }}
             className={`bg-white dark:bg-slate-900/90 p-3 rounded-xl border-l-4 ${styles.color} shadow-sm min-w-[200px] cursor-pointer group`}
-            onClick={() => {
-                // Future: Open resource detail modal/page
-            }}
+            onClick={onClick}
         >
             <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
@@ -496,6 +539,123 @@ const ResourceCard = ({ resource }) => {
                 </div>
             )}
         </motion.div>
+    );
+};
+
+// Resource Viewer Modal
+const ResourceViewerModal = ({ isOpen, onClose, resource, loading, onNavigate }) => {
+    if (!isOpen) return null;
+
+    const getYouTubeId = (url) => {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url?.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    };
+
+    return (
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={resource ? `Viewing ${resource.type}: ${resource.title || resource.name}` : 'Loading...'}
+            size="lg"
+        >
+            <div className="min-h-[300px] max-h-[60vh] overflow-y-auto">
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center h-48 space-y-4">
+                        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+                        <p className="text-slate-500 text-sm">Fetching resource details...</p>
+                    </div>
+                ) : resource ? (
+                    <div className="space-y-6 p-2">
+                        {/* Note View */}
+                        {resource.type === 'note' && (
+                            <div className="space-y-4 text-slate-800 dark:text-slate-200">
+                                <p className="text-sm border-l-4 border-emerald-500 pl-4 py-1 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-r-lg">
+                                    {resource.content || 'No content provided.'}
+                                </p>
+                                {resource.pdfPath && (
+                                    <a
+                                        href={resource.pdfPath}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl hover:bg-blue-100 transition-colors"
+                                    >
+                                        <FileText size={18} />
+                                        <span>View Attached PDF Document</span>
+                                    </a>
+                                )}
+                                <Button
+                                    variant="secondary"
+                                    className="w-full h-12 rounded-xl flex items-center justify-center gap-2"
+                                    onClick={() => onNavigate('/notes')}
+                                >
+                                    <ExternalLink size={18} />
+                                    <span>Open in Notes Manager</span>
+                                </Button>
+                            </div>
+                        )}
+
+                        {/* Tutorial View */}
+                        {resource.type === 'tutorial' && (
+                            <div className="space-y-4">
+                                {getYouTubeId(resource.url) ? (
+                                    <div className="aspect-video rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl">
+                                        <iframe
+                                            className="w-full h-full"
+                                            src={`https://www.youtube.com/embed/${getYouTubeId(resource.url)}`}
+                                            title="YouTube video player"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        ></iframe>
+                                    </div>
+                                ) : (
+                                    <div className="p-12 text-center bg-slate-50 dark:bg-slate-800/50 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-700">
+                                        <Youtube size={48} className="mx-auto text-slate-300 mb-4" />
+                                        <p className="text-slate-500">This tutorial is a direct link.</p>
+                                    </div>
+                                )}
+                                <Button
+                                    variant="primary"
+                                    className="w-full h-12 rounded-xl flex items-center justify-center gap-2"
+                                    onClick={() => window.open(resource.url, '_blank')}
+                                >
+                                    <ExternalLink size={18} />
+                                    <span>Open Resource Link</span>
+                                </Button>
+                            </div>
+                        )}
+
+                        {/* Flashcard View */}
+                        {resource.type === 'flashcard' && (
+                            <div className="space-y-6 py-4">
+                                <div className="text-center p-8 bg-purple-50 dark:bg-purple-900/10 rounded-3xl border border-purple-100 dark:border-purple-900/30">
+                                    <Brain size={48} className="mx-auto text-purple-500 mb-4" />
+                                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+                                        {resource.name || resource.title}
+                                    </h3>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                                        Master this deck using Spaced Repetition.
+                                    </p>
+                                </div>
+                                <Button
+                                    variant="primary"
+                                    className="w-full h-14 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20"
+                                    onClick={() => onNavigate('/flashcards')}
+                                >
+                                    <Play size={20} />
+                                    <span className="text-lg">Start Study Session</span>
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <div className="text-center py-20">
+                        <X size={48} className="mx-auto text-red-500/50 mb-4" />
+                        <p className="text-slate-600 dark:text-slate-400 font-medium">Resource not found.</p>
+                    </div>
+                )}
+            </div>
+        </Modal>
     );
 };
 
