@@ -6,7 +6,7 @@ import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
 import { useFirestore } from '../hooks/useFirestore';
 import { tutorialService, moduleService } from '../services/firestoreService';
-import { Plus, Youtube, Trash2, Book, ExternalLink, Search, LayoutDashboard } from 'lucide-react';
+import { Plus, Youtube, Trash2, Book, ExternalLink, Search, LayoutDashboard, Play } from 'lucide-react';
 
 const Tutorials = () => {
     const { data: tutorials, loading, refresh } = useFirestore(tutorialService.getAll);
@@ -14,6 +14,7 @@ const Tutorials = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterModule, setFilterModule] = useState('');
+    const [playingId, setPlayingId] = useState(null);
     const [formData, setFormData] = useState({
         url: '',
         title: '',
@@ -22,11 +23,12 @@ const Tutorials = () => {
         description: ''
     });
 
-    // Extract YouTube video ID from URL
+    // Extract YouTube video ID from URL (supports Shorts, watch, embed, and shortened URLs)
     const getYouTubeId = (url) => {
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&?]*).*/;
-        const match = url?.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : null;
+        if (!url) return null;
+        const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?)\?v=|(&v=)|(shorts\/))([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[9].length === 11) ? match[9] : null;
     };
 
     const getThumbnail = (videoId) =>
@@ -119,66 +121,94 @@ const Tutorials = () => {
 
                 {/* Tutorial Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {filteredTutorials.map((tutorial) => (
-                        <Card key={tutorial.id} className="flex flex-col h-full overflow-hidden hover:shadow-lg transition-shadow">
-                            {/* YouTube Embed */}
-                            <div className="aspect-video bg-slate-900 relative group">
-                                <iframe
-                                    className="w-full h-full"
-                                    src={`https://www.youtube.com/embed/${tutorial.videoId}`}
-                                    title={tutorial.title}
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                ></iframe>
-                            </div>
+                    {filteredTutorials.map((tutorial) => {
+                        const videoId = tutorial.videoId || getYouTubeId(tutorial.url);
+                        const isPlaying = playingId === tutorial.id;
 
-                            {/* Content */}
-                            <div className="p-4 flex flex-col flex-1">
-                                <div className="flex justify-between items-start mb-3">
-                                    <div className="flex items-center gap-2 px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">
-                                        <Book size={10} />
-                                        <span>{getModuleName(tutorial.moduleId)}</span>
-                                    </div>
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() => handleDelete(tutorial.id)}
-                                        className="!p-1.5 text-slate-400 hover:text-red-500"
-                                    >
-                                        <Trash2 size={14} />
-                                    </Button>
+                        return (
+                            <Card key={tutorial.id} className="flex flex-col h-full overflow-hidden hover:shadow-lg transition-shadow bg-white dark:bg-slate-900/50">
+                                {/* YouTube Player Area */}
+                                <div className="aspect-video bg-black relative group overflow-hidden">
+                                    {isPlaying ? (
+                                        <iframe
+                                            className="w-full h-full"
+                                            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&origin=${window.location.origin}`}
+                                            title={tutorial.title}
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        ></iframe>
+                                    ) : (
+                                        <div
+                                            className="absolute inset-0 cursor-pointer overflow-hidden group/thumb"
+                                            onClick={() => setPlayingId(tutorial.id)}
+                                        >
+                                            <img
+                                                src={tutorial.thumbnail || getThumbnail(videoId)}
+                                                alt={tutorial.title}
+                                                className="w-full h-full object-cover opacity-80 group-hover/thumb:scale-105 transition-transform duration-500"
+                                            />
+                                            {/* Play Overlay */}
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover/thumb:bg-black/40 transition-colors">
+                                                <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-2xl group-hover/thumb:scale-110 transition-transform duration-300">
+                                                    <Play size={24} fill="white" className="text-white ml-1" />
+                                                </div>
+                                            </div>
+                                            {/* Glassmorphism Badge */}
+                                            <div className="absolute bottom-4 left-4 right-4 p-2 bg-black/20 backdrop-blur-md border border-white/10 rounded-xl">
+                                                <p className="text-[10px] font-black text-white uppercase tracking-widest text-center opacity-80">Click to Play Tutorial</p>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
-                                <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-2 line-clamp-2">
-                                    {tutorial.title}
-                                </h3>
-
-                                {tutorial.topic && (
-                                    <div className="flex items-center gap-1 mb-2">
-                                        <Youtube size={12} className="text-red-500" />
-                                        <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-                                            {tutorial.topic}
-                                        </span>
+                                {/* Content */}
+                                <div className="p-4 flex flex-col flex-1">
+                                    <div className="flex justify-between items-start mb-3">
+                                        <div className="flex items-center gap-2 px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">
+                                            <Book size={10} />
+                                            <span>{getModuleName(tutorial.moduleId)}</span>
+                                        </div>
+                                        <Button
+                                            variant="ghost"
+                                            onClick={() => handleDelete(tutorial.id)}
+                                            className="!p-1.5 text-slate-400 hover:text-red-500"
+                                        >
+                                            <Trash2 size={14} />
+                                        </Button>
                                     </div>
-                                )}
 
-                                {tutorial.description && (
-                                    <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 flex-1">
-                                        {tutorial.description}
-                                    </p>
-                                )}
+                                    <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-2 line-clamp-2">
+                                        {tutorial.title}
+                                    </h3>
 
-                                <a
-                                    href={tutorial.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="mt-4 flex items-center gap-2 text-primary-600 text-xs font-semibold hover:underline"
-                                >
-                                    <ExternalLink size={12} />
-                                    Watch on YouTube
-                                </a>
-                            </div>
-                        </Card>
-                    ))}
+                                    {tutorial.topic && (
+                                        <div className="flex items-center gap-1 mb-2">
+                                            <Youtube size={12} className="text-red-500" />
+                                            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                                                {tutorial.topic}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {tutorial.description && (
+                                        <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-3 flex-1">
+                                            {tutorial.description}
+                                        </p>
+                                    )}
+
+                                    <a
+                                        href={tutorial.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="mt-4 flex items-center gap-2 text-primary-600 text-xs font-semibold hover:underline"
+                                    >
+                                        <ExternalLink size={12} />
+                                        Watch on YouTube
+                                    </a>
+                                </div>
+                            </Card>
+                        );
+                    })}
 
                     {filteredTutorials.length === 0 && !loading && (
                         <div className="col-span-full text-center py-20 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700">
