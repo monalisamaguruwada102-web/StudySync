@@ -154,6 +154,7 @@ const mapToTable = (item) => {
         else if (key === 'totalHoursStudied') mapped.total_hours_studied = item[key];
         else if (key === 'completedAt') mapped.completed_at = item[key];
         else if (key === 'id') mapped.id = item[key];
+        else if (key === 'topic') mapped.activity = item[key];
         else mapped[key] = item[key];
     }
     return mapped;
