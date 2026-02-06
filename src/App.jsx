@@ -27,6 +27,7 @@ const StudyGroups = React.lazy(() => import('./pages/StudyGroups'));
 const DeepFocus = React.lazy(() => import('./pages/DeepFocus'));
 const ModuleDetail = React.lazy(() => import('./pages/ModuleDetail'));
 const Tutorials = React.lazy(() => import('./pages/Tutorials'));
+const Chat = React.lazy(() => import('./pages/Chat'));
 
 // Loading Screen Component
 const LoadingScreen = () => (
@@ -69,6 +70,7 @@ function App() {
                     <Route path="/deep-analytics" element={<DeepAnalytics />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/focus" element={<DeepFocus />} />
+                    <Route path="/chat" element={<Chat />} />
                     {/* Analytics link points to dashboard as it contains the main charts */}
                     <Route path="/analytics" element={<Dashboard />} />
                   </Route>

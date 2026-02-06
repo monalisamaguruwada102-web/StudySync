@@ -378,6 +378,9 @@
   "calendarEvents": [],
   "pomodoroSessions": [],
   "tutorials": [],
+  "conversations": [],
+  "messages": [],
+  "groups": [],
   "settings": {
     "owner": {
       "uid": "1769561085648",

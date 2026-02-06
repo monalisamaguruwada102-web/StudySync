@@ -211,9 +211,173 @@ app.post('/api/user/xp', authenticateToken, (req, res) => {
     res.json(result);
 });
 
+// --- CHAT ENDPOINTS ---
+
+// Get all users (for user selector)
+app.get('/api/users/all', authenticateToken, (req, res) => {
+    const users = db.get('users');
+    // Return basic user info (no passwords)
+    const userList = users.map(u => ({
+        id: u.id,
+        email: u.email,
+        level: u.level || 1,
+        xp: u.xp || 0
+    }));
+    res.json(userList);
+});
+
+// Get user conversations (with participant details)
+app.get('/api/conversations', authenticateToken, (req, res) => {
+    const conversations = db.get('conversations');
+    const users = db.get('users');
+    const groups = db.get('groups');
+
+    // Filter conversations where user is a participant
+    const userConversations = conversations.filter(c =>
+        c.participants && c.participants.includes(req.user.id)
+    );
+
+    // Enrich with participant/group details
+    const enriched = userConversations.map(conv => {
+        if (conv.type === 'group' && conv.groupId) {
+            const group = groups.find(g => g.id === conv.groupId);
+            return {
+                ...conv,
+                groupName: group?.name || 'Unknown Group',
+                groupDescription: group?.description
+            };
+        } else {
+            // Direct message - find the other participant
+            const otherUserId = conv.participants.find(id => id !== req.user.id);
+            const otherUser = users.find(u => u.id === otherUserId);
+            return {
+                ...conv,
+                otherUser: otherUser ? {
+                    id: otherUser.id,
+                    email: otherUser.email,
+                    level: otherUser.level
+                } : null
+            };
+        }
+    });
+
+    res.json(enriched);
+});
+
+// Get messages for a conversation
+app.get('/api/messages/:conversationId', authenticateToken, (req, res) => {
+    const messages = db.get('messages');
+    const conversations = db.get('conversations');
+
+    // Verify user is part of this conversation
+    const conversation = conversations.find(c => c.id === req.params.conversationId);
+    if (!conversation || !conversation.participants.includes(req.user.id)) {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    // Get messages for this conversation
+    const convMessages = messages.filter(m => m.conversationId === req.params.conversationId);
+    res.json(convMessages);
+});
+
+// Create group (admin only)
+app.post('/api/groups/create', authenticateToken, (req, res) => {
+    // Check if user is admin
+    if (req.user.email !== 'joshuamujakari15@gmail.com') {
+        return res.status(403).json({ error: 'Only admin can create groups' });
+    }
+
+    const { name, description } = req.body;
+    if (!name) return res.status(400).json({ error: 'Group name is required' });
+
+    // Generate unique invite code
+    const inviteCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+    const group = db.insert('groups', {
+        name,
+        description: description || '',
+        createdBy: req.user.id,
+        members: [req.user.id],
+        inviteCode,
+        createdAt: new Date().toISOString()
+    });
+
+    // Create a conversation for this group
+    const conversation = db.insert('conversations', {
+        type: 'group',
+        groupId: group.id,
+        participants: [req.user.id],
+        lastMessage: 'Group created',
+        lastMessageTime: new Date().toISOString(),
+        createdAt: new Date().toISOString()
+    });
+
+    res.json({ group, conversation });
+});
+
+// Join group via invite code
+app.post('/api/groups/join/:inviteCode', authenticateToken, (req, res) => {
+    const groups = db.get('groups');
+    const group = groups.find(g => g.inviteCode === req.params.inviteCode);
+
+    if (!group) return res.status(404).json({ error: 'Invalid invite code' });
+
+    // Check if already a member
+    if (group.members.includes(req.user.id)) {
+        return res.status(400).json({ error: 'Already a member of this group' });
+    }
+
+    // Add user to group
+    const updatedGroup = db.update('groups', group.id, {
+        members: [...group.members, req.user.id]
+    });
+
+    // Add user to conversation
+    const conversations = db.get('conversations');
+    const conversation = conversations.find(c => c.groupId === group.id);
+    if (conversation) {
+        db.update('conversations', conversation.id, {
+            participants: [...conversation.participants, req.user.id]
+        });
+    }
+
+    res.json({ message: 'Successfully joined group', group: updatedGroup });
+});
+
+// Create or get direct conversation
+app.post('/api/conversations/direct', authenticateToken, (req, res) => {
+    const { otherUserId } = req.body;
+    if (!otherUserId) return res.status(400).json({ error: 'Other user ID required' });
+
+    const conversations = db.get('conversations');
+
+    // Check if conversation already exists
+    const existing = conversations.find(c =>
+        c.type === 'direct' &&
+        c.participants &&
+        c.participants.includes(req.user.id) &&
+        c.participants.includes(otherUserId)
+    );
+
+    if (existing) {
+        return res.json(existing);
+    }
+
+    // Create new conversation
+    const conversation = db.insert('conversations', {
+        type: 'direct',
+        participants: [req.user.id, otherUserId],
+        lastMessage: '',
+        lastMessageTime: new Date().toISOString(),
+        createdAt: new Date().toISOString()
+    });
+
+    res.json(conversation);
+});
+
 // --- CRUD ROUTES ---
 
-const collections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 'flashcardDecks', 'flashcards', 'calendarEvents', 'pomodoroSessions', 'tutorials'];
+const collections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 'flashcardDecks', 'flashcards', 'calendarEvents', 'pomodoroSessions', 'tutorials', 'conversations', 'messages', 'groups'];
 
 collections.forEach(collection => {
     app.get(`/api/${collection}`, authenticateToken, (req, res) => {
