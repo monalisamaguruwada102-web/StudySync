@@ -5,10 +5,10 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
 import { useFirestore } from '../hooks/useFirestore';
-import { moduleService, studyLogService } from '../services/firestoreService';
+import { moduleService, studyLogService, taskService, pomodoroService, flashcardDeckService, flashcardService } from '../services/firestoreService';
+import { useAnalytics } from '../hooks/useAnalytics';
 import { Plus, Edit2, Trash2, Target, BookOpen, Sparkles, Wand2, RefreshCcw } from 'lucide-react';
 import aiService from '../services/aiService';
-import { flashcardDeckService, flashcardService } from '../services/firestoreService';
 
 const Modules = () => {
     const { data: modules, loading, refresh } = useFirestore(moduleService.getAll);
