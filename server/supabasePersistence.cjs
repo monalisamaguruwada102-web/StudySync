@@ -37,6 +37,20 @@ const getTutorials = async (userId) => {
     return data;
 };
 
+const getTutorialById = async (id) => {
+    const client = initSupabase();
+    if (!client) return null;
+
+    const { data, error } = await client
+        .from('tutorials')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (error) return null;
+    return data;
+};
+
 const insertTutorial = async (tutorial) => {
     const client = initSupabase();
     if (!client) return null;
@@ -283,6 +297,7 @@ module.exports = {
     initSupabase,
     // Tutorials
     getTutorials,
+    getTutorialById,
     insertTutorial,
     deleteTutorial,
     // Conversations

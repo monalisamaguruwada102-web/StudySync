@@ -541,6 +541,32 @@ genericCollections.forEach(collection => {
         db.delete(collection, req.params.id);
         res.sendStatus(204);
     });
+
+    // Single item GET with sharing-aware permissions
+    app.get(`/api/${collection}/:id`, authenticateToken, (req, res) => {
+        const item = db.find(collection, i => i.id === req.params.id);
+        if (!item) return res.sendStatus(404);
+
+        if (item.userId === req.user.id) {
+            return res.json(item);
+        }
+
+        // Check if shared in a conversation the user is part of
+        const messages = db.get('messages') || [];
+        const conversations = db.get('conversations') || [];
+
+        const isShared = messages.some(m =>
+            m.sharedResource &&
+            String(m.sharedResource.id) === String(item.id) &&
+            conversations.some(c => c.id === m.conversationId && c.participants.includes(req.user.id))
+        );
+
+        if (isShared) {
+            return res.json(item);
+        }
+
+        res.status(403).json({ error: 'Access denied to this shared resource' });
+    });
 });
 
 // --- TUTORIALS OVERRIDES (Supabase) ---
@@ -578,6 +604,43 @@ app.delete('/api/tutorials/:id', authenticateToken, async (req, res) => {
         res.sendStatus(204);
     } catch (error) {
         res.status(500).json({ error: 'Failed to delete tutorial' });
+    }
+});
+
+// Single tutorial GET (Supabase + Local fallback)
+app.get('/api/tutorials/:id', authenticateToken, async (req, res) => {
+    try {
+        // Try Supabase first
+        let tutorial = await supabasePersistence.getTutorialById(req.params.id);
+
+        // Fallback to local
+        if (!tutorial) {
+            tutorial = db.find('tutorials', t => t.id === req.params.id);
+        }
+
+        if (!tutorial) return res.sendStatus(404);
+
+        if (tutorial.user_id === req.user.id || tutorial.userId === req.user.id) {
+            return res.json(tutorial);
+        }
+
+        // Check sharing permissions
+        const messages = db.get('messages') || [];
+        const conversations = db.get('conversations') || [];
+
+        const isShared = messages.some(m =>
+            m.sharedResource &&
+            String(m.sharedResource.id) === String(req.params.id) &&
+            conversations.some(c => c.id === m.conversationId && c.participants.includes(req.user.id))
+        );
+
+        if (isShared) {
+            return res.json(tutorial);
+        }
+
+        res.status(403).json({ error: 'Access denied' });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
