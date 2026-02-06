@@ -218,45 +218,12 @@ function ResourceViewerModal({ isOpen, onClose, resource, loading, onNavigate })
 };
 
 function Chat() {
-    const {
-        conversations,
-        messages,
-        activeConversation,
-        setActiveConversation,
-        sendMessage,
-        createDirectConversation,
-        shareResource,
-        createGroup,
-        joinGroup,
-        onlineUsers,
-        typingUsers,
-        sendTyping,
+    const navigate = useNavigate();
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const isAdmin = currentUser.email === (import.meta.env.VITE_ADMIN_EMAIL || 'joshuamujakari15@gmail.com');
 
-        respondToRequest,
-        activeConversation: chatActiveConversation,
-        availableGroups,
-        fetchAvailableGroups
-    } = useChat();
-
-    // Group Discovery Effect
-    useEffect(() => {
-        if (activeTab === 'groups') {
-            fetchAvailableGroups();
-        }
-    }, [activeTab, fetchAvailableGroups]);
-
-    // Handle Join Group
-    const handleJoinGroupById = async (inviteCode) => {
-        try {
-            await joinGroup(inviteCode);
-            alert('Successfully joined group!');
-            setActiveTab('chats');
-        } catch (error) {
-            alert('Failed to join group: ' + error.message);
-        }
-    };
-
-    const [activeTab, setActiveTab] = useState('chats'); // 'chats' | 'requests'
+    // --- State & Refs ---
+    const [activeTab, setActiveTab] = useState('chats');
     const [messageInput, setMessageInput] = useState('');
     const [showUserSelector, setShowUserSelector] = useState(false);
     const [showResourceShare, setShowResourceShare] = useState(false);
@@ -273,147 +240,41 @@ function Chat() {
     const [copied, setCopied] = useState(false);
     const messagesEndRef = useRef(null);
 
-    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-    const isAdmin = currentUser.email === (import.meta.env.VITE_ADMIN_EMAIL || 'joshuamujakari15@gmail.com');
+    // --- Custom Hooks ---
+    const {
+        conversations,
+        messages,
+        activeConversation,
+        setActiveConversation,
+        sendMessage,
+        createDirectConversation,
+        shareResource,
+        createGroup,
+        joinGroup,
+        onlineUsers,
+        typingUsers,
+        sendTyping,
+        respondToRequest,
+        availableGroups,
+        fetchAvailableGroups
+    } = useChat();
 
-    // Scroll to bottom when messages change
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages, typingUsers]);
-
-    // Update typing status when input changes
-    const handleInputChange = (e) => {
-        setMessageInput(e.target.value);
-        if (activeConversation) {
-            sendTyping(activeConversation.id, e.target.value.length > 0);
-        }
-    };
-
-    // Fetch users for selector
-    const fetchUsers = async () => {
-        try {
-            const response = await api.get('/users/all');
-            setUsers(response.data.filter(u => u.id !== currentUser.id));
-        } catch (error) {
-            console.error('Error fetching users:', error);
-        }
-    };
-
-    useEffect(() => {
-        if (showUserSelector) {
-            fetchUsers();
-        }
-    }, [showUserSelector]);
-
-    // Handle sending message
-    const handleSendMessage = async () => {
-        if (!messageInput.trim() || !activeConversation) return;
-
-        try {
-            await sendMessage(activeConversation.id, messageInput);
-            setMessageInput('');
-            sendTyping(activeConversation.id, false);
-        } catch (error) {
-            console.error('Error sending message:', error);
-        }
-    };
-
-    // Handle starting a conversation with a user
-    const handleSelectUser = async (userId) => {
-        try {
-            const conversation = await createDirectConversation(userId);
-            setActiveConversation(conversation);
-            setShowUserSelector(false);
-        } catch (error) {
-            console.error('Error creating conversation:', error);
-        }
-    };
-
-    // Handle creating group
-    const handleCreateGroup = async () => {
-        if (!groupName.trim()) return;
-
-        try {
-            const result = await createGroup(groupName, groupDescription);
-            setActiveConversation(result.conversation);
-            setGroupName('');
-            setGroupDescription('');
-            setShowGroupModal(false);
-            alert(`Group "${groupName}" created successfully!\n\nInvite Code: ${result.group.inviteCode}\n\nShare this code with your friends so they can join!`);
-        } catch (error) {
-            console.error('Error creating group:', error);
-            alert(error.response?.data?.error || 'Failed to create group');
-        }
-    };
-
-    // Handle joining group
-    const handleJoinGroup = async () => {
-        if (!inviteCode.trim()) return;
-
-        try {
-            await joinGroup(inviteCode);
-            setInviteCode('');
-            setShowJoinGroup(false);
-            alert('Successfully joined group!');
-        } catch (error) {
-            console.error('Error joining group:', error);
-            alert(error.response?.data?.error || 'Failed to join group');
-        }
-    };
-
-    // Handle copying invite code
-    const handleCopyInviteCode = (code) => {
-        if (!code) return;
-        navigator.clipboard.writeText(code);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
-
-    const navigate = useNavigate();
-
-    // Handle opening a shared resource
-    const handleOpenResource = async (resource) => {
-        setViewerLoading(true);
-        setShowResourceViewer(true);
-        setSelectedResourceData(null); // Reset while loading
-
-        try {
-            let endpoint = '';
-            switch (resource.type) {
-                case 'note': endpoint = `/notes/${resource.resourceId}`; break;
-                case 'flashcard': endpoint = `/flashcardDecks/${resource.resourceId}`; break;
-                case 'tutorial': endpoint = `/tutorials/${resource.resourceId}`; break;
-                default: throw new Error('Unknown resource type');
-            }
-
-            const response = await api.get(endpoint);
-            setSelectedResourceData({ ...response.data, type: resource.type });
-        } catch (error) {
-            console.error('Error fetching resource details:', error);
-            alert('Failed to load resource details. It might have been deleted.');
-            setShowResourceViewer(false);
-        } finally {
-            setViewerLoading(false);
-        }
-    };
-
-    // Format timestamp
-    const formatMessageTime = (timestamp) => {
+    // --- Hoisted Functions ---
+    function formatMessageTime(timestamp) {
         if (!timestamp) return '';
         const date = new Date(timestamp);
         return format(date, 'h:mm a');
-    };
+    }
 
-    const formatLastMessageTime = (timestamp) => {
+    function formatLastMessageTime(timestamp) {
         if (!timestamp) return '';
         const date = new Date(timestamp);
         if (isToday(date)) return format(date, 'h:mm a');
         if (isYesterday(date)) return 'Yesterday';
         return format(date, 'MMM d');
-    };
+    }
 
-    // Get conversation title & status
-    const getConversationDisplay = (conv) => {
+    function getConversationDisplay(conv) {
         if (conv.type === 'group') {
             return {
                 title: conv.groupName || 'Group Chat',
@@ -428,39 +289,142 @@ function Chat() {
             status: isOnline ? 'Online' : 'Offline',
             isOnline
         };
-    };
+    }
 
-    const filteredUsers = users.filter(u =>
-        u.email.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    // Get typing users text
-    const getTypingText = () => {
+    function getTypingText() {
         if (!activeConversation || typingUsers.size === 0) return null;
-
-        // Filter typing users relevant to this conversation
         const typingInChat = Array.from(typingUsers).filter(uid =>
             activeConversation.participants?.includes(uid) && uid !== currentUser.id
         );
-
         if (typingInChat.length === 0) return null;
         if (typingInChat.length === 1) return 'Typing...';
         return 'Multiple people typing...';
-    };
+    }
 
-    // Filter conversations
-    const activeChats = conversations.filter(c =>
-        !c.status || c.status === 'active' || (c.status === 'pending' && c.initiatorId === currentUser.id)
-    );
+    // --- Effects ---
+    useEffect(() => {
+        if (activeTab === 'groups') {
+            fetchAvailableGroups();
+        }
+    }, [activeTab, fetchAvailableGroups]);
 
-    const pendingRequests = conversations.filter(c =>
-        c.status === 'pending' && c.initiatorId !== currentUser.id && c.type === 'direct'
-    );
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages, typingUsers]);
 
-    const displayList = activeTab === 'chats' ? activeChats : pendingRequests;
+    useEffect(() => {
+        if (showUserSelector) {
+            fetchUsers();
+        }
+    }, [showUserSelector]);
 
-    // Handle Request Response
-    const handleRequestResponse = async (status) => {
+    // --- Handlers ---
+    async function fetchUsers() {
+        try {
+            const response = await api.get('/users/all');
+            setUsers(response.data.filter(u => u.id !== currentUser.id));
+        } catch (error) {
+            console.error('Error fetching users:', error);
+        }
+    }
+
+    async function handleJoinGroupById(invCode) {
+        try {
+            await joinGroup(invCode);
+            alert('Successfully joined group!');
+            setActiveTab('chats');
+        } catch (error) {
+            alert('Failed to join group: ' + error.message);
+        }
+    }
+
+    function handleInputChange(e) {
+        setMessageInput(e.target.value);
+        if (activeConversation) {
+            sendTyping(activeConversation.id, e.target.value.length > 0);
+        }
+    }
+
+    async function handleSendMessage() {
+        if (!messageInput.trim() || !activeConversation) return;
+        try {
+            await sendMessage(activeConversation.id, messageInput);
+            setMessageInput('');
+            sendTyping(activeConversation.id, false);
+        } catch (error) {
+            console.error('Error sending message:', error);
+        }
+    }
+
+    async function handleSelectUser(userId) {
+        try {
+            const conversation = await createDirectConversation(userId);
+            setActiveConversation(conversation);
+            setShowUserSelector(false);
+        } catch (error) {
+            console.error('Error creating conversation:', error);
+        }
+    }
+
+    async function handleCreateGroup() {
+        if (!groupName.trim()) return;
+        try {
+            const result = await createGroup(groupName, groupDescription);
+            setActiveConversation(result.conversation);
+            setGroupName('');
+            setGroupDescription('');
+            setShowGroupModal(false);
+            alert(`Group "${groupName}" created successfully!\n\nInvite Code: ${result.group.inviteCode}\n\nShare this code with your friends so they can join!`);
+        } catch (error) {
+            console.error('Error creating group:', error);
+            alert(error.response?.data?.error || 'Failed to create group');
+        }
+    }
+
+    async function handleJoinGroup() {
+        if (!inviteCode.trim()) return;
+        try {
+            await joinGroup(inviteCode);
+            setInviteCode('');
+            setShowJoinGroup(false);
+            alert('Successfully joined group!');
+        } catch (error) {
+            console.error('Error joining group:', error);
+            alert(error.response?.data?.error || 'Failed to join group');
+        }
+    }
+
+    function handleCopyInviteCode(code) {
+        if (!code) return;
+        navigator.clipboard.writeText(code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    }
+
+    async function handleOpenResource(resource) {
+        setViewerLoading(true);
+        setShowResourceViewer(true);
+        setSelectedResourceData(null);
+        try {
+            let endpoint = '';
+            switch (resource.type) {
+                case 'note': endpoint = `/notes/${resource.resourceId}`; break;
+                case 'flashcard': endpoint = `/flashcardDecks/${resource.resourceId}`; break;
+                case 'tutorial': endpoint = `/tutorials/${resource.resourceId}`; break;
+                default: throw new Error('Unknown resource type');
+            }
+            const response = await api.get(endpoint);
+            setSelectedResourceData({ ...response.data, type: resource.type });
+        } catch (error) {
+            console.error('Error fetching resource details:', error);
+            alert('Failed to load resource details. It might have been deleted.');
+            setShowResourceViewer(false);
+        } finally {
+            setViewerLoading(false);
+        }
+    }
+
+    async function handleRequestResponse(status) {
         if (!activeConversation) return;
         try {
             await respondToRequest(activeConversation.id, status);
@@ -470,7 +434,20 @@ function Chat() {
         } catch (error) {
             console.error('Error responding:', error);
         }
-    };
+    }
+
+    // --- Derived ---
+    const filteredUsers = users.filter(u =>
+        u.email.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    const activeChats = conversations.filter(c =>
+        !c.status || c.status === 'active' || (c.status === 'pending' && c.initiatorId === currentUser.id)
+    );
+    const pendingRequests = conversations.filter(c =>
+        c.status === 'pending' && c.initiatorId !== currentUser.id && c.type === 'direct'
+    );
+    const displayList = activeTab === 'chats' ? activeChats : pendingRequests;
+
 
     return (
         <div className="flex h-[calc(100vh-120px)] gap-4 p-6">
