@@ -11,6 +11,211 @@ import Modal from '../components/ui/Modal';
 import ResourceShareModal from '../components/chat/ResourceShareModal';
 import api from '../services/api';
 
+// Message Bubble Component
+const MessageBubble = ({ message, isOwn, handleOpenResource, formatTime }) => {
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+        >
+            <div className={`max-w-[75%] ${isOwn ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
+                <div className="flex items-center gap-2 px-1">
+                    {!isOwn && (
+                        <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">
+                            {message.senderEmail.split('@')[0]}
+                        </span>
+                    )}
+                </div>
+                <div
+                    className={`px-4 py-2.5 rounded-2xl shadow-sm ${isOwn
+                        ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-tr-none border border-blue-400/20'
+                        : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-tl-none border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-sm shadow-slate-200/50 dark:shadow-none'
+                        }`}
+                >
+                    {message.sharedResource ? (
+                        <ResourceCard
+                            resource={message.sharedResource}
+                            onClick={() => handleOpenResource(message.sharedResource)}
+                        />
+                    ) : (
+                        <p className="text-[13px] leading-relaxed break-words">{message.content}</p>
+                    )}
+                </div>
+                <div className="flex items-center gap-1 mt-0.5 px-1">
+                    <span className="text-[9px] text-slate-400 font-medium uppercase tracking-tighter">
+                        {formatTime(message.timestamp)}
+                    </span>
+                    {isOwn && (
+                        <span className="text-slate-400">
+                            {message.read ? (
+                                <CheckCheck size={12} className="text-blue-500" />
+                            ) : (
+                                <Check size={12} />
+                            )}
+                        </span>
+                    )}
+                </div>
+            </div>
+        </motion.div>
+    );
+};
+
+// Resource Card Component (for shared items)
+const ResourceCard = ({ resource, onClick }) => {
+    const getTypeStyles = (type) => {
+        switch (type) {
+            case 'note': return { icon: <FileText size={14} />, color: 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-900/10' };
+            case 'flashcard': return { icon: <Brain size={14} />, color: 'border-purple-500 text-purple-600 dark:text-purple-400 bg-purple-50/50 dark:bg-purple-900/10' };
+            case 'tutorial': return { icon: <Youtube size={14} />, color: 'border-rose-500 text-rose-600 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-900/10' };
+            default: return { icon: <Share2 size={14} />, color: 'border-slate-500 text-slate-600' };
+        }
+    };
+
+    const styles = getTypeStyles(resource.type);
+
+    return (
+        <motion.div
+            whileHover={{ y: -2 }}
+            className={`bg-white dark:bg-slate-900/90 p-3 rounded-xl border-l-4 ${styles.color} shadow-sm min-w-[200px] cursor-pointer group`}
+            onClick={onClick}
+        >
+            <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    {styles.icon}
+                    <span className="text-[9px] font-bold uppercase tracking-wider">{resource.type}</span>
+                </div>
+                <ExternalLink size={12} className="text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+            <div className="font-bold text-slate-800 dark:text-slate-100 text-xs mb-1 line-clamp-1">
+                {resource.title}
+            </div>
+            {resource.preview && (
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                    {resource.preview}
+                </div>
+            )}
+        </motion.div>
+    );
+};
+
+// Resource Viewer Modal
+const ResourceViewerModal = ({ isOpen, onClose, resource, loading, onNavigate }) => {
+    if (!isOpen) return null;
+
+    const getYouTubeId = (url) => {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url?.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    };
+
+    return (
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={resource ? `Viewing ${resource.type}: ${resource.title || resource.name}` : 'Loading...'}
+            size="lg"
+        >
+            <div className="min-h-[300px] max-h-[60vh] overflow-y-auto">
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center h-48 space-y-4">
+                        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+                        <p className="text-slate-500 text-sm">Fetching resource details...</p>
+                    </div>
+                ) : resource ? (
+                    <div className="space-y-6 p-2">
+                        {/* Note View */}
+                        {resource.type === 'note' && (
+                            <div className="space-y-4 text-slate-800 dark:text-slate-200">
+                                <p className="text-sm border-l-4 border-emerald-500 pl-4 py-1 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-r-lg">
+                                    {resource.content || 'No content provided.'}
+                                </p>
+                                {resource.pdfPath && (
+                                    <a
+                                        href={resource.pdfPath}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl hover:bg-blue-100 transition-colors"
+                                    >
+                                        <FileText size={18} />
+                                        <span>View Attached PDF Document</span>
+                                    </a>
+                                )}
+                                <Button
+                                    variant="secondary"
+                                    className="w-full h-12 rounded-xl flex items-center justify-center gap-2"
+                                    onClick={() => onNavigate('/notes')}
+                                >
+                                    <ExternalLink size={18} />
+                                    <span>Open in Notes Manager</span>
+                                </Button>
+                            </div>
+                        )}
+
+                        {/* Tutorial View */}
+                        {resource.type === 'tutorial' && (
+                            <div className="space-y-4">
+                                {getYouTubeId(resource.url) ? (
+                                    <div className="aspect-video rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl">
+                                        <iframe
+                                            className="w-full h-full"
+                                            src={`https://www.youtube.com/embed/${getYouTubeId(resource.url)}`}
+                                            title="YouTube video player"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        ></iframe>
+                                    </div>
+                                ) : (
+                                    <div className="p-12 text-center bg-slate-50 dark:bg-slate-800/50 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-700">
+                                        <Youtube size={48} className="mx-auto text-slate-300 mb-4" />
+                                        <p className="text-slate-500">This tutorial is a direct link.</p>
+                                    </div>
+                                )}
+                                <Button
+                                    variant="primary"
+                                    className="w-full h-12 rounded-xl flex items-center justify-center gap-2"
+                                    onClick={() => window.open(resource.url, '_blank')}
+                                >
+                                    <ExternalLink size={18} />
+                                    <span>Open Resource Link</span>
+                                </Button>
+                            </div>
+                        )}
+
+                        {/* Flashcard View */}
+                        {resource.type === 'flashcard' && (
+                            <div className="space-y-6 py-4">
+                                <div className="text-center p-8 bg-purple-50 dark:bg-purple-900/10 rounded-3xl border border-purple-100 dark:border-purple-900/30">
+                                    <Brain size={48} className="mx-auto text-purple-500 mb-4" />
+                                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+                                        {resource.name || resource.title}
+                                    </h3>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                                        Master this deck using Spaced Repetition.
+                                    </p>
+                                </div>
+                                <Button
+                                    variant="primary"
+                                    className="w-full h-14 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20"
+                                    onClick={() => onNavigate('/flashcards')}
+                                >
+                                    <Play size={20} />
+                                    <span className="text-lg">Start Study Session</span>
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <div className="text-center py-20">
+                        <X size={48} className="mx-auto text-red-500/50 mb-4" />
+                        <p className="text-slate-600 dark:text-slate-400 font-medium">Resource not found.</p>
+                    </div>
+                )}
+            </div>
+        </Modal>
+    );
+};
+
 const Chat = () => {
     const {
         conversations,
@@ -724,209 +929,6 @@ const Chat = () => {
     );
 };
 
-// Message Bubble Component
-const MessageBubble = ({ message, isOwn, handleOpenResource, formatTime }) => {
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
-        >
-            <div className={`max-w-[75%] ${isOwn ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
-                <div className="flex items-center gap-2 px-1">
-                    {!isOwn && (
-                        <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">
-                            {message.senderEmail.split('@')[0]}
-                        </span>
-                    )}
-                </div>
-                <div
-                    className={`px-4 py-2.5 rounded-2xl shadow-sm ${isOwn
-                        ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-tr-none border border-blue-400/20'
-                        : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-tl-none border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-sm shadow-slate-200/50 dark:shadow-none'
-                        }`}
-                >
-                    {message.sharedResource ? (
-                        <ResourceCard
-                            resource={message.sharedResource}
-                            onClick={() => handleOpenResource(message.sharedResource)}
-                        />
-                    ) : (
-                        <p className="text-[13px] leading-relaxed break-words">{message.content}</p>
-                    )}
-                </div>
-                <div className="flex items-center gap-1 mt-0.5 px-1">
-                    <span className="text-[9px] text-slate-400 font-medium uppercase tracking-tighter">
-                        {formatTime(message.timestamp)}
-                    </span>
-                    {isOwn && (
-                        <span className="text-slate-400">
-                            {message.read ? (
-                                <CheckCheck size={12} className="text-blue-500" />
-                            ) : (
-                                <Check size={12} />
-                            )}
-                        </span>
-                    )}
-                </div>
-            </div>
-        </motion.div>
-    );
-};
 
-// Resource Card Component (for shared items)
-const ResourceCard = ({ resource, onClick }) => {
-    const getTypeStyles = (type) => {
-        switch (type) {
-            case 'note': return { icon: <FileText size={14} />, color: 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-900/10' };
-            case 'flashcard': return { icon: <Brain size={14} />, color: 'border-purple-500 text-purple-600 dark:text-purple-400 bg-purple-50/50 dark:bg-purple-900/10' };
-            case 'tutorial': return { icon: <Youtube size={14} />, color: 'border-rose-500 text-rose-600 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-900/10' };
-            default: return { icon: <Share2 size={14} />, color: 'border-slate-500 text-slate-600' };
-        }
-    };
-
-    const styles = getTypeStyles(resource.type);
-
-    return (
-        <motion.div
-            whileHover={{ y: -2 }}
-            className={`bg-white dark:bg-slate-900/90 p-3 rounded-xl border-l-4 ${styles.color} shadow-sm min-w-[200px] cursor-pointer group`}
-            onClick={onClick}
-        >
-            <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                    {styles.icon}
-                    <span className="text-[9px] font-bold uppercase tracking-wider">{resource.type}</span>
-                </div>
-                <ExternalLink size={12} className="text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-            <div className="font-bold text-slate-800 dark:text-slate-100 text-xs mb-1 line-clamp-1">
-                {resource.title}
-            </div>
-            {resource.preview && (
-                <div className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
-                    {resource.preview}
-                </div>
-            )}
-        </motion.div>
-    );
-};
-
-// Resource Viewer Modal
-const ResourceViewerModal = ({ isOpen, onClose, resource, loading, onNavigate }) => {
-    if (!isOpen) return null;
-
-    const getYouTubeId = (url) => {
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-        const match = url?.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : null;
-    };
-
-    return (
-        <Modal
-            isOpen={isOpen}
-            onClose={onClose}
-            title={resource ? `Viewing ${resource.type}: ${resource.title || resource.name}` : 'Loading...'}
-            size="lg"
-        >
-            <div className="min-h-[300px] max-h-[60vh] overflow-y-auto">
-                {loading ? (
-                    <div className="flex flex-col items-center justify-center h-48 space-y-4">
-                        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
-                        <p className="text-slate-500 text-sm">Fetching resource details...</p>
-                    </div>
-                ) : resource ? (
-                    <div className="space-y-6 p-2">
-                        {/* Note View */}
-                        {resource.type === 'note' && (
-                            <div className="space-y-4 text-slate-800 dark:text-slate-200">
-                                <p className="text-sm border-l-4 border-emerald-500 pl-4 py-1 bg-emerald-50/50 dark:bg-emerald-900/10 rounded-r-lg">
-                                    {resource.content || 'No content provided.'}
-                                </p>
-                                {resource.pdfPath && (
-                                    <a
-                                        href={resource.pdfPath}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center gap-2 text-blue-600 dark:text-blue-400 font-bold bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl hover:bg-blue-100 transition-colors"
-                                    >
-                                        <FileText size={18} />
-                                        <span>View Attached PDF Document</span>
-                                    </a>
-                                )}
-                                <Button
-                                    variant="secondary"
-                                    className="w-full h-12 rounded-xl flex items-center justify-center gap-2"
-                                    onClick={() => onNavigate('/notes')}
-                                >
-                                    <ExternalLink size={18} />
-                                    <span>Open in Notes Manager</span>
-                                </Button>
-                            </div>
-                        )}
-
-                        {/* Tutorial View */}
-                        {resource.type === 'tutorial' && (
-                            <div className="space-y-4">
-                                {getYouTubeId(resource.url) ? (
-                                    <div className="aspect-video rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl">
-                                        <iframe
-                                            className="w-full h-full"
-                                            src={`https://www.youtube.com/embed/${getYouTubeId(resource.url)}`}
-                                            title="YouTube video player"
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                            allowFullScreen
-                                        ></iframe>
-                                    </div>
-                                ) : (
-                                    <div className="p-12 text-center bg-slate-50 dark:bg-slate-800/50 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-700">
-                                        <Youtube size={48} className="mx-auto text-slate-300 mb-4" />
-                                        <p className="text-slate-500">This tutorial is a direct link.</p>
-                                    </div>
-                                )}
-                                <Button
-                                    variant="primary"
-                                    className="w-full h-12 rounded-xl flex items-center justify-center gap-2"
-                                    onClick={() => window.open(resource.url, '_blank')}
-                                >
-                                    <ExternalLink size={18} />
-                                    <span>Open Resource Link</span>
-                                </Button>
-                            </div>
-                        )}
-
-                        {/* Flashcard View */}
-                        {resource.type === 'flashcard' && (
-                            <div className="space-y-6 py-4">
-                                <div className="text-center p-8 bg-purple-50 dark:bg-purple-900/10 rounded-3xl border border-purple-100 dark:border-purple-900/30">
-                                    <Brain size={48} className="mx-auto text-purple-500 mb-4" />
-                                    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">
-                                        {resource.name || resource.title}
-                                    </h3>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                                        Master this deck using Spaced Repetition.
-                                    </p>
-                                </div>
-                                <Button
-                                    variant="primary"
-                                    className="w-full h-14 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20"
-                                    onClick={() => onNavigate('/flashcards')}
-                                >
-                                    <Play size={20} />
-                                    <span className="text-lg">Start Study Session</span>
-                                </Button>
-                            </div>
-                        )}
-                    </div>
-                ) : (
-                    <div className="text-center py-20">
-                        <X size={48} className="mx-auto text-red-500/50 mb-4" />
-                        <p className="text-slate-600 dark:text-slate-400 font-medium">Resource not found.</p>
-                    </div>
-                )}
-            </div>
-        </Modal>
-    );
-};
 
 export default Chat;
