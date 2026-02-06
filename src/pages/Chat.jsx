@@ -59,9 +59,14 @@ const Chat = () => {
 
     useEffect(() => {
         if (showUserSelector) {
+            console.log('Fetching users for selector...');
             fetchUsers();
         }
     }, [showUserSelector]);
+
+    console.log('Current users state:', users);
+    console.log('Filtered users:', filteredUsers);
+    console.log('Current UI user:', currentUser);
 
     // Handle sending message
     const handleSendMessage = async () => {
@@ -312,17 +317,27 @@ const Chat = () => {
                         icon={Search}
                     />
                     <div className="max-h-96 overflow-y-auto space-y-2">
-                        {filteredUsers.map((user) => (
-                            <motion.div
-                                key={user.id}
-                                whileHover={{ scale: 1.02 }}
-                                onClick={() => handleSelectUser(user.id)}
-                                className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                            >
-                                <div className="font-medium text-slate-800 dark:text-slate-100">{user.email}</div>
-                                <div className="text-xs text-slate-500">Level {user.level} • {user.xp} XP</div>
-                            </motion.div>
-                        ))}
+                        {users.length === 0 ? (
+                            <div className="text-center py-8 text-slate-500">
+                                <p>No users found on the server.</p>
+                            </div>
+                        ) : filteredUsers.length === 0 ? (
+                            <div className="text-center py-8 text-slate-500">
+                                <p>No users match your search.</p>
+                            </div>
+                        ) : (
+                            filteredUsers.map((user) => (
+                                <motion.div
+                                    key={user.id}
+                                    whileHover={{ scale: 1.02 }}
+                                    onClick={() => handleSelectUser(user.id)}
+                                    className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                >
+                                    <div className="font-medium text-slate-800 dark:text-slate-100">{user.email}</div>
+                                    <div className="text-xs text-slate-500">Level {user.level} • {user.xp} XP</div>
+                                </motion.div>
+                            ))
+                        )}
                     </div>
                 </div>
             </Modal>
