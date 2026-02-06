@@ -541,6 +541,18 @@ const collections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 'flashc
 
 const genericCollections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 'flashcardDecks', 'flashcards', 'calendarEvents', 'pomodoroSessions'];
 
+const tableMap = {
+    'modules': 'modules',
+    'studyLogs': 'study_logs',
+    'tasks': 'tasks',
+    'notes': 'notes',
+    'grades': 'grades',
+    'flashcardDecks': 'flashcard_decks',
+    'flashcards': 'flashcards',
+    'calendarEvents': 'calendar_events',
+    'pomodoroSessions': 'pomodoro_sessions'
+};
+
 genericCollections.forEach(collection => {
     app.get(`/api/${collection}`, authenticateToken, (req, res) => {
         const items = db.get(collection);
@@ -549,20 +561,46 @@ genericCollections.forEach(collection => {
         res.json(userItems);
     });
 
-    app.post(`/api/${collection}`, authenticateToken, (req, res) => {
+    app.post(`/api/${collection}`, authenticateToken, async (req, res) => {
         // Attach userId to new items
         const item = db.insert(collection, { ...req.body, userId: req.user.id });
+
+        // Sync to Supabase
+        const supabaseTable = tableMap[collection];
+        if (supabaseTable) {
+            const cloudItem = await supabasePersistence.upsertToCollection(supabaseTable, item);
+            if (cloudItem) {
+                db.update(collection, item.id, { supabaseId: cloudItem.id });
+                return res.json({ ...item, supabaseId: cloudItem.id });
+            }
+        }
+
         res.json(item);
     });
 
-    app.put(`/api/${collection}/:id`, authenticateToken, (req, res) => {
+    app.put(`/api/${collection}/:id`, authenticateToken, async (req, res) => {
         const item = db.update(collection, req.params.id, req.body);
-        if (item) res.json(item);
-        else res.sendStatus(404);
+        if (item) {
+            // Sync update to Supabase
+            const supabaseTable = tableMap[collection];
+            if (supabaseTable) {
+                await supabasePersistence.upsertToCollection(supabaseTable, item);
+            }
+            res.json(item);
+        } else {
+            res.sendStatus(404);
+        }
     });
 
-    app.delete(`/api/${collection}/:id`, authenticateToken, (req, res) => {
+    app.delete(`/api/${collection}/:id`, authenticateToken, async (req, res) => {
         db.delete(collection, req.params.id);
+
+        // Sync delete to Supabase
+        const supabaseTable = tableMap[collection];
+        if (supabaseTable) {
+            await supabasePersistence.deleteFromCollection(supabaseTable, req.params.id);
+        }
+
         res.sendStatus(204);
     });
 
@@ -1090,6 +1128,20 @@ const syncLocalDataToCloud = async () => {
                 const cloudMsg = await supabasePersistence.insertMessage(messageData);
                 if (cloudMsg) {
                     db.update('messages', localMsg.id, { supabaseId: cloudMsg.id });
+                }
+            }
+        }
+
+        // 4. Sync Generic Collections (Notes, Tasks, etc.)
+        for (const [localCol, remoteTable] of Object.entries(tableMap)) {
+            const items = db.get(localCol) || [];
+            for (const localItem of items) {
+                if (!localItem.supabaseId) {
+                    console.log(`📡 Syncing ${localCol} item: ${localItem.id}`);
+                    const cloudItem = await supabasePersistence.upsertToCollection(remoteTable, localItem);
+                    if (cloudItem) {
+                        db.update(localCol, localItem.id, { supabaseId: cloudItem.id });
+                    }
                 }
             }
         }

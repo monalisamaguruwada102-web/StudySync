@@ -85,6 +85,10 @@ const migrate = async () => {
                     newItem.completed_at = newItem.completedAt;
                     delete newItem.completedAt;
                 }
+                if (newItem.userId) {
+                    newItem.user_id = newItem.userId;
+                    delete newItem.userId;
+                }
                 if (newItem.createdAt) {
                     newItem.created_at = newItem.createdAt;
                     delete newItem.createdAt;
