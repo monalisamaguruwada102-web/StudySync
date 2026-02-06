@@ -344,7 +344,7 @@ const Notes = () => {
                                     ))}
                                 </div>
                             </div>
-                        )
+                        )}
 
                         {/* Fallback for old single audioPath format */}
                         {note.audioPath && !note.audioEpisodes && (
