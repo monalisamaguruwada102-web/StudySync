@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, Send, Share2, Users, Plus, Search, X } from 'lucide-react';
+import { MessageCircle, Send, Share2, Users, Plus, Search, X, Copy, Check, FileText, Brain, Youtube, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useChat from '../hooks/useChat';
 import Card from '../components/ui/Card';
@@ -32,6 +32,7 @@ const Chat = () => {
     const [groupName, setGroupName] = useState('');
     const [groupDescription, setGroupDescription] = useState('');
     const [inviteCode, setInviteCode] = useState('');
+    const [copied, setCopied] = useState(false);
     const messagesEndRef = useRef(null);
 
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
@@ -92,6 +93,7 @@ const Chat = () => {
             setGroupName('');
             setGroupDescription('');
             setShowGroupModal(false);
+            alert(`Group "${groupName}" created successfully!\n\nInvite Code: ${result.group.inviteCode}\n\nShare this code with your friends so they can join!`);
         } catch (error) {
             console.error('Error creating group:', error);
             alert(error.response?.data?.error || 'Failed to create group');
@@ -111,6 +113,14 @@ const Chat = () => {
             console.error('Error joining group:', error);
             alert(error.response?.data?.error || 'Failed to join group');
         }
+    };
+
+    // Handle copying invite code
+    const handleCopyInviteCode = (code) => {
+        if (!code) return;
+        navigator.clipboard.writeText(code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
     };
 
     // Format timestamp
@@ -236,24 +246,43 @@ const Chat = () => {
                             {/* Chat Header */}
                             <div className="p-4 border-b border-slate-200 dark:border-slate-700">
                                 <div className="flex items-center justify-between">
-                                    <div>
-                                        <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100">
-                                            {getConversationTitle(activeConversation)}
-                                        </h2>
-                                        {activeConversation.type === 'direct' && activeConversation.otherUser && (
-                                            <p className="text-xs text-slate-500">
-                                                Level {activeConversation.otherUser.level} • {activeConversation.otherUser.xp} XP
-                                            </p>
-                                        )}
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex flex-col">
+                                            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 leading-tight">
+                                                {getConversationTitle(activeConversation)}
+                                            </h2>
+                                            {activeConversation.type === 'direct' ? (
+                                                activeConversation.otherUser && (
+                                                    <p className="text-xs text-slate-500">
+                                                        Level {activeConversation.otherUser.level} • {activeConversation.otherUser.xp} XP
+                                                    </p>
+                                                )
+                                            ) : (
+                                                <div className="flex items-center gap-2 mt-0.5">
+                                                    <span className="text-[10px] font-mono bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-400 uppercase tracking-wider border border-slate-200 dark:border-slate-700">
+                                                        Code: {activeConversation.inviteCode || '...'}
+                                                    </span>
+                                                    <button
+                                                        onClick={() => handleCopyInviteCode(activeConversation.inviteCode)}
+                                                        className="text-blue-500 hover:text-blue-600 transition-colors"
+                                                        title="Copy Invite Code"
+                                                    >
+                                                        {copied ? <Check size={12} /> : <Copy size={12} />}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                    <Button
-                                        onClick={() => setShowResourceShare(true)}
-                                        variant="secondary"
-                                        className="text-sm"
-                                    >
-                                        <Share2 size={16} />
-                                        Share
-                                    </Button>
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            onClick={() => setShowResourceShare(true)}
+                                            variant="secondary"
+                                            className="text-xs h-9 px-3"
+                                        >
+                                            <Share2 size={14} />
+                                            Share Resource
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -399,23 +428,27 @@ const MessageBubble = ({ message, isOwn }) => {
             animate={{ opacity: 1, y: 0 }}
             className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
         >
-            <div className={`max-w-[70%] ${isOwn ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
-                {!isOwn && (
-                    <span className="text-xs text-slate-500 px-2">{message.senderEmail}</span>
-                )}
+            <div className={`max-w-[75%] ${isOwn ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
+                <div className="flex items-center gap-2 px-1">
+                    {!isOwn && (
+                        <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">
+                            {message.senderEmail.split('@')[0]}
+                        </span>
+                    )}
+                </div>
                 <div
-                    className={`px-4 py-2 rounded-2xl ${isOwn
-                        ? 'bg-blue-500 text-white rounded-br-sm'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-bl-sm'
+                    className={`px-4 py-2.5 rounded-2xl shadow-sm ${isOwn
+                        ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-tr-none border border-blue-400/20'
+                        : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-tl-none border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-sm shadow-slate-200/50 dark:shadow-none'
                         }`}
                 >
                     {message.sharedResource ? (
                         <ResourceCard resource={message.sharedResource} />
                     ) : (
-                        <p className="text-sm break-words">{message.content}</p>
+                        <p className="text-[13px] leading-relaxed break-words">{message.content}</p>
                     )}
                 </div>
-                <span className="text-[10px] text-slate-400 px-2">
+                <span className="text-[9px] text-slate-400 px-1 mt-0.5 font-medium uppercase tracking-tighter">
                     {new Date(message.timestamp).toLocaleTimeString('en-US', {
                         hour: '2-digit',
                         minute: '2-digit'
@@ -428,20 +461,41 @@ const MessageBubble = ({ message, isOwn }) => {
 
 // Resource Card Component (for shared items)
 const ResourceCard = ({ resource }) => {
+    const getTypeStyles = (type) => {
+        switch (type) {
+            case 'note': return { icon: <FileText size={14} />, color: 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-900/10' };
+            case 'flashcard': return { icon: <Brain size={14} />, color: 'border-purple-500 text-purple-600 dark:text-purple-400 bg-purple-50/50 dark:bg-purple-900/10' };
+            case 'tutorial': return { icon: <Youtube size={14} />, color: 'border-rose-500 text-rose-600 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-900/10' };
+            default: return { icon: <Share2 size={14} />, color: 'border-slate-500 text-slate-600' };
+        }
+    };
+
+    const styles = getTypeStyles(resource.type);
+
     return (
-        <div className="bg-white dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
-            <div className="text-xs text-blue-600 dark:text-blue-400 font-semibold mb-1">
-                📎 Shared {resource.type}
+        <motion.div
+            whileHover={{ y: -2 }}
+            className={`bg-white dark:bg-slate-900/90 p-3 rounded-xl border-l-4 ${styles.color} shadow-sm min-w-[200px] cursor-pointer group`}
+            onClick={() => {
+                // Future: Open resource detail modal/page
+            }}
+        >
+            <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    {styles.icon}
+                    <span className="text-[9px] font-bold uppercase tracking-wider">{resource.type}</span>
+                </div>
+                <ExternalLink size={12} className="text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
-            <div className="font-medium text-slate-800 dark:text-slate-100 text-sm mb-1">
+            <div className="font-bold text-slate-800 dark:text-slate-100 text-xs mb-1 line-clamp-1">
                 {resource.title}
             </div>
             {resource.preview && (
-                <div className="text-xs text-slate-500 truncate">
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
                     {resource.preview}
                 </div>
             )}
-        </div>
+        </motion.div>
     );
 };
 
