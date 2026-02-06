@@ -1,0 +1,1 @@
+import{t as n,c as o}from"./toDate-BKXxHYqX.js";import{n as f}from"./format-DmV111vt.js";import{s}from"./startOfDay-jrD5UjnC.js";function u(r,a,e){const t=n(r,e?.in);return isNaN(a)?o(r,NaN):(a&&t.setDate(t.getDate()+a),t)}function d(r,a,e){const[t,i]=f(e?.in,r,a);return+s(t)==+s(i)}export{u as a,d as i};

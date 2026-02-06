@@ -1,0 +1,1 @@
+const t=["#6366f1","#ec4899","#22c55e","#f59e0b","#3b82f6","#a855f7","#ef4444","#06b6d4","#8b5cf6","#10b981"],b=(e,l=0)=>{if(typeof e=="number")return t[e%t.length];if(!e)return t[l%t.length];let o=0;for(let h=0;h<e.length;h++)o=e.charCodeAt(h)+((o<<5)-o);return t[Math.abs(o)%t.length]};export{b as g};
