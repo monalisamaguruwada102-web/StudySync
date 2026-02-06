@@ -213,7 +213,7 @@ app.post('/api/user/xp', authenticateToken, (req, res) => {
 
 // --- CRUD ROUTES ---
 
-const collections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 'flashcardDecks', 'flashcards', 'calendarEvents', 'pomodoroSessions'];
+const collections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 'flashcardDecks', 'flashcards', 'calendarEvents', 'pomodoroSessions', 'tutorials'];
 
 collections.forEach(collection => {
     app.get(`/api/${collection}`, authenticateToken, (req, res) => {
