@@ -112,6 +112,7 @@ const mapRow = (row) => {
         else if (key === 'module_id') mapped.moduleId = row[key];
         else if (key === 'created_at') mapped.createdAt = row[key];
         else if (key === 'updated_at') mapped.updatedAt = row[key];
+        else if (key === 'video_id') mapped.videoId = row[key];
         else if (key === 'due_date') mapped.dueDate = row[key];
         else if (key === 'start_time') mapped.startTime = row[key];
         else if (key === 'end_time') mapped.endTime = row[key];
@@ -139,6 +140,7 @@ const mapToTable = (item) => {
         else if (key === 'moduleId') mapped.module_id = item[key];
         else if (key === 'createdAt') mapped.created_at = item[key];
         else if (key === 'updated_at') mapped.updated_at = item[key];
+        else if (key === 'videoId') mapped.video_id = item[key];
         else if (key === 'dueDate') mapped.due_date = item[key];
         else if (key === 'startTime') mapped.start_time = item[key];
         else if (key === 'endTime') mapped.end_time = item[key];

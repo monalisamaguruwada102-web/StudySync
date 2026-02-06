@@ -647,7 +647,7 @@ app.post('/api/conversations/:id/read', authenticateToken, async (req, res) => {
 
 const collections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 'flashcardDecks', 'flashcards', 'calendarEvents', 'pomodoroSessions', 'tutorials', 'conversations', 'messages', 'groups'];
 
-const genericCollections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 'flashcardDecks', 'flashcards', 'calendarEvents', 'pomodoroSessions'];
+const genericCollections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 'flashcardDecks', 'flashcards', 'calendarEvents', 'pomodoroSessions', 'tutorials'];
 
 const tableMap = {
     'modules': 'modules',
@@ -658,7 +658,8 @@ const tableMap = {
     'flashcardDecks': 'flashcard_decks',
     'flashcards': 'flashcards',
     'calendarEvents': 'calendar_events',
-    'pomodoroSessions': 'pomodoro_sessions'
+    'pomodoroSessions': 'pomodoro_sessions',
+    'tutorials': 'tutorials'
 };
 
 genericCollections.forEach(collection => {

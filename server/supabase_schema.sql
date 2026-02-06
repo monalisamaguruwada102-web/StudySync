@@ -92,6 +92,20 @@ CREATE TABLE IF NOT EXISTS pomodoro_sessions (
   completed_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- 10. Tutorials
+CREATE TABLE IF NOT EXISTS tutorials (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  module_id TEXT REFERENCES modules(id) ON DELETE SET NULL,
+  title TEXT NOT NULL,
+  url TEXT NOT NULL,
+  video_id TEXT,
+  thumbnail TEXT,
+  topic TEXT,
+  description TEXT,
+  user_id TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- Enable Row Level Security (RLS)
 -- For now, we allow all operations for easy initial sync
 ALTER TABLE modules ENABLE ROW LEVEL SECURITY;
@@ -103,6 +117,7 @@ ALTER TABLE flashcard_decks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE flashcards ENABLE ROW LEVEL SECURITY;
 ALTER TABLE calendar_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pomodoro_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tutorials ENABLE ROW LEVEL SECURITY;
 
 -- Create Permissive Policies (One for each table)
 CREATE POLICY "Allow all for anon" ON modules FOR ALL USING (true) WITH CHECK (true);
@@ -114,3 +129,4 @@ CREATE POLICY "Allow all for anon" ON flashcard_decks FOR ALL USING (true) WITH 
 CREATE POLICY "Allow all for anon" ON flashcards FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all for anon" ON calendar_events FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all for anon" ON pomodoro_sessions FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all for anon" ON tutorials FOR ALL USING (true) WITH CHECK (true);
