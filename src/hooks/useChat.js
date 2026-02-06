@@ -8,6 +8,7 @@ const useChat = () => {
     const [activeConversation, setActiveConversation] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [unreadCounts, setUnreadCounts] = useState({});
 
     // Realtime States
     const [onlineUsers, setOnlineUsers] = useState(new Set());
@@ -20,6 +21,15 @@ const useChat = () => {
         try {
             const response = await api.get('/conversations');
             setConversations(response.data);
+
+            // Initial unread counts calculation if not provided by server
+            const counts = {};
+            response.data.forEach(conv => {
+                // If the server doesn't provide unreadCount, we'd need to fetch or estimate.
+                // For now, let's assume the server might contribute or we start at 0 and grow.
+                counts[conv.id] = conv.unreadCount || 0;
+            });
+            setUnreadCounts(counts);
         } catch (err) {
             console.error('Error fetching conversations:', err);
             setError(err.message);
@@ -43,7 +53,13 @@ const useChat = () => {
             // Update local state to reflect read status
             setMessages(prev => prev.map(msg => ({ ...msg, read: true })));
 
-            // Also update conversation list last message status if needed
+            // Clear unread count locally
+            setUnreadCounts(prev => ({ ...prev, [conversationId]: 0 }));
+
+            // Update conversations list to show last message as read
+            setConversations(prev => prev.map(conv =>
+                conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
+            ));
         } catch (err) {
             console.error('Error marking as read:', err);
         }
@@ -250,6 +266,9 @@ const useChat = () => {
                         : conv
                 ));
 
+                // Mark as read immediately if we are active
+                markAsRead(activeConversation.id);
+
                 if (document.hidden && Notification.permission === 'granted') {
                     new Notification('New Message', {
                         body: newMessage.content,
@@ -262,7 +281,56 @@ const useChat = () => {
         return () => {
             channel.unsubscribe();
         };
-    }, [activeConversation, setConversations]);
+    }, [activeConversation, markAsRead, setConversations]);
+
+    // Global message listener for unread counts and notifications
+    useEffect(() => {
+        if (!supabase) return;
+
+        const channel = supabase.channel('global-messages')
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'messages'
+            }, (payload) => {
+                const newMessage = payload.new;
+
+                // Update conversation list globally
+                setConversations(prev => prev.map(conv => {
+                    if (conv.id === newMessage.conversation_id) {
+                        const isCurrentlyActive = activeConversation?.id === newMessage.conversation_id;
+                        return {
+                            ...conv,
+                            lastMessage: newMessage.content,
+                            lastMessageTime: newMessage.created_at,
+                            unreadCount: isCurrentlyActive ? 0 : (conv.unreadCount || 0) + 1
+                        };
+                    }
+                    return conv;
+                }));
+
+                // Update unread counts if not active
+                if (!activeConversation || activeConversation.id !== newMessage.conversation_id) {
+                    setUnreadCounts(prev => ({
+                        ...prev,
+                        [newMessage.conversation_id]: (prev[newMessage.conversation_id] || 0) + 1
+                    }));
+
+                    // Show notification for background messages
+                    if (document.hidden && Notification.permission === 'granted') {
+                        new Notification('New Message', {
+                            body: newMessage.content,
+                            icon: '/favicon.ico'
+                        });
+                    }
+                }
+            })
+            .subscribe();
+
+        return () => {
+            channel.unsubscribe();
+        };
+    }, [activeConversation]);
 
     // Global User Presence
     useEffect(() => {
@@ -316,6 +384,7 @@ const useChat = () => {
         refreshConversations: fetchConversations,
         onlineUsers,
         typingUsers,
+        unreadCounts,
         sendTyping,
         respondToRequest,
         availableGroups,

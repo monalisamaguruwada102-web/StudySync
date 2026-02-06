@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const DB_PATH = path.join(__dirname, 'db.json');
 const BACKUP_DIR = path.join(__dirname, 'backups');
@@ -145,7 +146,9 @@ const db = {
 
     insert: (collection, item) => {
         const data = readDB();
-        const newItem = { ...item, id: Date.now().toString(), createdAt: new Date().toISOString() };
+        // Use UUID for compatibility with Supabase
+        const id = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
+        const newItem = { ...item, id, createdAt: new Date().toISOString() };
         data[collection].push(newItem);
         writeDB(data);
         return newItem;
@@ -164,8 +167,13 @@ const db = {
 
     delete: (collection, id) => {
         const data = readDB();
-        data[collection] = data[collection].filter(i => i.id !== id);
+        data[collection] = data[collection].filter(i => String(i.id) !== String(id));
         writeDB(data);
+    },
+
+    getById: (collection, id) => {
+        const data = readDB();
+        return data[collection].find(i => String(i.id) === String(id));
     },
 
     getSettings: () => readDB().settings,

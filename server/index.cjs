@@ -561,8 +561,13 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
             status: 'sent'
         };
 
-        // 1. Insert message into Supabase
-        let message = await supabasePersistence.insertMessage(messageData);
+        // 1. Insert message into Supabase (if conversationId is a valid UUID)
+        let message = null;
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(conversationId);
+
+        if (isUUID) {
+            message = await supabasePersistence.insertMessage(messageData);
+        }
 
         // 2. Always write to local DB for persistence
         const localMessage = db.insert('messages', {
@@ -584,7 +589,10 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
             lastMessageTime
         };
 
-        await supabasePersistence.updateConversation(conversationId, convUpdates);
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(conversationId);
+        if (isUUID) {
+            await supabasePersistence.updateConversation(conversationId, convUpdates);
+        }
         db.update('conversations', conversationId, convUpdates);
 
         res.json(message);
@@ -599,16 +607,11 @@ app.post('/api/conversations/:id/respond', authenticateToken, async (req, res) =
     try {
         const { status } = req.body; // 'active' or 'rejected'
         const conversationId = req.params.id;
-        const userId = req.user.id;
 
-        if (!['active', 'rejected'].includes(status)) {
-            return res.status(400).json({ error: 'Invalid status' });
-        }
-
-        // 1. Update Supabase
+        // Update in Supabase
         await supabasePersistence.updateConversation(conversationId, { status });
 
-        // 2. Update local DB
+        // Update locally
         db.update('conversations', conversationId, { status });
 
         res.json({ success: true, status });
@@ -618,28 +621,30 @@ app.post('/api/conversations/:id/respond', authenticateToken, async (req, res) =
     }
 });
 
-// Mark conversation as read
+// Mark messages as read
 app.post('/api/conversations/:id/read', authenticateToken, async (req, res) => {
     try {
         const conversationId = req.params.id;
-        const userId = req.user.id;
 
-        // 1. Update Supabase
-        await supabasePersistence.markMessagesAsRead(conversationId, userId);
+        // Only attempt Supabase update if ID looks like a UUID
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(conversationId);
 
-        // 2. Update local DB
+        if (isUUID) {
+            await supabasePersistence.markMessagesAsRead(conversationId, req.user.id);
+        }
+
+        // Update locally (optional, since UI usually refreshes or updates optimistically)
         const messages = db.get('messages') || [];
-        // Find messages in this conversation sent by OTHERS that are not read
         messages.forEach(m => {
-            if (m.conversationId === conversationId && m.senderId !== userId && m.status !== 'read') {
-                db.update('messages', m.id, { status: 'read' });
+            if (m.conversationId === conversationId && m.senderId !== req.user.id) {
+                db.update('messages', m.id, { read: true });
             }
         });
 
         res.json({ success: true });
     } catch (error) {
-        console.error('Error marking conversation as read:', error);
-        res.status(500).json({ error: 'Failed to mark as read' });
+        console.error('Error marking messages as read:', error);
+        res.status(500).json({ error: 'Failed to mark messages as read' });
     }
 });
 

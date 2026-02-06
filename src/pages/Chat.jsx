@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Send, Share2, Users, Plus, Search, X, Copy, Check, FileText, Brain, Youtube, ExternalLink, LayoutDashboard, CheckCheck, Play } from 'lucide-react';
+import { MessageCircle, Send, Share2, Users, Plus, Search, X, Copy, Check, FileText, Brain, Youtube, ExternalLink, LayoutDashboard, CheckCheck, Play, ArrowDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, isToday, isYesterday } from 'date-fns';
 import useChat from '../hooks/useChat';
@@ -238,7 +238,10 @@ function Chat() {
     const [groupDescription, setGroupDescription] = useState('');
     const [inviteCode, setInviteCode] = useState('');
     const [copied, setCopied] = useState(false);
+    const [isAtBottom, setIsAtBottom] = useState(true);
+    const [showNewMessageToast, setShowNewMessageToast] = useState(false);
     const messagesEndRef = useRef(null);
+    const scrollContainerRef = useRef(null);
 
     // --- Custom Hooks ---
     const {
@@ -251,12 +254,12 @@ function Chat() {
         shareResource,
         createGroup,
         joinGroup,
-        onlineUsers,
         typingUsers,
         sendTyping,
         respondToRequest,
         availableGroups,
-        fetchAvailableGroups
+        fetchAvailableGroups,
+        unreadCounts
     } = useChat();
 
     // --- Hoisted Functions ---
@@ -308,9 +311,26 @@ function Chat() {
         }
     }, [activeTab, fetchAvailableGroups]);
 
+    // Scroll tracking
+    const handleScroll = (e) => {
+        const { scrollTop, scrollHeight, clientHeight } = e.target;
+        const atBottom = scrollHeight - scrollTop - clientHeight < 100;
+        setIsAtBottom(atBottom);
+        if (atBottom) setShowNewMessageToast(false);
+    };
+
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages, typingUsers]);
+        if (isAtBottom) {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        } else if (messages.length > 0) {
+            // Check if last message is from other user
+            const lastMessage = messages[messages.length - 1];
+            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+            if (lastMessage.senderId !== currentUser.id) {
+                setShowNewMessageToast(true);
+            }
+        }
+    }, [messages, isAtBottom]);
 
     useEffect(() => {
         if (showUserSelector) {
@@ -613,9 +633,16 @@ function Chat() {
                                                 </p>
                                             </div>
                                             {conv.lastMessageTime && (
-                                                <span className="text-[10px] text-slate-400 flex-shrink-0">
-                                                    {formatLastMessageTime(conv.lastMessageTime)}
-                                                </span>
+                                                <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                                                    <span className="text-[10px] text-slate-400">
+                                                        {formatLastMessageTime(conv.lastMessageTime)}
+                                                    </span>
+                                                    {unreadCounts[conv.id] > 0 && (
+                                                        <span className="bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-sm shadow-blue-500/30">
+                                                            {unreadCounts[conv.id]}
+                                                        </span>
+                                                    )}
+                                                </div>
                                             )}
                                         </div>
                                     </motion.div>
@@ -682,7 +709,11 @@ function Chat() {
                             </div>
 
                             {/* Messages */}
-                            <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                            <div
+                                className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar min-h-0 relative"
+                                onScroll={handleScroll}
+                                ref={scrollContainerRef}
+                            >
                                 {messages.length === 0 ? (
                                     <div className="flex items-center justify-center h-full">
                                         <p className="text-slate-500 text-sm">No messages yet. Start the conversation!</p>
@@ -710,7 +741,26 @@ function Chat() {
                                         <span className="ml-1">{getTypingText()}</span>
                                     </motion.div>
                                 )}
-                                <div ref={messagesEndRef} />
+                                <div ref={messagesEndRef} className="h-4" />
+
+                                {/* New Message Toast */}
+                                <AnimatePresence>
+                                    {showNewMessageToast && (
+                                        <motion.button
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: 20 }}
+                                            onClick={() => {
+                                                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                                                setShowNewMessageToast(false);
+                                            }}
+                                            className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm hover:bg-blue-700 transition-colors z-10"
+                                        >
+                                            <ArrowDown size={14} />
+                                            New messages below
+                                        </motion.button>
+                                    )}
+                                </AnimatePresence>
                             </div>
 
                             {/* Request Banner / Input */}
