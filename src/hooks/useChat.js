@@ -189,9 +189,10 @@ const useChat = () => {
     useEffect(() => {
         if (!activeConversation) return;
 
+        // Fallback polling (less frequent now that we have realtime)
         const interval = setInterval(() => {
             fetchMessages(activeConversation.id);
-        }, 3000); // Poll every 3 seconds as backup
+        }, 15000);
 
         return () => clearInterval(interval);
     }, [activeConversation, fetchMessages]);
@@ -211,12 +212,10 @@ const useChat = () => {
                 if (isTyping) {
                     setTypingUsers(prev => new Set(prev).add(userId));
 
-                    // Clear existing timeout
                     if (typingTimeoutRef.current[userId]) {
                         clearTimeout(typingTimeoutRef.current[userId]);
                     }
 
-                    // Auto-remove typing status after 3 seconds
                     typingTimeoutRef.current[userId] = setTimeout(() => {
                         setTypingUsers(prev => {
                             const next = new Set(prev);
@@ -240,12 +239,17 @@ const useChat = () => {
             }, (payload) => {
                 const newMessage = payload.new;
                 setMessages(prev => {
-                    // Avoid duplicates
                     if (prev.some(m => m.id === newMessage.id)) return prev;
                     return [...prev, newMessage];
                 });
 
-                // Show notification if window is hidden
+                // Update conversation list 'last message' in local state
+                setConversations(prev => prev.map(conv =>
+                    conv.id === activeConversation.id
+                        ? { ...conv, lastMessage: newMessage.content, lastMessageTime: newMessage.created_at }
+                        : conv
+                ));
+
                 if (document.hidden && Notification.permission === 'granted') {
                     new Notification('New Message', {
                         body: newMessage.content,
@@ -258,7 +262,7 @@ const useChat = () => {
         return () => {
             channel.unsubscribe();
         };
-    }, [activeConversation]);
+    }, [activeConversation, setConversations]);
 
     // Global User Presence
     useEffect(() => {
