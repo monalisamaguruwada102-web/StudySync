@@ -1021,7 +1021,7 @@ app.post('/api/ai/process', authenticateToken, async (req, res) => {
     }
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
         let prompt = '';
 
         switch (action) {
@@ -1100,9 +1100,12 @@ app.post('/api/ai/process', authenticateToken, async (req, res) => {
 
     } catch (error) {
         console.error(`Gemini AI error (${action}):`, error);
+        // Extract more detailed error info if available
+        const errorMessage = error.response?.data?.error?.message || error.message || 'Unknown AI error';
+
         res.status(500).json({
             error: 'AI processing failed on the server',
-            message: error.message,
+            message: errorMessage,
             action: action
         });
     }
