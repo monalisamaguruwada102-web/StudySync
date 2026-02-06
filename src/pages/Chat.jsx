@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Send, Share2, Users, Plus, Search, X, Copy, Check, FileText, Brain, Youtube, ExternalLink } from 'lucide-react';
+import { MessageCircle, Send, Share2, Users, Plus, Search, X, Copy, Check, FileText, Brain, Youtube, ExternalLink, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useChat from '../hooks/useChat';
 import Card from '../components/ui/Card';
@@ -192,6 +192,10 @@ const Chat = () => {
                             <MessageCircle className="text-blue-500" size={24} />
                             Chats
                         </h2>
+                        <a href="/" className="flex items-center gap-2 text-slate-400 hover:text-primary-500 transition-colors bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700">
+                            <LayoutDashboard size={14} />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">Dash</span>
+                        </a>
                     </div>
 
                     <div className="flex gap-2 mb-4">

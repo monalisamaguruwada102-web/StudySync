@@ -6,7 +6,7 @@ import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
 import { useFirestore } from '../hooks/useFirestore';
 import { tutorialService, moduleService } from '../services/firestoreService';
-import { Plus, Youtube, Trash2, Book, ExternalLink, Search } from 'lucide-react';
+import { Plus, Youtube, Trash2, Book, ExternalLink, Search, LayoutDashboard } from 'lucide-react';
 
 const Tutorials = () => {
     const { data: tutorials, loading, refresh } = useFirestore(tutorialService.getAll);
@@ -80,9 +80,14 @@ const Tutorials = () => {
             <div className="space-y-6">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Video Tutorials</h1>
-                        <p className="text-slate-500 dark:text-slate-400">Curated YouTube learning resources</p>
+                    <div className="flex items-center gap-4">
+                        <a href="/" className="p-2 text-slate-400 hover:text-primary-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all" title="Back to Dashboard">
+                            <LayoutDashboard size={24} />
+                        </a>
+                        <div>
+                            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Video Tutorials</h1>
+                            <p className="text-slate-500 dark:text-slate-400">Curated YouTube learning resources</p>
+                        </div>
                     </div>
                     <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2">
                         <Plus size={20} />
