@@ -262,7 +262,7 @@ app.get('/api/conversations', authenticateToken, async (req, res) => {
                     ...conv,
                     groupName: group?.name || 'Unknown Group',
                     groupDescription: group?.description,
-                    inviteCode: group?.invite_code || group?.inviteCode
+                    inviteCode: group?.inviteCode || group?.invite_code
                 };
             } else {
                 // Direct message - find the other participant
@@ -316,9 +316,11 @@ app.get('/api/messages/:conversationId', authenticateToken, async (req, res) => 
         const cloudIds = new Set(cloudMessages.map(m => m.id));
         const localOnly = localMessages.filter(m => !cloudIds.has(m.supabaseId) && !cloudIds.has(m.id));
 
-        const mergedMessages = [...cloudMessages, ...localOnly].sort((a, b) =>
-            new Date(a.timestamp || a.createdAt) - new Date(b.timestamp || b.createdAt)
-        );
+        const mergedMessages = [...cloudMessages, ...localOnly].sort((a, b) => {
+            const dateA = new Date(a.timestamp || a.createdAt || a.created_at || 0);
+            const dateB = new Date(b.timestamp || b.createdAt || b.created_at || 0);
+            return dateA - dateB;
+        });
 
         res.json(mergedMessages);
     } catch (error) {
@@ -509,7 +511,12 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
             supabaseId: message?.id
         });
 
-        if (!message) message = localMessage;
+        if (!message) {
+            message = { ...localMessage, timestamp: localMessage.createdAt };
+        } else {
+            // Ensure local copy also has the supabaseId
+            message.timestamp = message.timestamp || localMessage.createdAt;
+        }
 
         // 3. Update conversation's last message (Dual-update)
         const lastMessageTime = new Date().toISOString();

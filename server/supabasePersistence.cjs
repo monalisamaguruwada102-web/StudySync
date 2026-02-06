@@ -88,6 +88,19 @@ const deleteTutorial = async (id) => {
 };
 
 // Conversations
+const mapConversation = (conv) => {
+    if (!conv) return null;
+    return {
+        id: conv.id,
+        type: conv.type,
+        groupId: conv.group_id || conv.groupId,
+        participants: conv.participants,
+        lastMessage: conv.last_message || conv.lastMessage,
+        lastMessageTime: conv.last_message_time || conv.lastMessageTime,
+        createdAt: conv.created_at || conv.createdAt
+    };
+};
+
 const getConversations = async (userId) => {
     const client = initSupabase();
     if (!client) return null;
@@ -102,7 +115,7 @@ const getConversations = async (userId) => {
         console.error('Error fetching conversations:', error);
         return null;
     }
-    return data;
+    return data.map(mapConversation);
 };
 
 const createConversation = async (conversation) => {
@@ -125,7 +138,7 @@ const createConversation = async (conversation) => {
         console.error('Error creating conversation:', error);
         return null;
     }
-    return data;
+    return mapConversation(data);
 };
 
 const findDirectConversation = async (userId1, userId2) => {
@@ -139,7 +152,7 @@ const findDirectConversation = async (userId1, userId2) => {
         .contains('participants', [userId1, userId2]);
 
     if (error || !data || data.length === 0) return null;
-    return data[0];
+    return mapConversation(data[0]);
 };
 
 const updateConversation = async (id, updates) => {
@@ -158,7 +171,7 @@ const updateConversation = async (id, updates) => {
         .single();
 
     if (error) return null;
-    return data;
+    return mapConversation(data);
 };
 
 // Messages
@@ -225,6 +238,19 @@ const insertMessage = async (message) => {
 };
 
 // Groups
+const mapGroup = (group) => {
+    if (!group) return null;
+    return {
+        id: group.id,
+        name: group.name,
+        description: group.description,
+        createdBy: group.created_by || group.createdBy,
+        members: group.members,
+        inviteCode: group.invite_code || group.inviteCode,
+        createdAt: group.created_at || group.createdAt
+    };
+};
+
 const createGroup = async (group) => {
     const client = initSupabase();
     if (!client) return null;
@@ -245,7 +271,7 @@ const createGroup = async (group) => {
         console.error('Error creating group:', error);
         return null;
     }
-    return data;
+    return mapGroup(data);
 };
 
 const findGroupByInviteCode = async (inviteCode) => {
@@ -259,7 +285,7 @@ const findGroupByInviteCode = async (inviteCode) => {
         .single();
 
     if (error) return null;
-    return data;
+    return mapGroup(data);
 };
 
 const updateGroup = async (id, updates) => {
@@ -276,7 +302,7 @@ const updateGroup = async (id, updates) => {
         .single();
 
     if (error) return null;
-    return data;
+    return mapGroup(data);
 };
 
 const getGroup = async (id) => {
@@ -290,7 +316,7 @@ const getGroup = async (id) => {
         .single();
 
     if (error) return null;
-    return data;
+    return mapGroup(data);
 };
 
 module.exports = {

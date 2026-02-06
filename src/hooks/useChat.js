@@ -55,12 +55,6 @@ const useChat = () => {
             // Update local messages
             setMessages(prev => [...prev, response.data]);
 
-            // Update conversation last message
-            await api.put(`/conversations/${conversationId}`, {
-                lastMessage: content.substring(0, 50),
-                lastMessageTime: new Date().toISOString()
-            });
-
             // Refresh conversations
             fetchConversations();
 
