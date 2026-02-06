@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
 const db = require('./database.cjs');
+const supabasePersistence = require('./supabasePersistence.cjs');
 const multer = require('multer');
 const ical = require('node-ical');
 const axios = require('axios');
