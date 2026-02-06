@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
 
-export const useAnalytics = (logs, modules, tasks) => {
+export const useAnalytics = (logs, modules, tasks, sessions = []) => {
     return useMemo(() => {
         if (!logs || !modules || !tasks) {
             return {
@@ -15,12 +15,22 @@ export const useAnalytics = (logs, modules, tasks) => {
             };
         }
 
+        // Unified list of study activity
+        const normalizedSessions = (sessions || []).map(s => ({
+            ...s,
+            hours: s.duration || 0, // In hours
+            date: s.completedAt,
+            type: 'focus'
+        }));
+
+        const allLogs = [...logs, ...normalizedSessions];
+
         // 1. Total Hours
-        const totalHours = logs.reduce((acc, log) => acc + parseFloat(log.hours || 0), 0);
+        const totalHours = allLogs.reduce((acc, log) => acc + parseFloat(log.hours || 0), 0);
 
         // 1.1 Today's Hours
         const todayStr = new Date().toISOString().split('T')[0];
-        const todayHours = logs
+        const todayHours = allLogs
             .filter(log => (log.date || log.createdAt)?.split('T')[0] === todayStr)
             .reduce((acc, log) => acc + parseFloat(log.hours || 0), 0);
 
@@ -32,7 +42,7 @@ export const useAnalytics = (logs, modules, tasks) => {
 
         // 4. Module Progress Data
         const moduleData = modules.map((mod, index) => {
-            const modLogs = logs.filter(l => l.moduleId === mod.id);
+            const modLogs = allLogs.filter(l => l.moduleId === mod.id);
             const loggedHours = modLogs.reduce((acc, log) => acc + parseFloat(log.hours || 0), 0);
             const baseHours = parseFloat(mod.totalHoursStudied || 0);
 
@@ -55,14 +65,13 @@ export const useAnalytics = (logs, modules, tasks) => {
         const totalRemaining = moduleData.reduce((acc, m) => acc + parseFloat(m.remaining), 0);
 
         // 5. Weekly Trend
-        // ... (existing weekly trend logic)
         const now = new Date();
         const weekStart = startOfWeek(now);
         const weekEnd = endOfWeek(now);
 
         const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const weeklyTrend = days.map((day, index) => {
-            const dayLogs = logs.filter(log => {
+            const dayLogs = allLogs.filter(log => {
                 const logDate = log.date ? new Date(log.date) : (log.createdAt ? new Date(log.createdAt) : null);
                 return logDate && logDate.getDay() === index && isWithinInterval(logDate, { start: weekStart, end: weekEnd });
             });
@@ -84,8 +93,7 @@ export const useAnalytics = (logs, modules, tasks) => {
         });
 
         // 6. Streak tracking (Real Logic)
-        // ... (existing streak logic)
-        const sortedDates = [...new Set(logs.map(log => {
+        const sortedDates = [...new Set(allLogs.map(log => {
             const date = log.date || log.createdAt;
             return date ? new Date(date).toISOString().split('T')[0] : null;
         }))].filter(Boolean).sort().reverse();
@@ -108,13 +116,12 @@ export const useAnalytics = (logs, modules, tasks) => {
         }
 
         // 7. Achievement Detection
-        // ... (existing badges)
         const badges = [];
         if (streak >= 3) badges.push({ name: 'Persistence', icon: 'Flame', color: 'purple' });
         if (totalHours >= 10) badges.push({ name: 'Scholar', icon: 'Target', color: 'gold' });
         if (tasks.filter(t => t.status === 'Completed').length >= 5) badges.push({ name: 'Focus King', icon: 'Award', color: 'green' });
 
-        const hasEarlySession = logs.some(log => {
+        const hasEarlySession = allLogs.some(log => {
             const date = log.date ? new Date(log.date) : null;
             return date && date.getHours() < 8;
         });
@@ -133,5 +140,5 @@ export const useAnalytics = (logs, modules, tasks) => {
             badges
         };
 
-    }, [logs, modules, tasks]);
+    }, [logs, modules, tasks, sessions]);
 };

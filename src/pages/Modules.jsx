@@ -13,8 +13,11 @@ import { flashcardDeckService, flashcardService } from '../services/firestoreSer
 const Modules = () => {
     const { data: modules, loading, refresh } = useFirestore(moduleService.getAll);
     const { data: logs } = useFirestore(studyLogService.getAll);
+    const { data: tasks } = useFirestore(taskService.getAll);
+    const { data: sessions } = useFirestore(pomodoroService.getAll);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentModule, setCurrentModule] = useState(null);
+    const stats = useAnalytics(logs, modules, tasks, sessions);
     const [formData, setFormData] = useState({ name: '', description: '', targetHours: '', totalHoursStudied: '' });
     const [isGenerating, setIsGenerating] = useState(null); // moduleId being processed
 
@@ -116,8 +119,8 @@ const Modules = () => {
                 <div className="text-center py-12 text-slate-400">Loading modules...</div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {modules.map((mod) => {
-                        const progress = calculateProgress(mod);
+                    {stats.moduleData.map((mod) => {
+                        const progress = mod.progress.toFixed(0);
                         return (
                             <Card key={mod.id} className="group relative overflow-hidden transition-all hover:shadow-lg hover:border-primary-100">
                                 <div className="flex justify-between items-start mb-4">
@@ -144,20 +147,27 @@ const Modules = () => {
                                 </div>
 
                                 <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1">{mod.name}</h3>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 line-clamp-2 h-10">{mod.description}</p>
+                                <div className="flex justify-between items-start mb-4">
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 h-10">{mod.description || 'No description provided'}</p>
+                                </div>
 
                                 <div className="space-y-3">
                                     <div className="flex justify-between items-end">
-                                        <div className="flex items-center gap-2 text-primary-600 dark:text-primary-400 font-semibold">
-                                            <Target size={16} />
-                                            <span>{Math.max(0, mod.targetHours - (mod.totalHoursStudied || 0)).toFixed(1)}h Remaining</span>
+                                        <div className="flex flex-col gap-0.5">
+                                            <div className="flex items-center gap-2 text-primary-600 dark:text-primary-400 font-bold text-xs uppercase tracking-wider">
+                                                <Target size={14} />
+                                                <span>{mod.remaining}h Remaining</span>
+                                            </div>
+                                            <span className="text-[10px] text-slate-400 font-medium">{mod.hours.toFixed(1)}h / {mod.target}h Total</span>
                                         </div>
-                                        <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{progress}%</span>
+                                        <span className="text-sm font-black text-slate-800 dark:text-slate-200">{progress}%</span>
                                     </div>
-                                    <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                        <div
-                                            className="h-full bg-primary-600 rounded-full transition-all duration-1000"
-                                            style={{ width: `${progress}%` }}
+                                    <div className="h-2 bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden border border-slate-200/50 dark:border-white/5">
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${progress}%` }}
+                                            className="h-full bg-gradient-to-r from-primary-500 to-indigo-500 rounded-full"
+                                            transition={{ duration: 1, ease: "easeOut" }}
                                         />
                                     </div>
                                 </div>

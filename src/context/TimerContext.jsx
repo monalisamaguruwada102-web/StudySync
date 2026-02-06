@@ -101,7 +101,8 @@ export const TimerProvider = ({ children }) => {
             try {
                 await pomodoroService.add({
                     taskId: selectedTask?.id || null,
-                    duration: 60,
+                    moduleId: selectedTask?.moduleId || null,
+                    duration: 1.0, // Recorded in hours for consistency with analytics
                     completedAt: new Date().toISOString()
                 });
             } catch (error) {

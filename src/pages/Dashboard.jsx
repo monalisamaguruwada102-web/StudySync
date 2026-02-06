@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import Layout from '../components/layout/Layout';
 import Card from '../components/ui/Card';
 import { useFirestore } from '../hooks/useFirestore';
-import { moduleService, studyLogService, taskService } from '../services/firestoreService';
+import { moduleService, studyLogService, taskService, pomodoroService } from '../services/firestoreService';
 import { useAnalytics } from '../hooks/useAnalytics';
 import Heatmap from '../components/analytics/Heatmap';
 import { useAuth } from '../context/AuthContext';
@@ -79,6 +79,7 @@ const Dashboard = () => {
     const { data: modules } = useFirestore(moduleService.getAll);
     const { data: logs } = useFirestore(studyLogService.getAll);
     const { data: tasks } = useFirestore(taskService.getAll);
+    const { data: sessions } = useFirestore(pomodoroService.getAll);
     const [isHelpOpen, setIsHelpOpen] = React.useState(false);
     const [cloudEvents, setCloudEvents] = React.useState([]);
     const [isSyncingCloud, setIsSyncingCloud] = React.useState(false);
@@ -108,7 +109,7 @@ const Dashboard = () => {
         fetchCloudEvents();
     }, []);
 
-    const stats = useAnalytics(logs, modules, tasks);
+    const stats = useAnalytics(logs, modules, tasks, sessions);
     const league = useMemo(() => getLeague(user?.level || 1), [user?.level]);
 
     const barData = {

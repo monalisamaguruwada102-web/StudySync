@@ -4,7 +4,8 @@ import Layout from '../components/layout/Layout';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { useFirestore } from '../hooks/useFirestore';
-import { moduleService, taskService, studyLogService, noteService, flashcardDeckService, flashcardService } from '../services/firestoreService';
+import { useAnalytics } from '../hooks/useAnalytics';
+import { moduleService, taskService, studyLogService, noteService, flashcardDeckService, flashcardService, pomodoroService } from '../services/firestoreService';
 import {
     BookOpen,
     Target,
@@ -29,6 +30,7 @@ const ModuleDetail = () => {
     const { data: modules, loading: modulesLoading } = useFirestore(moduleService.getAll);
     const { data: allTasks, loading: tasksLoading } = useFirestore(taskService.getAll);
     const { data: allLogs, loading: logsLoading } = useFirestore(studyLogService.getAll);
+    const { data: sessions } = useFirestore(pomodoroService.getAll);
 
     const [activeTab, setActiveTab] = useState('overview'); // overview, notes, flashcards
     const { data: allNotes } = useFirestore(noteService.getAll);
@@ -46,18 +48,19 @@ const ModuleDetail = () => {
         return allCards.filter(c => deckIds.includes(c.deckId));
     }, [allCards, decks]);
 
+    const allStats = useAnalytics(allLogs, modules, allTasks, sessions);
     const stats = useMemo(() => {
-        if (!module) return { progress: 0, hours: 0, completedTasks: 0 };
-        const total = parseFloat(module.totalHoursStudied || 0);
+        const modStats = allStats.moduleData.find(m => m.id === id);
+        if (!modStats) return { progress: 0, hours: 0, completedTasks: 0, totalTasks: 0 };
+
         const completed = tasks.filter(t => t.status === 'Completed').length;
-        const progress = module.targetHours > 0 ? (total / module.targetHours) * 100 : 0;
         return {
-            progress: Math.min(progress, 100).toFixed(0),
-            hours: total.toFixed(1),
+            progress: modStats.progress.toFixed(0),
+            hours: modStats.hours.toFixed(1),
             completedTasks: completed,
             totalTasks: tasks.length
         };
-    }, [module, tasks, logs]);
+    }, [allStats, tasks, id]);
 
     if (modulesLoading) return <Layout title="Loading..."><div className="flex items-center justify-center h-64 text-slate-400">Loading module data...</div></Layout>;
     if (!module) return <Layout title="Not Found"><div className="text-center py-12">Module not found. <Button onClick={() => navigate('/modules')}>Go Back</Button></div></Layout>;

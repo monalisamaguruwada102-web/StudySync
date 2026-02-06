@@ -2,7 +2,8 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Lock, Star, ChevronRight, Clock, Target } from 'lucide-react';
 import { useFirestore } from '../../hooks/useFirestore';
-import { moduleService, taskService, studyLogService } from '../../services/firestoreService';
+import { moduleService, taskService, studyLogService, pomodoroService } from '../../services/firestoreService';
+import { useAnalytics } from '../../hooks/useAnalytics';
 import { useNavigate } from 'react-router-dom';
 
 const JourneyMap = () => {
@@ -10,27 +11,42 @@ const JourneyMap = () => {
     const { data: modules } = useFirestore(moduleService.getAll);
     const { data: tasks } = useFirestore(taskService.getAll);
     const { data: logs } = useFirestore(studyLogService.getAll);
+    const { data: sessions } = useFirestore(pomodoroService.getAll);
+    const stats = useAnalytics(logs, modules, tasks, sessions);
 
     const timelineData = useMemo(() => {
         let firstIncompleteFound = false;
 
-        const ordered = [...modules].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+        const ordered = stats.moduleData.sort((a, b) => {
+            const modA = modules.find(m => m.id === a.id);
+            const modB = modules.find(m => m.id === b.id);
+            return new Date(modA?.createdAt || 0) - new Date(modB?.createdAt || 0);
+        });
 
-        return ordered.map((mod, index) => {
+        return ordered.map((modData, index) => {
+            const mod = modules.find(m => m.id === modData.id);
             const modTasks = tasks.filter(t => t.moduleId === mod.id);
-            const totalStudied = parseFloat(mod.totalHoursStudied || 0);
             const isCompleted = modTasks.length > 0 && modTasks.every(t => t.status === 'Completed');
 
             let isActive = false;
-            // First incomplete is marked as active for visual suggestion
             if (!isCompleted && !firstIncompleteFound) {
                 isActive = true;
                 firstIncompleteFound = true;
             }
 
-            return { mod, id: mod.id, isCompleted, isActive, isLocked: false, index, totalStudied };
+            return {
+                mod,
+                id: mod.id,
+                isCompleted,
+                isActive,
+                isLocked: false,
+                index,
+                totalStudied: modData.hours,
+                remainingHours: modData.remaining,
+                targetHours: modData.target
+            };
         });
-    }, [modules, tasks, logs]);
+    }, [stats.moduleData, modules, tasks]);
 
     if (modules.length === 0) {
         return (
@@ -127,7 +143,7 @@ const JourneyMap = () => {
                                         <Target size={12} />
                                     </div>
                                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                                        {Math.max(0, parseFloat(item.mod.targetHours || 0) - item.totalStudied).toFixed(1)}h Remaining
+                                        {item.remainingHours}h Remaining
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -150,7 +166,7 @@ const JourneyMap = () => {
                                 <div className="h-1.5 flex-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                                     <motion.div
                                         initial={{ width: 0 }}
-                                        animate={{ width: `${Math.min(100, (item.totalStudied / Math.max(1, item.mod.targetHours)) * 100)}%` }}
+                                        animate={{ width: `${Math.min(100, (item.totalStudied / Math.max(1, item.targetHours)) * 100)}%` }}
                                         className="h-full rounded-full bg-blue-500"
                                     />
                                 </div>
