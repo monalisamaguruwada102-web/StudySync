@@ -7,9 +7,7 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
 import ResourceShareModal from '../components/chat/ResourceShareModal';
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+import api from '../services/api';
 
 const Chat = () => {
     const {
@@ -47,10 +45,7 @@ const Chat = () => {
     // Fetch users for selector
     const fetchUsers = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get(`${API_URL}/users/all`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get('/users/all');
             setUsers(response.data.filter(u => u.id !== currentUser.id));
         } catch (error) {
             console.error('Error fetching users:', error);
@@ -137,8 +132,7 @@ const Chat = () => {
     );
 
     useEffect(() => {
-        console.log('Chat Mount - API_URL:', API_URL);
-        console.log('Current UI user:', currentUser);
+        console.log('Chat Mount - User:', currentUser);
     }, []);
 
     useEffect(() => {

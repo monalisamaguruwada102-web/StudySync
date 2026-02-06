@@ -5,9 +5,7 @@ import Modal from '../ui/Modal';
 import Button from '../ui/Button';
 import Input from '../ui/Input';
 import Card from '../ui/Card';
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+import api from '../../services/api';
 
 const ResourceShareModal = ({ isOpen, onClose, onShare }) => {
     const [activeTab, setActiveTab] = useState('notes');
@@ -17,8 +15,6 @@ const ResourceShareModal = ({ isOpen, onClose, onShare }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const getToken = () => localStorage.getItem('token');
-
     // Fetch resources
     useEffect(() => {
         if (!isOpen) return;
@@ -26,13 +22,10 @@ const ResourceShareModal = ({ isOpen, onClose, onShare }) => {
         const fetchResources = async () => {
             setLoading(true);
             try {
-                const token = getToken();
-                const headers = { Authorization: `Bearer ${token}` };
-
                 const [notesRes, flashcardsRes, tutorialsRes] = await Promise.all([
-                    axios.get(`${API_URL}/notes`, { headers }),
-                    axios.get(`${API_URL}/flashcardDecks`, { headers }),
-                    axios.get(`${API_URL}/tutorials`, { headers })
+                    api.get('/notes'),
+                    api.get('/flashcardDecks'),
+                    api.get('/tutorials')
                 ]);
 
                 setNotes(notesRes.data);

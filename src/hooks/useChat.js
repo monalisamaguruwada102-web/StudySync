@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+import api from '../services/api';
 
 const useChat = () => {
     const [conversations, setConversations] = useState([]);
@@ -10,16 +8,10 @@ const useChat = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // Get auth token
-    const getToken = () => localStorage.getItem('token');
-
     // Fetch all conversations
     const fetchConversations = useCallback(async () => {
         try {
-            const token = getToken();
-            const response = await axios.get(`${API_URL}/conversations`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get('/conversations');
             setConversations(response.data);
         } catch (err) {
             console.error('Error fetching conversations:', err);
@@ -32,11 +24,7 @@ const useChat = () => {
         if (!conversationId) return;
 
         try {
-            setLoading(true);
-            const token = getToken();
-            const response = await axios.get(`${API_URL}/messages/${conversationId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.get(`/messages/${conversationId}`);
             setMessages(response.data);
         } catch (err) {
             console.error('Error fetching messages:', err);
@@ -49,7 +37,6 @@ const useChat = () => {
     // Send a message
     const sendMessage = useCallback(async (conversationId, content, type = 'text', sharedResource = null) => {
         try {
-            const token = getToken();
             const user = JSON.parse(localStorage.getItem('user') || '{}');
 
             const message = {
@@ -63,19 +50,15 @@ const useChat = () => {
                 read: false
             };
 
-            const response = await axios.post(`${API_URL}/messages`, message, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await api.post('/messages', message);
 
             // Update local messages
             setMessages(prev => [...prev, response.data]);
 
             // Update conversation last message
-            await axios.put(`${API_URL}/conversations/${conversationId}`, {
+            await api.put(`/conversations/${conversationId}`, {
                 lastMessage: content.substring(0, 50),
                 lastMessageTime: new Date().toISOString()
-            }, {
-                headers: { Authorization: `Bearer ${token}` }
             });
 
             // Refresh conversations
@@ -92,11 +75,7 @@ const useChat = () => {
     // Create or get direct conversation
     const createDirectConversation = useCallback(async (otherUserId) => {
         try {
-            const token = getToken();
-            const response = await axios.post(`${API_URL}/conversations/direct`,
-                { otherUserId },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const response = await api.post('/conversations/direct', { otherUserId });
 
             // Refresh conversations
             await fetchConversations();
@@ -118,11 +97,7 @@ const useChat = () => {
     // Create group (admin only)
     const createGroup = useCallback(async (name, description) => {
         try {
-            const token = getToken();
-            const response = await axios.post(`${API_URL}/groups/create`,
-                { name, description },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const response = await api.post('/groups/create', { name, description });
 
             // Refresh conversations
             await fetchConversations();
@@ -138,11 +113,7 @@ const useChat = () => {
     // Join group via invite code
     const joinGroup = useCallback(async (inviteCode) => {
         try {
-            const token = getToken();
-            const response = await axios.post(`${API_URL}/groups/join/${inviteCode}`,
-                {},
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            const response = await api.post(`/groups/join/${inviteCode}`, {});
 
             // Refresh conversations
             await fetchConversations();
