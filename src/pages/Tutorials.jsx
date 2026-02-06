@@ -26,9 +26,9 @@ const Tutorials = () => {
     // Extract YouTube video ID from URL (supports Shorts, watch, embed, and shortened URLs)
     const getYouTubeId = (url) => {
         if (!url) return null;
-        const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?)\?v=|(&v=)|(shorts\/))([^#&?]*).*/;
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
         const match = url.match(regExp);
-        return (match && match[9].length === 11) ? match[9] : null;
+        return (match && match[2].length === 11) ? match[2] : null;
     };
 
     const getThumbnail = (videoId) =>
