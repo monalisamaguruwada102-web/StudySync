@@ -11,8 +11,46 @@ import Modal from '../components/ui/Modal';
 import ResourceShareModal from '../components/chat/ResourceShareModal';
 import api from '../services/api';
 
+// Resource Card Component (for shared items)
+function ResourceCard({ resource, onClick }) {
+    const getTypeStyles = (type) => {
+        switch (type) {
+            case 'note': return { icon: <FileText size={14} />, color: 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-900/10' };
+            case 'flashcard': return { icon: <Brain size={14} />, color: 'border-purple-500 text-purple-600 dark:text-purple-400 bg-purple-50/50 dark:bg-purple-900/10' };
+            case 'tutorial': return { icon: <Youtube size={14} />, color: 'border-rose-500 text-rose-600 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-900/10' };
+            default: return { icon: <Share2 size={14} />, color: 'border-slate-500 text-slate-600' };
+        }
+    };
+
+    const styles = getTypeStyles(resource.type);
+
+    return (
+        <motion.div
+            whileHover={{ y: -2 }}
+            className={`bg-white dark:bg-slate-900/90 p-3 rounded-xl border-l-4 ${styles.color} shadow-sm min-w-[200px] cursor-pointer group`}
+            onClick={onClick}
+        >
+            <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    {styles.icon}
+                    <span className="text-[9px] font-bold uppercase tracking-wider">{resource.type}</span>
+                </div>
+                <ExternalLink size={12} className="text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+            <div className="font-bold text-slate-800 dark:text-slate-100 text-xs mb-1 line-clamp-1">
+                {resource.title}
+            </div>
+            {resource.preview && (
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                    {resource.preview}
+                </div>
+            )}
+        </motion.div>
+    );
+}
+
 // Message Bubble Component
-const MessageBubble = ({ message, isOwn, handleOpenResource, formatTime }) => {
+function MessageBubble({ message, isOwn, handleOpenResource, formatTime }) {
     return (
         <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -61,46 +99,9 @@ const MessageBubble = ({ message, isOwn, handleOpenResource, formatTime }) => {
     );
 };
 
-// Resource Card Component (for shared items)
-const ResourceCard = ({ resource, onClick }) => {
-    const getTypeStyles = (type) => {
-        switch (type) {
-            case 'note': return { icon: <FileText size={14} />, color: 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-900/10' };
-            case 'flashcard': return { icon: <Brain size={14} />, color: 'border-purple-500 text-purple-600 dark:text-purple-400 bg-purple-50/50 dark:bg-purple-900/10' };
-            case 'tutorial': return { icon: <Youtube size={14} />, color: 'border-rose-500 text-rose-600 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-900/10' };
-            default: return { icon: <Share2 size={14} />, color: 'border-slate-500 text-slate-600' };
-        }
-    };
-
-    const styles = getTypeStyles(resource.type);
-
-    return (
-        <motion.div
-            whileHover={{ y: -2 }}
-            className={`bg-white dark:bg-slate-900/90 p-3 rounded-xl border-l-4 ${styles.color} shadow-sm min-w-[200px] cursor-pointer group`}
-            onClick={onClick}
-        >
-            <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                    {styles.icon}
-                    <span className="text-[9px] font-bold uppercase tracking-wider">{resource.type}</span>
-                </div>
-                <ExternalLink size={12} className="text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-            <div className="font-bold text-slate-800 dark:text-slate-100 text-xs mb-1 line-clamp-1">
-                {resource.title}
-            </div>
-            {resource.preview && (
-                <div className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
-                    {resource.preview}
-                </div>
-            )}
-        </motion.div>
-    );
-};
 
 // Resource Viewer Modal
-const ResourceViewerModal = ({ isOpen, onClose, resource, loading, onNavigate }) => {
+function ResourceViewerModal({ isOpen, onClose, resource, loading, onNavigate }) {
     if (!isOpen) return null;
 
     const getYouTubeId = (url) => {
@@ -216,7 +217,7 @@ const ResourceViewerModal = ({ isOpen, onClose, resource, loading, onNavigate })
     );
 };
 
-const Chat = () => {
+function Chat() {
     const {
         conversations,
         messages,
