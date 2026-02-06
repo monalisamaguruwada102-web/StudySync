@@ -228,17 +228,20 @@ const Notes = () => {
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Personal Notes</h1>
                     <p className="text-slate-500 dark:text-slate-400">Capture key concepts and link important resources.</p>
                 </div>
-                <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2">
+                <Button
+                    onClick={() => setIsModalOpen(true)}
+                    className="flex items-center gap-2 bg-[#ff5a1f] hover:bg-[#e64a19] text-white border-none shadow-lg shadow-orange-500/20 px-6 py-3 rounded-2xl transition-all"
+                >
                     <Plus size={20} />
-                    <span>Add Note</span>
+                    <span className="font-bold">Add Note</span>
                 </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {notes.map((note) => (
-                    <Card key={note.id} className="flex flex-col h-full hover:shadow-md transition-shadow">
+                    <Card key={note.id} className="flex flex-col h-full hover:shadow-xl transition-all duration-300 border-none bg-white dark:bg-slate-900/50 shadow-sm hover:-translate-y-1">
                         <div className="flex justify-between items-start mb-4">
-                            <div className="flex items-center gap-2 px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-[#f1f5f9] dark:bg-slate-800/80 rounded-lg text-[10px] uppercase font-black tracking-wider text-[#475569] dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50">
                                 <Book size={10} />
                                 <span>{getModuleName(note.moduleId)}</span>
                             </div>
@@ -371,9 +374,9 @@ const Notes = () => {
                                 href={note.pdfPath}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="mt-2 w-full flex items-center justify-center gap-2 text-blue-600 text-xs font-bold bg-blue-50 dark:bg-blue-900/20 p-2 rounded-lg hover:bg-blue-100 transition-colors"
+                                className="mt-4 w-full flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400 text-[11px] font-bold bg-[#edf2ff] dark:bg-blue-900/30 py-2.5 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all shadow-sm border border-blue-100 dark:border-blue-800/50"
                             >
-                                <FileText size={14} />
+                                <FileText size={16} />
                                 <span>View PDF Document</span>
                             </a>
                         )}
