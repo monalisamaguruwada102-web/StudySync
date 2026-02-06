@@ -314,16 +314,20 @@ function Chat() {
     // Scroll tracking
     const handleScroll = (e) => {
         const { scrollTop, scrollHeight, clientHeight } = e.target;
-        const atBottom = scrollHeight - scrollTop - clientHeight < 100;
+        // Increase threshold to 150px for better reliability
+        const atBottom = scrollHeight - scrollTop - clientHeight < 150;
         setIsAtBottom(atBottom);
         if (atBottom) setShowNewMessageToast(false);
     };
 
     useEffect(() => {
         if (isAtBottom) {
-            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            // Use a small timeout to ensure DOM is updated and layout stable
+            const timer = setTimeout(() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }, 100);
+            return () => clearTimeout(timer);
         } else if (messages.length > 0) {
-            // Check if last message is from other user
             const lastMessage = messages[messages.length - 1];
             const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
             if (lastMessage.senderId !== currentUser.id) {
@@ -331,6 +335,16 @@ function Chat() {
             }
         }
     }, [messages, isAtBottom]);
+
+    // Initial scroll to bottom when switching conversations
+    useEffect(() => {
+        if (activeConversation) {
+            setIsAtBottom(true);
+            setTimeout(() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' });
+            }, 200);
+        }
+    }, [activeConversation?.id]);
 
     useEffect(() => {
         if (showUserSelector) {
