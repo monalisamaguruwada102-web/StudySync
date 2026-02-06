@@ -259,7 +259,8 @@ function Chat() {
         respondToRequest,
         availableGroups,
         fetchAvailableGroups,
-        unreadCounts
+        unreadCounts,
+        onlineUsers
     } = useChat();
 
     // --- Hoisted Functions ---
