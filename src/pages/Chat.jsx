@@ -15,10 +15,10 @@ import api from '../services/api';
 function ChatMessageResourceCard({ resource, onClick }) {
     const getTypeStyles = (type) => {
         switch (type) {
-            case 'note': return { icon: <FileText size={14} />, color: 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-900/10' };
-            case 'flashcard': return { icon: <Brain size={14} />, color: 'border-purple-500 text-purple-600 dark:text-purple-400 bg-purple-50/50 dark:bg-purple-900/10' };
-            case 'tutorial': return { icon: <Youtube size={14} />, color: 'border-rose-500 text-rose-600 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-900/10' };
-            default: return { icon: <Share2 size={14} />, color: 'border-slate-500 text-slate-600' };
+            case 'note': return { icon: <FileText size={16} />, color: 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-900/10', label: 'Note' };
+            case 'flashcard': return { icon: <Brain size={16} />, color: 'border-purple-500 text-purple-600 dark:text-purple-400 bg-purple-50/50 dark:bg-purple-900/10', label: 'Flashcard' };
+            case 'tutorial': return { icon: <Youtube size={16} />, color: 'border-rose-500 text-rose-600 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-900/10', label: 'Tutorial' };
+            default: return { icon: <Share2 size={16} />, color: 'border-slate-500 text-slate-600', label: 'Resource' };
         }
     };
 
@@ -26,22 +26,22 @@ function ChatMessageResourceCard({ resource, onClick }) {
 
     return (
         <motion.div
-            whileHover={{ y: -2 }}
-            className={`bg-white dark:bg-slate-900/90 p-3 rounded-xl border-l-4 ${styles.color} shadow-sm min-w-[200px] cursor-pointer group`}
+            whileHover={{ scale: 1.01 }}
+            className={`p-3 rounded-xl border-l-4 ${styles.color} shadow-sm min-w-[220px] max-w-full cursor-pointer group mb-1`}
             onClick={onClick}
         >
             <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                <div className="flex items-center gap-2">
                     {styles.icon}
-                    <span className="text-[9px] font-bold uppercase tracking-wider">{resource.type}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">{styles.label}</span>
                 </div>
-                <ExternalLink size={12} className="text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <ExternalLink size={12} className="opacity-40" />
             </div>
-            <div className="font-bold text-slate-800 dark:text-slate-100 text-xs mb-1 line-clamp-1">
+            <div className="font-bold text-sm mb-1 truncate">
                 {resource.title}
             </div>
             {resource.preview && (
-                <div className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                <div className="text-[11px] opacity-70 line-clamp-2 leading-snug">
                     {resource.preview}
                 </div>
             )}
@@ -53,51 +53,52 @@ function ChatMessageResourceCard({ resource, onClick }) {
 function MessageBubble({ message, isOwn, handleOpenResource, formatTime }) {
     return (
         <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className={`flex ${isOwn ? 'justify-end' : 'justify-start'} mb-1`}
         >
-            <div className={`max-w-[75%] ${isOwn ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
-                <div className="flex items-center gap-2 px-1">
-                    {!isOwn && (
-                        <span className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">
-                            {message.senderEmail.split('@')[0]}
-                        </span>
-                    )}
-                </div>
-                <div
-                    className={`px-4 py-2.5 rounded-2xl shadow-sm ${isOwn
-                        ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-tr-none border border-blue-400/20'
-                        : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-tl-none border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-sm shadow-slate-200/50 dark:shadow-none'
-                        }`}
-                >
-                    {message.sharedResource ? (
-                        <ChatMessageResourceCard
-                            resource={message.sharedResource}
-                            onClick={() => handleOpenResource(message.sharedResource)}
-                        />
-                    ) : (
-                        <p className="text-[13px] leading-relaxed break-words">{message.content}</p>
-                    )}
-                </div>
-                <div className="flex items-center gap-1 mt-0.5 px-1">
-                    <span className="text-[9px] text-slate-400 font-medium uppercase tracking-tighter">
+            <div className={`relative max-w-[80%] px-3 py-2 rounded-2xl shadow-sm ${isOwn
+                ? 'bg-[#d9fdd3] dark:bg-[#005c4b] text-slate-800 dark:text-slate-100 rounded-tr-none'
+                : 'bg-white dark:bg-[#202c33] text-slate-800 dark:text-slate-100 rounded-tl-none'
+                }`}>
+
+                {/* Tail Decoration for WhatsApp Feel */}
+                <div className={`absolute top-0 w-3 h-3 ${isOwn
+                    ? 'right-[-6px] bg-[#d9fdd3] dark:bg-[#005c4b] [clip-path:polygon(0_0,0_100%,100%_0)]'
+                    : 'left-[-6px] bg-white dark:bg-[#202c33] [clip-path:polygon(100%_0,100%_100%,0_0)]'}`}
+                />
+
+                {!isOwn && (
+                    <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 block mb-1">
+                        {message.senderEmail?.split('@')[0]}
+                    </span>
+                )}
+
+                {message.sharedResource ? (
+                    <ChatMessageResourceCard
+                        resource={message.sharedResource}
+                        onClick={() => handleOpenResource(message.sharedResource)}
+                    />
+                ) : (
+                    <p className="text-[14px] leading-relaxed break-words pr-12">{message.content}</p>
+                )}
+
+                <div className="absolute bottom-1 right-2 flex items-center gap-1 opacity-60">
+                    <span className="text-[10px] font-medium leading-none">
                         {formatTime(message.timestamp)}
                     </span>
                     {isOwn && (
-                        <span className="text-slate-400">
-                            {message.read ? (
-                                <CheckCheck size={12} className="text-blue-500" />
-                            ) : (
-                                <Check size={12} />
-                            )}
-                        </span>
+                        message.read ? (
+                            <CheckCheck size={14} className="text-blue-400" />
+                        ) : (
+                            <Check size={14} />
+                        )
                     )}
                 </div>
             </div>
         </motion.div>
     );
-};
+}
 
 
 // Resource Viewer Modal
@@ -223,7 +224,7 @@ function Chat() {
     const isAdmin = currentUser.email === (import.meta.env.VITE_ADMIN_EMAIL || 'joshuamujakari15@gmail.com');
 
     // --- State & Refs ---
-    const [activeTab, setActiveTab] = useState('chats');
+    const [activeTab, setActiveTab] = useState('chats'); // 'chats', 'groups', 'explore', 'requests'
     const [messageInput, setMessageInput] = useState('');
     const [showUserSelector, setShowUserSelector] = useState(false);
     const [showResourceShare, setShowResourceShare] = useState(false);
@@ -262,6 +263,21 @@ function Chat() {
         unreadCounts,
         onlineUsers
     } = useChat();
+
+    // --- Derived State ---
+    const directChats = conversations.filter(c =>
+        c.type === 'direct' && (!c.status || c.status === 'active' || (c.status === 'pending' && c.initiatorId === currentUser.id))
+    );
+    const joinedGroups = conversations.filter(c => c.type === 'group');
+    const pendingRequests = conversations.filter(c =>
+        c.status === 'pending' && c.initiatorId !== currentUser.id && c.type === 'direct'
+    );
+
+    // Determine which list to show based on tab
+    let displayList = [];
+    if (activeTab === 'chats') displayList = directChats;
+    else if (activeTab === 'groups') displayList = joinedGroups;
+    else if (activeTab === 'requests') displayList = pendingRequests;
 
     // --- Hoisted Functions ---
     function formatMessageTime(timestamp) {
@@ -472,16 +488,21 @@ function Chat() {
     }
 
     // --- Derived ---
-    const filteredUsers = users.filter(u =>
-        u.email.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    const activeChats = conversations.filter(c =>
-        !c.status || c.status === 'active' || (c.status === 'pending' && c.initiatorId === currentUser.id)
-    );
-    const pendingRequests = conversations.filter(c =>
-        c.status === 'pending' && c.initiatorId !== currentUser.id && c.type === 'direct'
-    );
-    const displayList = activeTab === 'chats' ? activeChats : pendingRequests;
+    // --- Avatar Helper ---
+    const renderAvatar = (name, isOnline = false, isGroup = false) => {
+        const initials = name?.split('@')[0].substring(0, 2).toUpperCase() || '?';
+        return (
+            <div className="relative flex-shrink-0">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm
+                    ${isGroup ? 'bg-emerald-500' : 'bg-gradient-to-br from-blue-400 to-indigo-500'}`}>
+                    {isGroup ? <Users size={24} /> : initials}
+                </div>
+                {!isGroup && isOnline && (
+                    <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-slate-800 rounded-full" />
+                )}
+            </div>
+        );
+    };
 
 
     return (
@@ -500,76 +521,79 @@ function Chat() {
                         </a>
                     </div>
 
-                    <div className="flex gap-2 mb-4 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+                    <div className="flex gap-1 mb-4 bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl">
                         <button
                             onClick={() => setActiveTab('chats')}
-                            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'chats'
+                            className={`flex-1 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${activeTab === 'chats'
                                 ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400'
-                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'
                                 }`}
                         >
-                            <MessageCircle size={16} />
                             Chats
                         </button>
                         <button
-                            onClick={() => setActiveTab('requests')}
-                            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all relative ${activeTab === 'requests'
+                            onClick={() => setActiveTab('groups')}
+                            className={`flex-1 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${activeTab === 'groups'
                                 ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400'
-                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'
                                 }`}
                         >
-                            <Users size={16} />
-                            Requests
-                            {pendingRequests.length > 0 && (
-                                <span className="absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                            )}
+                            Groups
                         </button>
                         <button
-                            onClick={() => setActiveTab('groups')}
-                            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'groups'
+                            onClick={() => setActiveTab('explore')}
+                            className={`flex-1 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${activeTab === 'explore'
                                 ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400'
-                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'
                                 }`}
                         >
-                            <Users size={16} />
-                            Groups
+                            Explore
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('requests')}
+                            className={`flex-1 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all relative ${activeTab === 'requests'
+                                ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400'
+                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'
+                                }`}
+                        >
+                            {pendingRequests.length > 0 && (
+                                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white dark:border-slate-800 animate-pulse" />
+                            )}
+                            Inbox
                         </button>
                     </div>
 
-                    {activeTab === 'chats' && (
-                        <div className="flex gap-2 mb-4">
-                            <Button
-                                onClick={() => setShowUserSelector(true)}
-                                variant="primary"
-                                className="flex-1 text-sm h-10"
-                            >
-                                <Plus size={16} />
-                                New Chat
-                            </Button>
-                            <Button
-                                onClick={() => setShowJoinGroup(true)}
-                                variant="secondary"
-                                className="flex-1 text-sm h-10"
-                            >
-                                <Users size={16} />
-                                Join Group
-                            </Button>
-                        </div>
-                    )}
+                    <div className="flex gap-2 mb-4">
+                        <Button
+                            onClick={() => setShowUserSelector(true)}
+                            variant="secondary"
+                            className="flex-1 text-[11px] h-9 rounded-xl bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                        >
+                            <Plus size={14} />
+                            New Chat
+                        </Button>
+                        <Button
+                            onClick={() => setShowJoinGroup(true)}
+                            variant="secondary"
+                            className="flex-1 text-[11px] h-9 rounded-xl bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                        >
+                            <Users size={14} />
+                            Join Group
+                        </Button>
+                    </div>
 
                     {isAdmin && (
                         <Button
                             onClick={() => setShowGroupModal(true)}
-                            variant="success"
-                            className="w-full mb-4 text-sm"
+                            className="w-full mb-4 text-[11px] h-9 rounded-xl font-bold bg-emerald-500 hover:bg-emerald-600 text-white border-none shadow-sm shadow-emerald-500/20"
                         >
-                            <Plus size={16} />
-                            Create Group
+                            <Plus size={14} />
+                            Create New Group
                         </Button>
                     )}
 
-                    <div className="space-y-2 max-h-[calc(100vh-450px)] overflow-y-auto custom-scrollbar">
-                        {activeTab === 'groups' ? (
+                    <div className="space-y-1 max-h-[calc(100vh-450px)] overflow-y-auto custom-scrollbar pr-1">
+                        {activeTab === 'explore' ? (
                             availableGroups.length === 0 ? (
                                 <div className="text-center py-10 opacity-50">
                                     <Users size={32} className="mx-auto mb-2 text-slate-300" />
@@ -579,23 +603,23 @@ function Chat() {
                                 availableGroups.map((group) => (
                                     <motion.div
                                         layout
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
+                                        initial={{ opacity: 0, scale: 0.98 }}
+                                        animate={{ opacity: 1, scale: 1 }}
                                         key={group.id}
-                                        className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all relative overflow-hidden group"
+                                        className="p-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all relative overflow-hidden group mb-2"
                                     >
                                         <div className="flex justify-between items-start mb-2">
-                                            <div className="font-semibold text-slate-800 dark:text-slate-100">{group.name}</div>
-                                            <span className="text-[10px] bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full text-slate-500">
-                                                {group.members?.length || 0} members
+                                            <div className="font-bold text-slate-800 dark:text-slate-100">{group.name}</div>
+                                            <span className="text-[10px] bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full font-bold">
+                                                {group.members?.length || 0} MEMBERS
                                             </span>
                                         </div>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">
+                                        <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mb-3 leading-relaxed">
                                             {group.description || 'No description provided.'}
                                         </p>
                                         <Button
                                             onClick={() => handleJoinGroupById(group.inviteCode)}
-                                            className="w-full text-xs h-8 bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 border-none"
+                                            className="w-full text-[11px] h-8 rounded-xl font-bold bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-none"
                                         >
                                             Join Group
                                         </Button>
@@ -603,11 +627,9 @@ function Chat() {
                                 ))
                             )
                         ) : displayList.length === 0 ? (
-                            <div className="text-center py-10 opacity-50">
-                                <MessageCircle size={32} className="mx-auto mb-2 text-slate-300" />
-                                <p className="text-sm text-slate-500">
-                                    {activeTab === 'chats' ? 'No active chats.' : 'No pending requests.'}
-                                </p>
+                            <div className="text-center py-16 opacity-30">
+                                <MessageCircle size={40} className="mx-auto mb-3" />
+                                <p className="text-sm font-medium">No results here.</p>
                             </div>
                         ) : (
                             displayList.map((conv) => {
@@ -615,48 +637,42 @@ function Chat() {
                                 return (
                                     <motion.div
                                         layout
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
                                         key={conv.id}
-                                        whileHover={{ scale: 1.02 }}
-                                        whileTap={{ scale: 0.98 }}
                                         onClick={() => setActiveConversation(conv)}
-                                        className={`p-3 rounded-lg cursor-pointer transition-all ${activeConversation?.id === conv.id
-                                            ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800'
-                                            : 'bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700'
+                                        className={`p-3 rounded-2xl cursor-pointer transition-all flex items-center gap-3 relative group
+                                            ${activeConversation?.id === conv.id
+                                                ? 'bg-blue-50 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-800'
+                                                : 'hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-transparent'
                                             }`}
                                     >
-                                        <div className="flex items-start justify-between gap-2">
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="relative">
-                                                        {conv.type === 'group' ? (
-                                                            <Users size={14} className="text-blue-500 flex-shrink-0" />
-                                                        ) : (
-                                                            <MessageCircle size={14} className="text-slate-400 flex-shrink-0" />
-                                                        )}
-                                                        {isOnline && (
-                                                            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-emerald-500 rounded-full border border-white dark:border-slate-800"></span>
-                                                        )}
-                                                    </div>
-                                                    <h3 className="font-semibold text-sm text-slate-800 dark:text-slate-100 truncate">
-                                                        {title}
-                                                    </h3>
-                                                </div>
-                                                <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-1">
-                                                    {conv.lastMessage || 'No messages yet'}
-                                                </p>
-                                            </div>
-                                            {conv.lastMessageTime && (
-                                                <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                                                    <span className="text-[10px] text-slate-400">
+                                        {renderAvatar(title, isOnline, conv.type === 'group')}
+
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between mb-0.5">
+                                                <h3 className="font-bold text-[14px] text-slate-800 dark:text-slate-100 truncate pr-2">
+                                                    {title}
+                                                </h3>
+                                                {conv.lastMessageTime && (
+                                                    <span className={`text-[10px] whitespace-nowrap ${unreadCounts[conv.id] > 0 ? 'text-emerald-500 font-bold' : 'text-slate-400'}`}>
                                                         {formatLastMessageTime(conv.lastMessageTime)}
                                                     </span>
-                                                    {unreadCounts[conv.id] > 0 && (
-                                                        <span className="bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-sm shadow-blue-500/30">
-                                                            {unreadCounts[conv.id]}
-                                                        </span>
-                                                    )}
+                                                )}
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <p className="text-[12px] text-slate-500 dark:text-slate-400 truncate flex-1">
+                                                    {conv.lastMessage || 'No messages yet'}
+                                                </p>
+                                                {unreadCounts[conv.id] > 0 && (
+                                                    <span className="bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center ml-2 shadow-sm shadow-emerald-500/30">
+                                                        {unreadCounts[conv.id]}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {conv.type === 'group' && conv.inviteCode && (
+                                                <div className="text-[9px] font-bold text-blue-500/70 mt-1 uppercase tracking-wider">
+                                                    CODE: {conv.inviteCode}
                                                 </div>
                                             )}
                                         </div>
@@ -674,50 +690,37 @@ function Chat() {
                     {activeConversation ? (
                         <>
                             {/* Chat Header */}
-                            <div className="p-4 border-b border-slate-200 dark:border-slate-700">
+                            <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-20">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
+                                        {renderAvatar(
+                                            getConversationDisplay(activeConversation).title,
+                                            getConversationDisplay(activeConversation).isOnline,
+                                            activeConversation.type === 'group'
+                                        )}
                                         <div className="flex flex-col">
-                                            <div className="flex items-center gap-2">
-                                                <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 leading-tight">
-                                                    {getConversationDisplay(activeConversation).title}
-                                                </h2>
-                                                {getConversationDisplay(activeConversation).isOnline && (
-                                                    <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-sm shadow-emerald-500/50"></span>
-                                                )}
-                                            </div>
-
-                                            {activeConversation.type === 'direct' ? (
-                                                <p className="text-xs text-slate-500 flex items-center gap-2">
-                                                    {getConversationDisplay(activeConversation).status}
-                                                    {activeConversation.otherUser && (
-                                                        <span>• Level {activeConversation.otherUser.level}</span>
-                                                    )}
-                                                </p>
-                                            ) : (
-                                                <div className="flex items-center gap-2 mt-0.5">
-                                                    <span className="text-[10px] font-mono bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-400 uppercase tracking-wider border border-slate-200 dark:border-slate-700">
-                                                        Code: {activeConversation.inviteCode || '...'}
-                                                    </span>
-                                                    <button
-                                                        onClick={() => handleCopyInviteCode(activeConversation.inviteCode)}
-                                                        className="text-blue-500 hover:text-blue-600 transition-colors"
-                                                        title="Copy Invite Code"
-                                                    >
-                                                        {copied ? <Check size={12} /> : <Copy size={12} />}
-                                                    </button>
-                                                </div>
-                                            )}
+                                            <h2 className="text-[15px] font-bold text-slate-800 dark:text-slate-100 leading-tight">
+                                                {getConversationDisplay(activeConversation).title}
+                                            </h2>
+                                            <p className="text-[11px] text-emerald-500 font-bold">
+                                                {activeConversation.type === 'direct'
+                                                    ? (getConversationDisplay(activeConversation).isOnline ? 'online' : 'last seen recently')
+                                                    : `Group • ${activeConversation.participants?.length || 0} participants`
+                                                }
+                                            </p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1">
+                                        <button className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                                            <Search size={18} />
+                                        </button>
                                         <Button
                                             onClick={() => setShowResourceShare(true)}
                                             variant="secondary"
-                                            className="text-xs h-9 px-3"
+                                            className="text-[11px] h-8 px-3 rounded-full bg-slate-100 dark:bg-slate-800 border-none font-bold"
                                         >
-                                            <Share2 size={14} />
-                                            Share Resource
+                                            <Share2 size={13} />
+                                            SHARE
                                         </Button>
                                     </div>
                                 </div>
@@ -807,39 +810,32 @@ function Chat() {
                                         </p>
                                     </div>
                                 ) : (
-                                    <div className="flex gap-2">
-                                        {/* Invite Code Display for Groups */}
-                                        {activeConversation.type === 'group' && activeConversation.inviteCode && (
-                                            <div className="flex-1 flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-xs font-semibold text-slate-500 uppercase">Invite Code:</span>
-                                                    <code className="text-sm font-mono text-blue-600 dark:text-blue-400 select-all">
-                                                        {activeConversation.inviteCode}
-                                                    </code>
-                                                </div>
-                                                <Button
-                                                    title="Copy Invite Code"
-                                                    onClick={() => {
-                                                        navigator.clipboard.writeText(activeConversation.inviteCode);
-                                                        alert('Invite code copied!');
-                                                    }}
-                                                    className="h-6 w-6 p-0 flex items-center justify-center bg-transparent hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500"
-                                                >
-                                                    <Copy size={12} />
-                                                </Button>
-                                            </div>
-                                        )}
-                                        {/* Added Attachment Button placeholder for future */}
-                                        <Input
+                                    <div className="flex items-end gap-2 bg-slate-50 dark:bg-[#111b21] p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner">
+                                        <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
+                                            <Plus size={20} />
+                                        </button>
+                                        <textarea
                                             value={messageInput}
                                             onChange={handleInputChange}
-                                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' && !e.shiftKey) {
+                                                    e.preventDefault();
+                                                    handleSendMessage();
+                                                }
+                                            }}
                                             placeholder="Type a message..."
-                                            className="flex-1 backdrop-blur-sm bg-white/50 dark:bg-slate-900/50"
+                                            rows={1}
+                                            className="flex-1 bg-white dark:bg-[#2a3942] border-none focus:ring-0 rounded-xl px-4 py-2 text-sm resize-none max-h-32 custom-scrollbar dark:text-slate-100"
+                                            style={{ height: 'auto', minHeight: '40px' }}
                                         />
-                                        <Button onClick={handleSendMessage} variant="primary" className="shadow-lg shadow-blue-500/20">
-                                            <Send size={18} />
-                                        </Button>
+                                        <button
+                                            onClick={handleSendMessage}
+                                            className={`p-2.5 rounded-full transition-all shadow-md ${messageInput.trim()
+                                                ? 'bg-emerald-500 hover:bg-emerald-600 text-white scale-100'
+                                                : 'bg-slate-200 dark:bg-slate-700 text-slate-400 scale-95'}`}
+                                        >
+                                            <Send size={20} />
+                                        </button>
                                     </div>
                                 )}
                             </div>
