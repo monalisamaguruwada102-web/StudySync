@@ -215,7 +215,16 @@ const useChat = () => {
 
     // Supabase Realtime Setup for Active Conversation
     useEffect(() => {
-        if (!activeConversation || !supabase) return;
+        if (!activeConversation) {
+            setMessages([]);
+            return;
+        }
+
+        // Fetch immediately on selection/change
+        setLoading(true);
+        fetchMessages(activeConversation.id);
+
+        if (!supabase) return;
 
         const channel = supabase.channel(`chat:${activeConversation.id}`);
 

@@ -685,186 +685,184 @@ function Chat() {
             </div>
 
             {/* Message Window */}
-            <div className="flex-1 flex flex-col">
-                <Card className="flex-1 flex flex-col">
-                    {activeConversation ? (
-                        <>
-                            {/* Chat Header */}
-                            <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-20">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        {renderAvatar(
-                                            getConversationDisplay(activeConversation).title,
-                                            getConversationDisplay(activeConversation).isOnline,
-                                            activeConversation.type === 'group'
-                                        )}
-                                        <div className="flex flex-col">
-                                            <h2 className="text-[15px] font-bold text-slate-800 dark:text-slate-100 leading-tight">
-                                                {getConversationDisplay(activeConversation).title}
-                                            </h2>
-                                            <p className="text-[11px] text-emerald-500 font-bold">
-                                                {activeConversation.type === 'direct'
-                                                    ? (getConversationDisplay(activeConversation).isOnline ? 'online' : 'last seen recently')
-                                                    : `Group • ${activeConversation.participants?.length || 0} participants`
-                                                }
-                                            </p>
-                                        </div>
+            <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/50 dark:border-slate-800 shadow-xl overflow-hidden relative">
+                {activeConversation ? (
+                    <>
+                        {/* Chat Header */}
+                        <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-20">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    {renderAvatar(
+                                        getConversationDisplay(activeConversation).title,
+                                        getConversationDisplay(activeConversation).isOnline,
+                                        activeConversation.type === 'group'
+                                    )}
+                                    <div className="flex flex-col">
+                                        <h2 className="text-[15px] font-bold text-slate-800 dark:text-slate-100 leading-tight">
+                                            {getConversationDisplay(activeConversation).title}
+                                        </h2>
+                                        <p className="text-[11px] text-emerald-500 font-bold">
+                                            {activeConversation.type === 'direct'
+                                                ? (getConversationDisplay(activeConversation).isOnline ? 'online' : 'last seen recently')
+                                                : `Group • ${activeConversation.participants?.length || 0} participants`
+                                            }
+                                        </p>
                                     </div>
-                                    <div className="flex items-center gap-1">
-                                        <button className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                                            <Search size={18} />
-                                        </button>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <button className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                                        <Search size={18} />
+                                    </button>
+                                    <Button
+                                        onClick={() => setShowResourceShare(true)}
+                                        variant="secondary"
+                                        className="text-[11px] h-8 px-3 rounded-full bg-slate-100 dark:bg-slate-800 border-none font-bold"
+                                    >
+                                        <Share2 size={13} />
+                                        SHARE
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Messages Container */}
+                        <div
+                            className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar min-h-0 relative bg-slate-50/30 dark:bg-slate-900/10"
+                            onScroll={handleScroll}
+                            ref={scrollContainerRef}
+                        >
+                            {messages.length === 0 ? (
+                                <div className="flex items-center justify-center h-full">
+                                    <p className="text-slate-500 text-sm">No messages yet. Start the conversation!</p>
+                                </div>
+                            ) : (
+                                messages.map((msg, idx) => (
+                                    <MessageBubble
+                                        key={msg.id || idx}
+                                        message={msg}
+                                        isOwn={msg.senderId === currentUser.id}
+                                        handleOpenResource={handleOpenResource}
+                                        formatTime={formatMessageTime}
+                                    />
+                                ))
+                            )}
+                            {getTypingText() && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="text-xs text-slate-400 italic ml-4 flex items-center gap-1"
+                                >
+                                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></span>
+                                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce delay-75"></span>
+                                    <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce delay-150"></span>
+                                    <span className="ml-1">{getTypingText()}</span>
+                                </motion.div>
+                            )}
+                            <div ref={messagesEndRef} className="h-4" />
+
+                            {/* New Message Toast */}
+                            <AnimatePresence>
+                                {showNewMessageToast && (
+                                    <motion.button
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: 20 }}
+                                        onClick={() => {
+                                            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                                            setShowNewMessageToast(false);
+                                        }}
+                                        className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm hover:bg-blue-700 transition-colors z-10"
+                                    >
+                                        <ArrowDown size={14} />
+                                        New messages below
+                                    </motion.button>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
+                        {/* Request Banner / Input */}
+                        <div className="p-4 border-t border-slate-200 dark:border-slate-700">
+                            {activeConversation.status === 'pending' && activeConversation.initiatorId !== currentUser.id ? (
+                                <div className="flex flex-col items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                                    <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">
+                                        {getConversationDisplay(activeConversation).title} wants to chat with you.
+                                    </p>
+                                    <div className="flex gap-3 w-full">
                                         <Button
-                                            onClick={() => setShowResourceShare(true)}
-                                            variant="secondary"
-                                            className="text-[11px] h-8 px-3 rounded-full bg-slate-100 dark:bg-slate-800 border-none font-bold"
+                                            onClick={() => handleRequestResponse('active')}
+                                            className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white border-none"
                                         >
-                                            <Share2 size={13} />
-                                            SHARE
+                                            <Check size={18} /> Accept
+                                        </Button>
+                                        <Button
+                                            onClick={() => handleRequestResponse('rejected')}
+                                            className="flex-1 bg-transprent border border-slate-300 hover:bg-slate-100 text-slate-600 dark:text-slate-400"
+                                        >
+                                            <X size={18} /> Decline
                                         </Button>
                                     </div>
                                 </div>
-                            </div>
-
-                            {/* Messages */}
-                            <div
-                                className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar min-h-0 relative"
-                                onScroll={handleScroll}
-                                ref={scrollContainerRef}
-                            >
-                                {messages.length === 0 ? (
-                                    <div className="flex items-center justify-center h-full">
-                                        <p className="text-slate-500 text-sm">No messages yet. Start the conversation!</p>
-                                    </div>
-                                ) : (
-                                    messages.map((msg, idx) => (
-                                        <MessageBubble
-                                            key={msg.id || idx}
-                                            message={msg}
-                                            isOwn={msg.senderId === currentUser.id}
-                                            handleOpenResource={handleOpenResource}
-                                            formatTime={formatMessageTime}
-                                        />
-                                    ))
-                                )}
-                                {getTypingText() && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="text-xs text-slate-400 italic ml-4 flex items-center gap-1"
-                                    >
-                                        <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></span>
-                                        <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce delay-75"></span>
-                                        <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce delay-150"></span>
-                                        <span className="ml-1">{getTypingText()}</span>
-                                    </motion.div>
-                                )}
-                                <div ref={messagesEndRef} className="h-4" />
-
-                                {/* New Message Toast */}
-                                <AnimatePresence>
-                                    {showNewMessageToast && (
-                                        <motion.button
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: 20 }}
-                                            onClick={() => {
-                                                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-                                                setShowNewMessageToast(false);
-                                            }}
-                                            className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm hover:bg-blue-700 transition-colors z-10"
-                                        >
-                                            <ArrowDown size={14} />
-                                            New messages below
-                                        </motion.button>
-                                    )}
-                                </AnimatePresence>
-                            </div>
-
-                            {/* Request Banner / Input */}
-                            <div className="p-4 border-t border-slate-200 dark:border-slate-700">
-                                {activeConversation.status === 'pending' && activeConversation.initiatorId !== currentUser.id ? (
-                                    <div className="flex flex-col items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
-                                        <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">
-                                            {getConversationDisplay(activeConversation).title} wants to chat with you.
-                                        </p>
-                                        <div className="flex gap-3 w-full">
-                                            <Button
-                                                onClick={() => handleRequestResponse('active')}
-                                                className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white border-none"
-                                            >
-                                                <Check size={18} /> Accept
-                                            </Button>
-                                            <Button
-                                                onClick={() => handleRequestResponse('rejected')}
-                                                className="flex-1 bg-transprent border border-slate-300 hover:bg-slate-100 text-slate-600 dark:text-slate-400"
-                                            >
-                                                <X size={18} /> Decline
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ) : activeConversation?.status === 'pending' ? (
-                                    <div className="text-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
-                                        <p className="text-sm text-slate-500">
-                                            Waiting for {getConversationDisplay(activeConversation).title} to accept your request.
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-end gap-2 bg-slate-50 dark:bg-[#111b21] p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner">
-                                        <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
-                                            <Plus size={20} />
-                                        </button>
-                                        <textarea
-                                            value={messageInput}
-                                            onChange={handleInputChange}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' && !e.shiftKey) {
-                                                    e.preventDefault();
-                                                    handleSendMessage();
-                                                }
-                                            }}
-                                            placeholder="Type a message..."
-                                            rows={1}
-                                            className="flex-1 bg-white dark:bg-[#2a3942] border-none focus:ring-0 rounded-xl px-4 py-2 text-sm resize-none max-h-32 custom-scrollbar dark:text-slate-100"
-                                            style={{ height: 'auto', minHeight: '40px' }}
-                                        />
-                                        <button
-                                            onClick={handleSendMessage}
-                                            className={`p-2.5 rounded-full transition-all shadow-md ${messageInput.trim()
-                                                ? 'bg-emerald-500 hover:bg-emerald-600 text-white scale-100'
-                                                : 'bg-slate-200 dark:bg-slate-700 text-slate-400 scale-95'}`}
-                                        >
-                                            <Send size={20} />
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </>
-                    ) : (
-                        <div className="flex-1 flex items-center justify-center relative overflow-hidden">
-                            {/* Premium Empty State */}
-                            <div className="absolute inset-0 pointer-events-none opacity-30">
-                                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
-                                <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-700"></div>
-                            </div>
-
-                            <div className="text-center relative z-10 p-8 glass rounded-3xl border border-white/20 shadow-2xl backdrop-blur-md">
-                                <div className="w-20 h-20 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg shadow-blue-500/30 transform -rotate-6">
-                                    <MessageCircle size={40} className="text-white" />
+                            ) : activeConversation?.status === 'pending' ? (
+                                <div className="text-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                                    <p className="text-sm text-slate-500">
+                                        Waiting for {getConversationDisplay(activeConversation).title} to accept your request.
+                                    </p>
                                 </div>
-                                <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
-                                    StudySync Chat
-                                </h3>
-                                <p className="text-slate-500 dark:text-slate-400 max-w-xs mx-auto mb-6">
-                                    Connect with peers, join study groups, and share your knowledge in real-time.
-                                </p>
-                                <Button onClick={() => setShowUserSelector(true)} variant="primary" className="w-full shadow-lg shadow-blue-500/25">
-                                    Start New Chat
-                                </Button>
-                            </div>
+                            ) : (
+                                <div className="flex items-end gap-2 bg-slate-50 dark:bg-[#111b21] p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner">
+                                    <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
+                                        <Plus size={20} />
+                                    </button>
+                                    <textarea
+                                        value={messageInput}
+                                        onChange={handleInputChange}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                handleSendMessage();
+                                            }
+                                        }}
+                                        placeholder="Type a message..."
+                                        rows={1}
+                                        className="flex-1 bg-white dark:bg-[#2a3942] border-none focus:ring-0 rounded-xl px-4 py-2 text-sm resize-none max-h-32 custom-scrollbar dark:text-slate-100"
+                                        style={{ height: 'auto', minHeight: '40px' }}
+                                    />
+                                    <button
+                                        onClick={handleSendMessage}
+                                        className={`p-2.5 rounded-full transition-all shadow-md ${messageInput.trim()
+                                            ? 'bg-emerald-500 hover:bg-emerald-600 text-white scale-100'
+                                            : 'bg-slate-200 dark:bg-slate-700 text-slate-400 scale-95'}`}
+                                    >
+                                        <Send size={20} />
+                                    </button>
+                                </div>
+                            )}
                         </div>
-                    )}
-                </Card>
+                    </>
+                ) : (
+                    <div className="flex-1 flex items-center justify-center relative overflow-hidden">
+                        {/* Premium Empty State */}
+                        <div className="absolute inset-0 pointer-events-none opacity-30">
+                            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+                            <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-700"></div>
+                        </div>
+
+                        <div className="text-center relative z-10 p-8 glass rounded-3xl border border-white/20 shadow-2xl backdrop-blur-md">
+                            <div className="w-20 h-20 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-lg shadow-blue-500/30 transform -rotate-6">
+                                <MessageCircle size={40} className="text-white" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
+                                StudySync Chat
+                            </h3>
+                            <p className="text-slate-500 dark:text-slate-400 max-w-xs mx-auto mb-6">
+                                Connect with peers, join study groups, and share your knowledge in real-time.
+                            </p>
+                            <Button onClick={() => setShowUserSelector(true)} variant="primary" className="w-full shadow-lg shadow-blue-500/25">
+                                Start New Chat
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* User Selector Modal */}
