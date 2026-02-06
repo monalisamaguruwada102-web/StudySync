@@ -27,14 +27,14 @@ import ThemeSelector from '../components/ThemeSelector';
 
 const Settings = () => {
     const { user } = useAuth();
-    const themeContext = useTheme();
+
 
     // Diagnostic logging for ReferenceError debugging
     console.debug('Settings: user state:', user);
     const [isExporting, setIsExporting] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
     const [importStatus, setImportStatus] = useState(null); // 'success', 'error', 'pending'
-    const [errorMessage, setErrorMessage] = useState('');
+
     const [activeTab, setActiveTab] = useState('general'); // 'general', 'appearance', 'integrations', 'system'
     const [calendarUrl, setCalendarUrl] = useState('');
     const [notionToken, setNotionToken] = useState('');
@@ -122,7 +122,6 @@ const Settings = () => {
             setTimeout(() => window.location.reload(), 2000);
         } catch (error) {
             setImportStatus('error');
-            setErrorMessage(error.response?.data?.error || 'Import failed');
             console.error('Import failed:', error);
         } finally {
             setIsImporting(false);

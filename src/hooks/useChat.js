@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../services/api';
+import { supabase } from '../services/supabase';
 
 const useChat = () => {
     const [conversations, setConversations] = useState([]);
@@ -7,6 +8,12 @@ const useChat = () => {
     const [activeConversation, setActiveConversation] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // Realtime States
+    const [onlineUsers, setOnlineUsers] = useState(new Set());
+    const [typingUsers, setTypingUsers] = useState(new Set());
+    const [availableGroups, setAvailableGroups] = useState([]);
+    const typingTimeoutRef = useRef({});
 
     // Fetch all conversations
     const fetchConversations = useCallback(async () => {
@@ -19,6 +26,29 @@ const useChat = () => {
         }
     }, []);
 
+    // Fetch available groups
+    const fetchAvailableGroups = useCallback(async () => {
+        try {
+            const response = await api.get('/groups');
+            setAvailableGroups(response.data);
+        } catch (err) {
+            console.error('Error fetching groups:', err);
+        }
+    }, []);
+
+    // Mark messages as read
+    const markAsRead = useCallback(async (conversationId) => {
+        try {
+            await api.post(`/conversations/${conversationId}/read`);
+            // Update local state to reflect read status
+            setMessages(prev => prev.map(msg => ({ ...msg, read: true })));
+
+            // Also update conversation list last message status if needed
+        } catch (err) {
+            console.error('Error marking as read:', err);
+        }
+    }, []);
+
     // Fetch messages for a conversation
     const fetchMessages = useCallback(async (conversationId) => {
         if (!conversationId) return;
@@ -26,13 +56,16 @@ const useChat = () => {
         try {
             const response = await api.get(`/messages/${conversationId}`);
             setMessages(response.data);
+
+            // Mark as read when fetching
+            markAsRead(conversationId);
         } catch (err) {
             console.error('Error fetching messages:', err);
             setError(err.message);
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [markAsRead]);
 
     // Send a message
     const sendMessage = useCallback(async (conversationId, content, type = 'text', sharedResource = null) => {
@@ -47,7 +80,8 @@ const useChat = () => {
                 senderId: user.id,
                 senderEmail: user.email,
                 timestamp: new Date().toISOString(),
-                read: false
+                read: false,
+                status: 'sent'
             };
 
             const response = await api.post('/messages', message);
@@ -66,14 +100,31 @@ const useChat = () => {
         }
     }, [fetchConversations]);
 
+    // Send typing indicator
+    const sendTyping = useCallback(async (conversationId, isTyping) => {
+        if (!supabase || !conversationId) return;
+
+        const channel = supabase.channel(`chat:${conversationId}`);
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        await channel.track({
+            user: user.email,
+            typing: isTyping
+        });
+
+        // Also broadcast directly for faster updates
+        channel.send({
+            type: 'broadcast',
+            event: 'typing',
+            payload: { userId: user.id, isTyping }
+        });
+    }, []);
+
     // Create or get direct conversation
     const createDirectConversation = useCallback(async (otherUserId) => {
         try {
             const response = await api.post('/conversations/direct', { otherUserId });
-
-            // Refresh conversations
             await fetchConversations();
-
             return response.data;
         } catch (err) {
             console.error('Error creating conversation:', err);
@@ -92,10 +143,7 @@ const useChat = () => {
     const createGroup = useCallback(async (name, description) => {
         try {
             const response = await api.post('/groups/create', { name, description });
-
-            // Refresh conversations
             await fetchConversations();
-
             return response.data;
         } catch (err) {
             console.error('Error creating group:', err);
@@ -108,10 +156,7 @@ const useChat = () => {
     const joinGroup = useCallback(async (inviteCode) => {
         try {
             const response = await api.post(`/groups/join/${inviteCode}`, {});
-
-            // Refresh conversations
             await fetchConversations();
-
             return response.data;
         } catch (err) {
             console.error('Error joining group:', err);
@@ -120,28 +165,137 @@ const useChat = () => {
         }
     }, [fetchConversations]);
 
-    // Poll for new messages
+    // Respond to chat request (accept/reject)
+    const respondToRequest = useCallback(async (conversationId, status) => {
+        try {
+            const response = await api.post(`/conversations/${conversationId}/respond`, { status });
+            await fetchConversations();
+            return response.data;
+        } catch (err) {
+            console.error('Error responding to request:', err);
+            setError(err.message);
+            throw err;
+        }
+    }, [fetchConversations]);
+
+    // Request Notification Permission
+    useEffect(() => {
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }, []);
+
+    // Poll for new messages (Legacy Polling + Supabase Realtime if active)
     useEffect(() => {
         if (!activeConversation) return;
 
         const interval = setInterval(() => {
             fetchMessages(activeConversation.id);
-        }, 3000); // Poll every 3 seconds
+        }, 3000); // Poll every 3 seconds as backup
 
         return () => clearInterval(interval);
     }, [activeConversation, fetchMessages]);
+
+    // Supabase Realtime Setup for Active Conversation
+    useEffect(() => {
+        if (!activeConversation || !supabase) return;
+
+        const channel = supabase.channel(`chat:${activeConversation.id}`);
+
+        channel
+            .on('broadcast', { event: 'typing' }, ({ payload }) => {
+                const { userId, isTyping } = payload;
+                const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                if (userId === currentUser.id) return;
+
+                if (isTyping) {
+                    setTypingUsers(prev => new Set(prev).add(userId));
+
+                    // Clear existing timeout
+                    if (typingTimeoutRef.current[userId]) {
+                        clearTimeout(typingTimeoutRef.current[userId]);
+                    }
+
+                    // Auto-remove typing status after 3 seconds
+                    typingTimeoutRef.current[userId] = setTimeout(() => {
+                        setTypingUsers(prev => {
+                            const next = new Set(prev);
+                            next.delete(userId);
+                            return next;
+                        });
+                    }, 3000);
+                } else {
+                    setTypingUsers(prev => {
+                        const next = new Set(prev);
+                        next.delete(userId);
+                        return next;
+                    });
+                }
+            })
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'messages',
+                filter: `conversation_id=eq.${activeConversation.id}`
+            }, (payload) => {
+                const newMessage = payload.new;
+                setMessages(prev => {
+                    // Avoid duplicates
+                    if (prev.some(m => m.id === newMessage.id)) return prev;
+                    return [...prev, newMessage];
+                });
+
+                // Show notification if window is hidden
+                if (document.hidden && Notification.permission === 'granted') {
+                    new Notification('New Message', {
+                        body: newMessage.content,
+                        icon: '/favicon.ico'
+                    });
+                }
+            })
+            .subscribe();
+
+        return () => {
+            channel.unsubscribe();
+        };
+    }, [activeConversation]);
+
+    // Global User Presence
+    useEffect(() => {
+        if (!supabase) return;
+
+        const globalChannel = supabase.channel('global_presence');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        globalChannel
+            .on('presence', { event: 'sync' }, () => {
+                const newState = globalChannel.presenceState();
+                const online = new Set();
+                Object.values(newState).forEach(presences => {
+                    presences.forEach(p => {
+                        if (p.userId) online.add(p.userId);
+                    });
+                });
+                setOnlineUsers(online);
+            })
+            .subscribe(async (status) => {
+                if (status === 'SUBSCRIBED') {
+                    await globalChannel.track({
+                        userId: user.id,
+                        onlineAt: new Date().toISOString()
+                    });
+                }
+            });
+
+        return () => {
+            globalChannel.unsubscribe();
+        };
+    }, []);
 
     // Initial fetch
     useEffect(() => {
         fetchConversations();
     }, [fetchConversations]);
-
-    // Update active conversation when selected
-    useEffect(() => {
-        if (activeConversation) {
-            fetchMessages(activeConversation.id);
-        }
-    }, [activeConversation, fetchMessages]);
 
     return {
         conversations,
@@ -155,7 +309,13 @@ const useChat = () => {
         shareResource,
         createGroup,
         joinGroup,
-        refreshConversations: fetchConversations
+        refreshConversations: fetchConversations,
+        onlineUsers,
+        typingUsers,
+        sendTyping,
+        respondToRequest,
+        availableGroups,
+        fetchAvailableGroups
     };
 };
 

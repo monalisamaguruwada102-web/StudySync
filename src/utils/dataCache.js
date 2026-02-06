@@ -102,7 +102,7 @@ class DataCache {
                     if (now - cached.timestamp > CACHE_EXPIRY) {
                         localStorage.removeItem(key);
                     }
-                } catch (error) {
+                } catch {
                     // Invalid cache entry, remove it
                     localStorage.removeItem(key);
                 }

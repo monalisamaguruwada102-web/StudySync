@@ -332,7 +332,7 @@ app.get('/api/messages/:conversationId', authenticateToken, async (req, res) => 
 // Create group (admin only)
 app.post('/api/groups/create', authenticateToken, async (req, res) => {
     // Check if user is admin
-    if (req.user.email !== 'joshuamujakari15@gmail.com') {
+    if (req.user.email !== (process.env.ADMIN_EMAIL || 'joshuamujakari15@gmail.com')) {
         return res.status(403).json({ error: 'Only admin can create groups' });
     }
 
@@ -382,6 +382,20 @@ app.post('/api/groups/create', authenticateToken, async (req, res) => {
     if (!conversation) conversation = localConv;
 
     res.json({ group, conversation });
+});
+
+// Get all public groups
+app.get('/api/groups', authenticateToken, async (req, res) => {
+    try {
+        let groups = await supabasePersistence.getGroups();
+        if (!groups || groups.length === 0) {
+            groups = db.get('groups') || [];
+        }
+        res.json(groups);
+    } catch (error) {
+        console.error('Error fetching groups:', error);
+        res.status(500).json({ error: 'Failed to fetch groups' });
+    }
 });
 
 // Join group via invite code
@@ -438,6 +452,48 @@ app.post('/api/groups/join/:inviteCode', authenticateToken, async (req, res) => 
 });
 
 // Create or get direct conversation
+app.get('/api/conversations', authenticateToken, async (req, res) => {
+    try {
+        // 1. Try Supabase
+        let conversations = await supabasePersistence.getConversations(req.user.id);
+
+        // 2. Fallback / Sync with Local
+        if (!conversations) {
+            const allConvs = db.get('conversations') || [];
+            conversations = allConvs.filter(c =>
+                c.participants && c.participants.includes(req.user.id)
+            ).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
+        }
+
+        // 3. Populate otherUser for direct messages
+        const users = db.get('users') || []; // Get all users for lookup
+
+        const populated = conversations.map(conv => {
+            if (conv.type === 'direct') {
+                const otherId = conv.participants.find(id => id !== req.user.id);
+                const otherUser = users.find(u => u.id === otherId);
+                if (otherUser) {
+                    return {
+                        ...conv,
+                        otherUser: {
+                            id: otherUser.id,
+                            email: otherUser.email,
+                            level: otherUser.level || 1,
+                            xp: otherUser.xp || 0
+                        }
+                    };
+                }
+            }
+            return conv;
+        });
+
+        res.json(populated);
+    } catch (error) {
+        console.error('Error fetching conversations:', error);
+        res.status(500).json({ error: 'Failed to fetch conversations' });
+    }
+});
+
 app.post('/api/conversations/direct', authenticateToken, async (req, res) => {
     const { otherUserId } = req.body;
     if (!otherUserId) return res.status(400).json({ error: 'Other user ID required' });
@@ -464,7 +520,9 @@ app.post('/api/conversations/direct', authenticateToken, async (req, res) => {
             type: 'direct',
             participants: [req.user.id, otherUserId],
             lastMessage: '',
-            lastMessageTime: new Date().toISOString()
+            lastMessageTime: new Date().toISOString(),
+            status: 'pending',
+            initiatorId: req.user.id
         };
 
         let conversation = await supabasePersistence.createConversation(convData);
@@ -499,7 +557,8 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
             senderEmail: req.user.email,
             content,
             type: type || 'text',
-            sharedResource: sharedResource || null
+            sharedResource: sharedResource || null,
+            status: 'sent'
         };
 
         // 1. Insert message into Supabase
@@ -532,6 +591,55 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Error sending message:', error);
         res.status(500).json({ error: 'Failed to send message' });
+    }
+});
+
+// Respond to conversation request
+app.post('/api/conversations/:id/respond', authenticateToken, async (req, res) => {
+    try {
+        const { status } = req.body; // 'active' or 'rejected'
+        const conversationId = req.params.id;
+        const userId = req.user.id;
+
+        if (!['active', 'rejected'].includes(status)) {
+            return res.status(400).json({ error: 'Invalid status' });
+        }
+
+        // 1. Update Supabase
+        await supabasePersistence.updateConversation(conversationId, { status });
+
+        // 2. Update local DB
+        db.update('conversations', conversationId, { status });
+
+        res.json({ success: true, status });
+    } catch (error) {
+        console.error('Error responding to request:', error);
+        res.status(500).json({ error: 'Failed to respond to request' });
+    }
+});
+
+// Mark conversation as read
+app.post('/api/conversations/:id/read', authenticateToken, async (req, res) => {
+    try {
+        const conversationId = req.params.id;
+        const userId = req.user.id;
+
+        // 1. Update Supabase
+        await supabasePersistence.markMessagesAsRead(conversationId, userId);
+
+        // 2. Update local DB
+        const messages = db.get('messages') || [];
+        // Find messages in this conversation sent by OTHERS that are not read
+        messages.forEach(m => {
+            if (m.conversationId === conversationId && m.senderId !== userId && m.status !== 'read') {
+                db.update('messages', m.id, { status: 'read' });
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error marking conversation as read:', error);
+        res.status(500).json({ error: 'Failed to mark as read' });
     }
 });
 
@@ -1008,6 +1116,25 @@ app.post('/api/sync/notion-tasks', authenticateToken, async (req, res) => {
 });
 
 // --- AI PROCESSING (Google Gemini) ---
+
+const callGeminiWithRetry = async (model, prompt, retries = 3) => {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const result = await model.generateContent(prompt);
+            return result;
+        } catch (error) {
+            const isRateLimit = error.status === 429 || error.message?.includes('429') || error.message?.includes('Quota exceeded');
+            if (isRateLimit && i < retries - 1) {
+                const delay = Math.pow(2, i) * 2000 + Math.random() * 1000; // Aggressive backoff for free tier
+                console.log(`⚠️ Gemini Rate Limit. Retrying in ${Math.round(delay)}ms...`);
+                await new Promise(res => setTimeout(res, delay));
+                continue;
+            }
+            throw error;
+        }
+    }
+};
+
 app.post('/api/ai/process', authenticateToken, async (req, res) => {
     const { action, payload } = req.body;
 
@@ -1021,6 +1148,7 @@ app.post('/api/ai/process', authenticateToken, async (req, res) => {
     }
 
     try {
+        // Default to flash model for speed/cost, fallback logic handled by retry if needed (though quota is usually project-wide)
         const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
         let prompt = '';
 
@@ -1076,7 +1204,9 @@ app.post('/api/ai/process', authenticateToken, async (req, res) => {
         }
 
         console.log(`🤖 AI Action: ${action} - Generating content...`);
-        const result = await model.generateContent(prompt);
+
+        // Use retry wrapper to handle rate limits
+        const result = await callGeminiWithRetry(model, prompt);
         const response = await result.response;
         let responseText = response.text();
         console.log(`✅ AI Response received (${responseText.length} chars)`);

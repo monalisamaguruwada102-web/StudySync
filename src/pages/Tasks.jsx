@@ -29,7 +29,7 @@ const Tasks = () => {
             const res = await api.get('/user/settings');
             token = res.data.notion_api_token;
             databaseId = res.data.notion_database_id;
-        } catch (e) {
+        } catch {
             console.error("Failed to fetch Notion settings from cloud");
         }
 

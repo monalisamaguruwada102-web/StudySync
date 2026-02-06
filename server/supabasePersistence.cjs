@@ -168,7 +168,9 @@ const mapConversation = (conv) => {
         participants: conv.participants,
         lastMessage: conv.last_message || conv.lastMessage,
         lastMessageTime: conv.last_message_time || conv.lastMessageTime,
-        createdAt: conv.created_at || conv.createdAt
+        createdAt: conv.created_at || conv.createdAt,
+        status: conv.status || 'active', // Default to active for existing chats
+        initiatorId: conv.initiator_id || conv.initiatorId
     };
 };
 
@@ -267,7 +269,9 @@ const createConversation = async (conversation) => {
             group_id: conversation.groupId,
             participants: conversation.participants,
             last_message: conversation.lastMessage,
-            last_message_time: conversation.lastMessageTime
+            last_message_time: conversation.lastMessageTime,
+            status: conversation.status || 'pending',
+            initiator_id: conversation.initiatorId
         }])
         .select()
         .single();
@@ -443,6 +447,22 @@ const updateGroup = async (id, updates) => {
     return mapGroup(data);
 };
 
+const getGroups = async () => {
+    const client = initSupabase();
+    if (!client) return null;
+
+    const { data, error } = await client
+        .from('groups')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching groups:', error);
+        return null;
+    }
+    return data.map(mapGroup);
+};
+
 const getGroup = async (id) => {
     const client = initSupabase();
     if (!client) return null;
@@ -455,6 +475,23 @@ const getGroup = async (id) => {
 
     if (error) return null;
     return mapGroup(data);
+};
+
+const markMessagesAsRead = async (conversationId, userId) => {
+    const client = initSupabase();
+    if (!client) return null;
+
+    const { error } = await client
+        .from('messages')
+        .update({ read: true })
+        .eq('conversation_id', conversationId)
+        .neq('sender_id', userId);
+
+    if (error) {
+        console.error('Error marking messages as read:', error);
+        return false;
+    }
+    return true;
 };
 
 module.exports = {
@@ -471,7 +508,10 @@ module.exports = {
     updateConversation,
     // Messages
     getMessages,
+    getMessages,
     insertMessage,
+    markMessagesAsRead,
+    markMessagesAsRead,
     // Groups
     createGroup,
     findGroupByInviteCode,

@@ -26,7 +26,7 @@ export const getCurrentUser = async () => {
     try {
         const response = await api.get('/auth/me');
         return response.data.user;
-    } catch (error) {
+    } catch {
         return null;
     }
 };
@@ -36,7 +36,7 @@ export const isUserAuthorized = async (user) => {
     try {
         const response = await api.get('/auth/me');
         return response.data.authorized;
-    } catch (error) {
+    } catch {
         return false;
     }
 };
