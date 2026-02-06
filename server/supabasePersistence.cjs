@@ -515,15 +515,14 @@ module.exports = {
     updateConversation,
     // Messages
     getMessages,
-    getMessages,
     insertMessage,
-    markMessagesAsRead,
     markMessagesAsRead,
     // Groups
     createGroup,
     findGroupByInviteCode,
     updateGroup,
     getGroup,
+    getGroups,
     // Generic
     fetchCollection,
     upsertToCollection,
