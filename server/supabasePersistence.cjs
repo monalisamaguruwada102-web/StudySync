@@ -20,6 +20,21 @@ const initSupabase = () => {
 };
 
 // Tutorials
+const mapTutorial = (tutorial) => {
+    if (!tutorial) return null;
+    return {
+        id: tutorial.id,
+        userId: tutorial.user_id || tutorial.userId,
+        title: tutorial.title,
+        youtubeUrl: tutorial.youtube_url || tutorial.youtubeUrl || tutorial.url,
+        moduleId: tutorial.module_id || tutorial.moduleId,
+        topic: tutorial.topic,
+        description: tutorial.description,
+        createdAt: tutorial.created_at || tutorial.createdAt,
+        updatedAt: tutorial.updated_at || tutorial.updatedAt
+    };
+};
+
 const getTutorials = async (userId) => {
     const client = initSupabase();
     if (!client) return null;
@@ -34,7 +49,7 @@ const getTutorials = async (userId) => {
         console.error('Error fetching tutorials:', error);
         return null;
     }
-    return data;
+    return data.map(mapTutorial);
 };
 
 const getTutorialById = async (id) => {
@@ -48,7 +63,7 @@ const getTutorialById = async (id) => {
         .single();
 
     if (error) return null;
-    return data;
+    return mapTutorial(data);
 };
 
 const insertTutorial = async (tutorial) => {
@@ -60,7 +75,7 @@ const insertTutorial = async (tutorial) => {
         .insert([{
             user_id: tutorial.userId,
             title: tutorial.title,
-            youtube_url: tutorial.youtubeUrl,
+            youtube_url: tutorial.youtubeUrl || tutorial.url || tutorial.youtube_url,
             module_id: tutorial.moduleId,
             topic: tutorial.topic,
             description: tutorial.description
@@ -72,7 +87,7 @@ const insertTutorial = async (tutorial) => {
         console.error('Error inserting tutorial:', error);
         return null;
     }
-    return data;
+    return mapTutorial(data);
 };
 
 const deleteTutorial = async (id) => {
