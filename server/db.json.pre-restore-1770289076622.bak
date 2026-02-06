@@ -1,0 +1,109 @@
+{
+  "users": [
+    {
+      "email": "joshuamujakari15@gmail.com",
+      "password": "$2b$10$l03GqpkdfeZx1yv31CUq4eDSmUL.6pANJMiZqERFGNCvu1bHCOY0u",
+      "id": "1769561085648",
+      "createdAt": "2026-01-28T00:44:45.648Z"
+    },
+    {
+      "email": "monalisamaguruwada@gmail.com",
+      "password": "$2b$10$1A8q/9vTzMc5sfmVdn8hzuVZk41Ict4CV06Ipztb9IaL1YZWR8W0S",
+      "id": "1769561085649",
+      "createdAt": "2026-01-28T00:45:00.000Z"
+    },
+    {
+      "email": "andrewmaposa27@gmail.com",
+      "password": "$2b$10$B81YDknsPmNqcvVbNi/SYeV0Udw3oRAVoPNQ5TGYo7oJZYBXUMkmK",
+      "id": "1738640325000",
+      "createdAt": "2026-02-03T19:38:45.000Z"
+    },
+    {
+      "email": "test_verified_ps@example.com",
+      "password": "$2b$10$wi/zg/EITv6YqLcacJhX7.glCgm3c.EAeMzkhHOrPz9T78vQX.fy.",
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "id": "1770285120974",
+      "createdAt": "2026-02-05T09:52:00.975Z"
+    },
+    {
+      "email": "testuser_local@example.com",
+      "password": "$2b$10$Q7FwBWTBZAO8kO2zJOx2c.Vc8wrEjHIAj9ZUfW0QwMv/X04Ocjzva",
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "id": "1770288071029",
+      "createdAt": "2026-02-05T10:41:11.029Z"
+    },
+    {
+      "email": "test-agent-1770288292269@example.com",
+      "password": "$2b$10$k5Zd1ugVQYCrjVjQ/jdITeypBJxFGXoIn8QVS/WuvS5P2HkDQfyBm",
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "id": "1770288292523",
+      "createdAt": "2026-02-05T10:44:52.523Z"
+    }
+  ],
+  "modules": [
+    {
+      "name": "DATABASE ADMIN",
+      "description": "HARD AND INCLUDE PRACTICAL",
+      "targetHours": 800,
+      "id": "1769560786039",
+      "createdAt": "2026-01-28T00:39:46.040Z"
+    },
+    {
+      "name": "NETWORK ADMIN",
+      "description": "HARD",
+      "targetHours": 700,
+      "id": "1769560812850",
+      "createdAt": "2026-01-28T00:40:12.852Z"
+    },
+    {
+      "name": "OOP",
+      "description": "HARDEST AND PRACTICALS ",
+      "targetHours": 1000,
+      "id": "1769560879409",
+      "createdAt": "2026-01-28T00:41:19.409Z"
+    },
+    {
+      "name": "SOFTWARE ENGINEERING",
+      "description": "SIMPLE",
+      "targetHours": 400,
+      "id": "1769560924908",
+      "createdAt": "2026-01-28T00:42:04.908Z"
+    },
+    {
+      "name": "HARDWARE ADMIN",
+      "description": "MODERATE ",
+      "targetHours": 450,
+      "id": "1769560958856",
+      "createdAt": "2026-01-28T00:42:38.856Z"
+    }
+  ],
+  "studyLogs": [
+    {
+      "date": "2026-01-27",
+      "moduleId": "1769560879409",
+      "topic": "BASICS",
+      "hours": 0.25,
+      "id": "1769561040592",
+      "createdAt": "2026-01-28T00:44:00.592Z"
+    }
+  ],
+  "tasks": [],
+  "notes": [],
+  "grades": [],
+  "flashcardDecks": [],
+  "flashcards": [],
+  "calendarEvents": [],
+  "pomodoroSessions": [],
+  "settings": {
+    "owner": {
+      "uid": "1769561085648",
+      "email": "joshuamujakari15@gmail.com"
+    }
+  }
+}

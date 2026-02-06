@@ -43,6 +43,7 @@ export const flashcardDeckService = createCollectionService('flashcardDecks');
 export const flashcardService = createCollectionService('flashcards');
 export const calendarService = createCollectionService('calendarEvents');
 export const pomodoroService = createCollectionService('pomodoroSessions');
+export const tutorialService = createCollectionService('tutorials');
 
 export const getAnalyticsData = async () => {
     try {

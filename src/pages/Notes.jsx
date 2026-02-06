@@ -331,14 +331,20 @@ const Notes = () => {
                                             </p>
                                             <audio
                                                 controls
+                                                preload="metadata"
                                                 src={ep.url}
                                                 className="w-full h-7"
+                                                onError={(e) => {
+                                                    console.error('Audio playback error:', e);
+                                                    e.target.style.opacity = '0.5';
+                                                }}
+                                                controlsList="nodownload"
                                             />
                                         </div>
                                     ))}
                                 </div>
                             </div>
-                        )}
+                        )
 
                         {/* Fallback for old single audioPath format */}
                         {note.audioPath && !note.audioEpisodes && (
@@ -348,8 +354,14 @@ const Notes = () => {
                                 </p>
                                 <audio
                                     controls
+                                    preload="metadata"
                                     src={note.audioPath}
                                     className="w-full h-8"
+                                    onError={(e) => {
+                                        console.error('Audio playback error:', e);
+                                        e.target.style.opacity = '0.5';
+                                    }}
+                                    controlsList="nodownload"
                                 />
                             </div>
                         )}

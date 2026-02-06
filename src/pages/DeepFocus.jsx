@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFirestore } from '../hooks/useFirestore';
-import { taskService, pomodoroService } from '../services/firestoreService';
+import { taskService } from '../services/firestoreService';
+import { useTimer } from '../context/TimerContext';
 import {
     Play,
     Pause,
@@ -22,9 +23,6 @@ import {
     EyeOff
 } from 'lucide-react';
 
-const FOCUS_TIME = 25 * 60; // 25 minutes
-const BREAK_TIME = 5 * 60;  // 5 minutes
-
 const SOUNDS = {
     lofi: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3', // Example URL
     rain: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3', // Example URL
@@ -33,11 +31,20 @@ const SOUNDS = {
 
 const DeepFocus = () => {
     const { data: tasks } = useFirestore(taskService.getAll);
-    const [timeLeft, setTimeLeft] = useState(FOCUS_TIME);
-    const [isRunning, setIsRunning] = useState(false);
-    const [isBreak, setIsBreak] = useState(false);
-    const [sessionsCompleted, setSessionsCompleted] = useState(0);
-    const [selectedTask, setSelectedTask] = useState(null);
+    const {
+        timeLeft,
+        isRunning,
+        isBreak,
+        sessionsCompleted,
+        selectedTask,
+        start,
+        pause,
+        reset,
+        setSelectedTask,
+        skipToBreak,
+        formatTime,
+        progress
+    } = useTimer();
     const [isMuted, setIsMuted] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [activeSound, setActiveSound] = useState(null);
@@ -45,7 +52,17 @@ const DeepFocus = () => {
     const [isGhostMode, setIsGhostMode] = useState(false);
     const [isMusicEnabled, setIsMusicEnabled] = useState(true);
     const [activePlaylist, setActivePlaylist] = useState('lofi');
+    const [musicSource, setMusicSource] = useState('spotify'); // 'spotify' or 'youtube'
+    const [youtubeUrl, setYoutubeUrl] = useState('');
+    const [showYoutubeInput, setShowYoutubeInput] = useState(false);
     const audioRef = useRef(null);
+
+    // Extract YouTube video ID from URL
+    const getYouTubeId = (url) => {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&?]*).*/;
+        const match = url?.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    };
 
     const playlistUrls = {
         lofi: "https://open.spotify.com/embed/playlist/37i9dQZF1DWWQRv9oySqS4?utm_source=generator&theme=0",
@@ -56,18 +73,6 @@ const DeepFocus = () => {
     const pendingTasks = tasks.filter(t => t.status !== 'Completed');
 
     useEffect(() => {
-        let interval;
-        if (isRunning && timeLeft > 0) {
-            interval = setInterval(() => {
-                setTimeLeft(prev => prev - 1);
-            }, 1000);
-        } else if (timeLeft === 0) {
-            handleSessionEnd();
-        }
-        return () => clearInterval(interval);
-    }, [isRunning, timeLeft]);
-
-    useEffect(() => {
         if (activeSound && !isMuted) {
             audioRef.current.play().catch(e => console.log('Audio play failed', e));
         } else {
@@ -75,42 +80,7 @@ const DeepFocus = () => {
         }
     }, [activeSound, isMuted]);
 
-    const handleSessionEnd = async () => {
-        setIsRunning(false);
-        if (!isBreak) {
-            setSessionsCompleted(prev => prev + 1);
-            try {
-                await pomodoroService.add({
-                    taskId: selectedTask?.id || null,
-                    duration: 25,
-                    completedAt: new Date().toISOString()
-                });
-            } catch (e) {
-                console.error('Failed to log session', e);
-            }
-            setIsBreak(true);
-            setTimeLeft(BREAK_TIME);
-        } else {
-            setIsBreak(false);
-            setTimeLeft(FOCUS_TIME);
-        }
-    };
-
-    const toggleTimer = () => setIsRunning(!isRunning);
-    const resetTimer = () => {
-        setIsRunning(false);
-        setTimeLeft(isBreak ? BREAK_TIME : FOCUS_TIME);
-    };
-
-    const formatTime = (seconds) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    const progress = isBreak
-        ? ((BREAK_TIME - timeLeft) / BREAK_TIME) * 100
-        : ((FOCUS_TIME - timeLeft) / FOCUS_TIME) * 100;
+    const toggleTimer = () => isRunning ? pause() : start();
 
     const toggleFullscreen = useCallback(() => {
         if (!document.fullscreenElement) {
@@ -257,12 +227,24 @@ const DeepFocus = () => {
                             >
                                 <Music size={16} />
                             </button>
+                            <button
+                                onClick={() => {
+                                    setMusicSource(musicSource === 'spotify' ? 'youtube' : 'spotify');
+                                    if (musicSource === 'spotify') {
+                                        setShowYoutubeInput(true);
+                                    }
+                                }}
+                                className={`px-3 py-1.5 rounded-full text-[10px] font-bold transition-all ${musicSource === 'youtube' ? 'bg-red-500 text-white' : 'bg-white/5 text-slate-400 hover:text-white'}`}
+                                title="Toggle between Spotify and YouTube"
+                            >
+                                {musicSource === 'spotify' ? 'SPOT' : 'YT'}
+                            </button>
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* Spotify Player Float (Hidden in Ghost Mode) */}
+            {/* Music Player Float (Hidden in Ghost Mode) */}
             <AnimatePresence>
                 {isMusicEnabled && !isGhostMode && (
                     <motion.div
@@ -273,28 +255,80 @@ const DeepFocus = () => {
                     >
                         <div className="p-3 border-b border-white/5 flex items-center justify-between">
                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Study Stream</span>
-                            <div className="flex gap-1">
-                                {Object.keys(playlistUrls).map(p => (
-                                    <button
-                                        key={p}
-                                        onClick={() => setActivePlaylist(p)}
-                                        className={`px-2 py-1 rounded-lg text-[9px] font-bold uppercase transition-all ${activePlaylist === p ? 'bg-primary-500 text-white' : 'bg-white/5 text-slate-500 hover:text-white'}`}
-                                    >
-                                        {p}
-                                    </button>
-                                ))}
-                            </div>
+                            {musicSource === 'spotify' ? (
+                                <div className="flex gap-1">
+                                    {Object.keys(playlistUrls).map(p => (
+                                        <button
+                                            key={p}
+                                            onClick={() => setActivePlaylist(p)}
+                                            className={`px-2 py-1 rounded-lg text-[9px] font-bold uppercase transition-all ${activePlaylist === p ? 'bg-primary-500 text-white' : 'bg-white/5 text-slate-500 hover:text-white'}`}
+                                        >
+                                            {p}
+                                        </button>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    {showYoutubeInput ? (
+                                        <div className="flex gap-1">
+                                            <input
+                                                type="text"
+                                                placeholder="Paste YouTube URL"
+                                                value={youtubeUrl}
+                                                onChange={(e) => setYoutubeUrl(e.target.value)}
+                                                className="px-2 py-1 rounded-lg text-[9px] bg-white/10 border border-white/5 text-white placeholder-slate-500 outline-none focus:border-primary-500 w-40"
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        setShowYoutubeInput(false);
+                                                    }
+                                                }}
+                                            />
+                                            <button
+                                                onClick={() => setShowYoutubeInput(false)}
+                                                className="px-2 py-1 bg-primary-500 text-white rounded-lg text-[9px] font-bold hover:bg-primary-600"
+                                            >
+                                                OK
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={() => setShowYoutubeInput(true)}
+                                            className="px-2 py-1 bg-white/5 text-slate-400 hover:text-white rounded-lg text-[9px] font-bold"
+                                        >
+                                            Change URL
+                                        </button>
+                                    )}
+                                </div>
+                            )}
                         </div>
-                        <iframe
-                            src={playlistUrls[activePlaylist]}
-                            width="100%"
-                            height="152"
-                            frameBorder="0"
-                            allowFullScreen=""
-                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                            loading="lazy"
-                            className="opacity-80 hover:opacity-100 transition-opacity"
-                        ></iframe>
+                        {musicSource === 'spotify' ? (
+                            <iframe
+                                src={playlistUrls[activePlaylist]}
+                                width="100%"
+                                height="152"
+                                frameBorder="0"
+                                allowFullScreen=""
+                                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                                loading="lazy"
+                                className="opacity-80 hover:opacity-100 transition-opacity"
+                            ></iframe>
+                        ) : (
+                            getYouTubeId(youtubeUrl) ? (
+                                <iframe
+                                    src={`https://www.youtube.com/embed/${getYouTubeId(youtubeUrl)}?autoplay=1&loop=1&playlist=${getYouTubeId(youtubeUrl)}`}
+                                    width="100%"
+                                    height="152"
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                    className="opacity-80 hover:opacity-100 transition-opacity"
+                                ></iframe>
+                            ) : (
+                                <div className="p-8 text-center">
+                                    <p className="text-xs text-slate-400">Paste a YouTube URL above</p>
+                                </div>
+                            )
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -398,7 +432,7 @@ const DeepFocus = () => {
                 {!isGhostMode && (
                     <div className="flex items-center gap-8 mb-12">
                         <button
-                            onClick={resetTimer}
+                            onClick={reset}
                             className="p-4 bg-white/5 hover:bg-white/10 rounded-full transition-all border border-white/5 hover:border-white/20 active:scale-95 text-slate-400"
                         >
                             <RotateCcw size={20} />
@@ -415,8 +449,9 @@ const DeepFocus = () => {
                             {isRunning ? <Pause size={36} /> : <Play size={36} className="ml-2" />}
                         </motion.button>
                         <button
-                            onClick={handleSessionEnd}
+                            onClick={skipToBreak}
                             className="p-4 bg-white/5 hover:bg-white/10 rounded-full transition-all border border-white/5 hover:border-white/20 active:scale-95 text-slate-400"
+                            title="Skip to break"
                         >
                             <CheckCircle size={20} />
                         </button>

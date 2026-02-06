@@ -15,7 +15,8 @@ import {
     Zap,
     Users,
     Database,
-    Star
+    Star,
+    Youtube
 } from 'lucide-react';
 
 export const navGroups = [
@@ -31,6 +32,7 @@ export const navGroups = [
         title: "Study Zone",
         items: [
             { icon: BookOpen, label: 'Modules', path: '/modules', gradient: 'from-purple-500 to-pink-500' },
+            { icon: Youtube, label: 'Tutorials', path: '/tutorials', gradient: 'from-red-500 to-pink-500' },
             { icon: Brain, label: 'Flashcards', path: '/flashcards', gradient: 'from-fuchsia-500 to-pink-500' },
             { icon: FileText, label: 'Notes', path: '/notes', gradient: 'from-teal-500 to-cyan-500' },
             { icon: Zap, label: 'Deep Focus', path: '/focus', gradient: 'from-yellow-500 to-orange-500' },

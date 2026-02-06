@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { TimerProvider } from './context/TimerContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import ConnectionStatus from './components/ConnectionStatus';
+import TimerWidget from './components/TimerWidget';
 
 import BackgroundSlideshow from './components/layout/BackgroundSlideshow';
 
@@ -24,6 +26,7 @@ const Settings = React.lazy(() => import('./pages/Settings'));
 const StudyGroups = React.lazy(() => import('./pages/StudyGroups'));
 const DeepFocus = React.lazy(() => import('./pages/DeepFocus'));
 const ModuleDetail = React.lazy(() => import('./pages/ModuleDetail'));
+const Tutorials = React.lazy(() => import('./pages/Tutorials'));
 
 // Loading Screen Component
 const LoadingScreen = () => (
@@ -38,38 +41,42 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Router>
-          {/* Global Background */}
-          <BackgroundSlideshow />
+        <TimerProvider>
+          <Router>
+            {/* Global Background */}
+            <BackgroundSlideshow />
 
-          {/* App Content */}
-          <div className="relative z-10 min-h-screen">
-            <ConnectionStatus />
-            <React.Suspense fallback={<LoadingScreen />}>
-              <Routes>
-                <Route path="/login" element={<Login />} />
+            {/* App Content */}
+            <div className="relative z-10 min-h-screen">
+              <ConnectionStatus />
+              <TimerWidget />
+              <React.Suspense fallback={<LoadingScreen />}>
+                <Routes>
+                  <Route path="/login" element={<Login />} />
 
-                <Route element={<ProtectedRoute />}>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/modules" element={<Modules />} />
-                  <Route path="/logs" element={<StudyLogs />} />
-                  <Route path="/tasks" element={<Tasks />} />
-                  <Route path="/notes" element={<Notes />} />
-                  <Route path="/grades" element={<Grades />} />
-                  <Route path="/flashcards" element={<Flashcards />} />
-                  <Route path="/calendar" element={<Calendar />} />
-                  <Route path="/kanban" element={<Kanban />} />
-                  <Route path="/sql" element={<SQLVisualizer />} />
-                  <Route path="/deep-analytics" element={<DeepAnalytics />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/focus" element={<DeepFocus />} />
-                  {/* Analytics link points to dashboard as it contains the main charts */}
-                  <Route path="/analytics" element={<Dashboard />} />
-                </Route>
-              </Routes>
-            </React.Suspense>
-          </div>
-        </Router>
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/modules" element={<Modules />} />
+                    <Route path="/tutorials" element={<Tutorials />} />
+                    <Route path="/logs" element={<StudyLogs />} />
+                    <Route path="/tasks" element={<Tasks />} />
+                    <Route path="/notes" element={<Notes />} />
+                    <Route path="/grades" element={<Grades />} />
+                    <Route path="/flashcards" element={<Flashcards />} />
+                    <Route path="/calendar" element={<Calendar />} />
+                    <Route path="/kanban" element={<Kanban />} />
+                    <Route path="/sql" element={<SQLVisualizer />} />
+                    <Route path="/deep-analytics" element={<DeepAnalytics />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/focus" element={<DeepFocus />} />
+                    {/* Analytics link points to dashboard as it contains the main charts */}
+                    <Route path="/analytics" element={<Dashboard />} />
+                  </Route>
+                </Routes>
+              </React.Suspense>
+            </div>
+          </Router>
+        </TimerProvider>
       </AuthProvider>
     </ThemeProvider>
   );
