@@ -228,61 +228,95 @@ app.get('/api/users/all', authenticateToken, (req, res) => {
 });
 
 // Get user conversations (with participant details)
-app.get('/api/conversations', authenticateToken, (req, res) => {
-    const conversations = db.get('conversations');
-    const users = db.get('users');
-    const groups = db.get('groups');
+app.get('/api/conversations', authenticateToken, async (req, res) => {
+    try {
+        let conversations = await supabasePersistence.getConversations(req.user.id);
+        const users = db.get('users');
 
-    // Filter conversations where user is a participant
-    const userConversations = conversations.filter(c =>
-        c.participants && c.participants.includes(req.user.id)
-    );
-
-    // Enrich with participant/group details
-    const enriched = userConversations.map(conv => {
-        if (conv.type === 'group' && conv.groupId) {
-            const group = groups.find(g => g.id === conv.groupId);
-            return {
-                ...conv,
-                groupName: group?.name || 'Unknown Group',
-                groupDescription: group?.description
-            };
-        } else {
-            // Direct message - find the other participant
-            const otherUserId = conv.participants.find(id => id !== req.user.id);
-            const otherUser = users.find(u => u.id === otherUserId);
-            return {
-                ...conv,
-                otherUser: otherUser ? {
-                    id: otherUser.id,
-                    email: otherUser.email,
-                    level: otherUser.level
-                } : null
-            };
+        // Fallback to local DB if Supabase not configured or failed
+        if (!conversations) {
+            const localConversations = db.get('conversations') || [];
+            conversations = localConversations.filter(c =>
+                c.participants && c.participants.includes(req.user.id)
+            );
         }
-    });
 
-    res.json(enriched);
+        // Enrich with participant/group details
+        const enriched = await Promise.all(conversations.map(async (conv) => {
+            if (conv.type === 'group' || (conv.type === 'group' && (conv.groupId || conv.group_id))) {
+                const groupId = conv.group_id || conv.groupId;
+                // Try fetching group from Supabase first
+                let group = await supabasePersistence.getGroup(groupId);
+                if (!group) {
+                    const groups = db.get('groups');
+                    group = groups.find(g => g.id === groupId);
+                }
+
+                return {
+                    ...conv,
+                    groupName: group?.name || 'Unknown Group',
+                    groupDescription: group?.description,
+                    inviteCode: group?.invite_code || group?.inviteCode
+                };
+            } else {
+                // Direct message - find the other participant
+                const otherUserId = conv.participants.find(id => id !== req.user.id);
+                const otherUser = users.find(u => u.id === otherUserId || u.email === otherUserId);
+                return {
+                    ...conv,
+                    otherUser: otherUser ? {
+                        id: otherUser.id,
+                        email: otherUser.email,
+                        level: otherUser.level,
+                        xp: otherUser.xp
+                    } : null
+                };
+            }
+        }));
+
+        res.json(enriched);
+    } catch (error) {
+        console.error('Error in /api/conversations:', error);
+        res.status(500).json({ error: 'Failed to fetch conversations' });
+    }
 });
 
 // Get messages for a conversation
-app.get('/api/messages/:conversationId', authenticateToken, (req, res) => {
-    const messages = db.get('messages');
-    const conversations = db.get('conversations');
+app.get('/api/messages/:conversationId', authenticateToken, async (req, res) => {
+    try {
+        let conversation;
+        // Search Supabase first
+        const allUserConvs = await supabasePersistence.getConversations(req.user.id);
+        if (allUserConvs) {
+            conversation = allUserConvs.find(c => c.id === req.params.conversationId);
+        }
 
-    // Verify user is part of this conversation
-    const conversation = conversations.find(c => c.id === req.params.conversationId);
-    if (!conversation || !conversation.participants.includes(req.user.id)) {
-        return res.status(403).json({ error: 'Unauthorized' });
+        // Fallback to local
+        if (!conversation) {
+            const conversations = db.get('conversations');
+            conversation = conversations.find(c => c.id === req.params.conversationId);
+        }
+
+        if (!conversation || !conversation.participants.includes(req.user.id)) {
+            return res.status(403).json({ error: 'Unauthorized or conversation not found' });
+        }
+
+        // Get messages
+        let messages = await supabasePersistence.getMessages(req.params.conversationId);
+        if (!messages) {
+            const localMessages = db.get('messages') || [];
+            messages = localMessages.filter(m => m.conversationId === req.params.conversationId);
+        }
+
+        res.json(messages);
+    } catch (error) {
+        console.error('Error in /api/messages:', error);
+        res.status(500).json({ error: 'Failed to fetch messages' });
     }
-
-    // Get messages for this conversation
-    const convMessages = messages.filter(m => m.conversationId === req.params.conversationId);
-    res.json(convMessages);
 });
 
 // Create group (admin only)
-app.post('/api/groups/create', authenticateToken, (req, res) => {
+app.post('/api/groups/create', authenticateToken, async (req, res) => {
     // Check if user is admin
     if (req.user.email !== 'joshuamujakari15@gmail.com') {
         return res.status(403).json({ error: 'Only admin can create groups' });
@@ -294,93 +328,196 @@ app.post('/api/groups/create', authenticateToken, (req, res) => {
     // Generate unique invite code
     const inviteCode = Math.random().toString(36).substring(2, 10).toUpperCase();
 
-    const group = db.insert('groups', {
+    let group = await supabasePersistence.createGroup({
         name,
         description: description || '',
         createdBy: req.user.id,
         members: [req.user.id],
-        inviteCode,
-        createdAt: new Date().toISOString()
+        inviteCode
     });
 
+    // Fallback to local
+    if (!group) {
+        group = db.insert('groups', {
+            name,
+            description: description || '',
+            createdBy: req.user.id,
+            members: [req.user.id],
+            inviteCode
+        });
+    }
+
     // Create a conversation for this group
-    const conversation = db.insert('conversations', {
+    let conversation = await supabasePersistence.createConversation({
         type: 'group',
         groupId: group.id,
         participants: [req.user.id],
         lastMessage: 'Group created',
-        lastMessageTime: new Date().toISOString(),
-        createdAt: new Date().toISOString()
+        lastMessageTime: new Date().toISOString()
     });
+
+    if (!conversation) {
+        conversation = db.insert('conversations', {
+            type: 'group',
+            groupId: group.id,
+            participants: [req.user.id],
+            lastMessage: 'Group created',
+            lastMessageTime: new Date().toISOString()
+        });
+    }
 
     res.json({ group, conversation });
 });
 
 // Join group via invite code
-app.post('/api/groups/join/:inviteCode', authenticateToken, (req, res) => {
-    const groups = db.get('groups');
-    const group = groups.find(g => g.inviteCode === req.params.inviteCode);
+app.post('/api/groups/join/:inviteCode', authenticateToken, async (req, res) => {
+    try {
+        let group = await supabasePersistence.findGroupByInviteCode(req.params.inviteCode);
+        if (!group) {
+            const groups = db.get('groups');
+            group = groups.find(g => (g.inviteCode || g.invite_code) === req.params.inviteCode);
+        }
 
-    if (!group) return res.status(404).json({ error: 'Invalid invite code' });
+        if (!group) return res.status(404).json({ error: 'Invalid invite code' });
 
-    // Check if already a member
-    if (group.members.includes(req.user.id)) {
-        return res.status(400).json({ error: 'Already a member of this group' });
+        const members = group.members || [];
+        if (members.includes(req.user.id)) {
+            return res.status(400).json({ error: 'Already a member of this group' });
+        }
+
+        // Update group
+        const newMembers = [...members, req.user.id];
+        let updatedGroup = await supabasePersistence.updateGroup(group.id, { members: newMembers });
+        if (!updatedGroup) {
+            updatedGroup = db.update('groups', group.id, { members: newMembers });
+        }
+
+        // Update conversation
+        let conversation;
+        const userConvs = await supabasePersistence.getConversations(req.user.id);
+        if (userConvs) {
+            conversation = userConvs.find(c => c.group_id === group.id || c.groupId === group.id);
+        }
+
+        if (!conversation) {
+            const localConversations = db.get('conversations') || [];
+            conversation = localConversations.find(c => c.groupId === group.id);
+        }
+
+        if (conversation) {
+            const participants = conversation.participants || [];
+            if (!participants.includes(req.user.id)) {
+                const newParticipants = [...participants, req.user.id];
+                const updatedConv = await supabasePersistence.updateConversation(conversation.id, { participants: newParticipants });
+                if (!updatedConv) {
+                    db.update('conversations', conversation.id, { participants: newParticipants });
+                }
+            }
+        }
+
+        res.json({ message: 'Successfully joined group', group: updatedGroup });
+    } catch (error) {
+        console.error('Error joining group:', error);
+        res.status(500).json({ error: 'Failed to join group' });
     }
-
-    // Add user to group
-    const updatedGroup = db.update('groups', group.id, {
-        members: [...group.members, req.user.id]
-    });
-
-    // Add user to conversation
-    const conversations = db.get('conversations');
-    const conversation = conversations.find(c => c.groupId === group.id);
-    if (conversation) {
-        db.update('conversations', conversation.id, {
-            participants: [...conversation.participants, req.user.id]
-        });
-    }
-
-    res.json({ message: 'Successfully joined group', group: updatedGroup });
 });
 
 // Create or get direct conversation
-app.post('/api/conversations/direct', authenticateToken, (req, res) => {
+app.post('/api/conversations/direct', authenticateToken, async (req, res) => {
     const { otherUserId } = req.body;
     if (!otherUserId) return res.status(400).json({ error: 'Other user ID required' });
 
-    const conversations = db.get('conversations');
+    try {
+        // Search Supabase first
+        let existing = await supabasePersistence.findDirectConversation(req.user.id, otherUserId);
+        if (!existing) {
+            const conversations = db.get('conversations') || [];
+            existing = conversations.find(c =>
+                c.type === 'direct' &&
+                c.participants &&
+                c.participants.includes(req.user.id) &&
+                c.participants.includes(otherUserId)
+            );
+        }
 
-    // Check if conversation already exists
-    const existing = conversations.find(c =>
-        c.type === 'direct' &&
-        c.participants &&
-        c.participants.includes(req.user.id) &&
-        c.participants.includes(otherUserId)
-    );
+        if (existing) {
+            return res.json(existing);
+        }
 
-    if (existing) {
-        return res.json(existing);
+        // Create new conversation
+        let conversation = await supabasePersistence.createConversation({
+            type: 'direct',
+            participants: [req.user.id, otherUserId],
+            lastMessage: '',
+            lastMessageTime: new Date().toISOString()
+        });
+
+        if (!conversation) {
+            conversation = db.insert('conversations', {
+                type: 'direct',
+                participants: [req.user.id, otherUserId],
+                lastMessage: '',
+                lastMessageTime: new Date().toISOString()
+            });
+        }
+
+        res.json(conversation);
+    } catch (error) {
+        console.error('Error in /api/conversations/direct:', error);
+        res.status(500).json({ error: 'Failed to create conversation' });
     }
+});
 
-    // Create new conversation
-    const conversation = db.insert('conversations', {
-        type: 'direct',
-        participants: [req.user.id, otherUserId],
-        lastMessage: '',
-        lastMessageTime: new Date().toISOString(),
-        createdAt: new Date().toISOString()
-    });
+// Explicit Message Sending Override (to use Supabase)
+app.post('/api/messages', authenticateToken, async (req, res) => {
+    try {
+        const { conversationId, content, type, sharedResource } = req.body;
 
-    res.json(conversation);
+        if (!conversationId || !content) {
+            return res.status(400).json({ error: 'Conversation ID and content required' });
+        }
+
+        const messageData = {
+            conversationId,
+            senderId: req.user.id,
+            senderEmail: req.user.email,
+            content,
+            type: type || 'text',
+            sharedResource: sharedResource || null
+        };
+
+        // 1. Insert message into Supabase
+        let message = await supabasePersistence.insertMessage(messageData);
+
+        // 2. Fallback to local DB if Supabase failed
+        if (!message) {
+            message = db.insert('messages', messageData);
+        }
+
+        // 3. Update conversation's last message
+        const lastMessageTime = new Date().toISOString();
+        const convUpdates = {
+            lastMessage: content.substring(0, 50),
+            lastMessageTime
+        };
+
+        await supabasePersistence.updateConversation(conversationId, convUpdates);
+        db.update('conversations', conversationId, convUpdates);
+
+        res.json(message);
+    } catch (error) {
+        console.error('Error sending message:', error);
+        res.status(500).json({ error: 'Failed to send message' });
+    }
 });
 
 // --- CRUD ROUTES ---
 
 const collections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 'flashcardDecks', 'flashcards', 'calendarEvents', 'pomodoroSessions', 'tutorials', 'conversations', 'messages', 'groups'];
 
-collections.forEach(collection => {
+const genericCollections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 'flashcardDecks', 'flashcards', 'calendarEvents', 'pomodoroSessions'];
+
+genericCollections.forEach(collection => {
     app.get(`/api/${collection}`, authenticateToken, (req, res) => {
         const items = db.get(collection);
         // Filter by userId to ensure data isolation
@@ -404,6 +541,44 @@ collections.forEach(collection => {
         db.delete(collection, req.params.id);
         res.sendStatus(204);
     });
+});
+
+// --- TUTORIALS OVERRIDES (Supabase) ---
+app.get('/api/tutorials', authenticateToken, async (req, res) => {
+    try {
+        let tutorials = await supabasePersistence.getTutorials(req.user.id);
+        if (!tutorials) {
+            tutorials = db.get('tutorials').filter(t => t.userId === req.user.id);
+        }
+        res.json(tutorials);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch tutorials' });
+    }
+});
+
+app.post('/api/tutorials', authenticateToken, async (req, res) => {
+    try {
+        const tutorialData = { ...req.body, userId: req.user.id };
+        let tutorial = await supabasePersistence.insertTutorial(tutorialData);
+        if (!tutorial) {
+            tutorial = db.insert('tutorials', tutorialData);
+        }
+        res.json(tutorial);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to save tutorial' });
+    }
+});
+
+app.delete('/api/tutorials/:id', authenticateToken, async (req, res) => {
+    try {
+        const removed = await supabasePersistence.deleteTutorial(req.params.id);
+        if (!removed) {
+            db.delete('tutorials', req.params.id);
+        }
+        res.sendStatus(204);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to delete tutorial' });
+    }
 });
 
 // --- GAMIFICATION OVERRIDES ---

@@ -20,6 +20,10 @@ const initialState = {
     flashcards: [],
     calendarEvents: [],
     pomodoroSessions: [],
+    tutorials: [],
+    conversations: [],
+    messages: [],
+    groups: [],
     settings: {
         owner: null
     }
