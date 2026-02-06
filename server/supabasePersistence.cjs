@@ -123,6 +123,8 @@ const mapRow = (row) => {
         else if (key === 'pdf_path') mapped.pdfPath = row[key];
         else if (key === 'deck_id') mapped.deckId = row[key];
         else if (key === 'supabase_id') mapped.supabaseId = row[key];
+        else if (key === 'target_hours') mapped.targetHours = row[key];
+        else if (key === 'total_hours_studied') mapped.totalHoursStudied = row[key];
         else mapped[key] = row[key];
     }
     return mapped;
@@ -147,6 +149,8 @@ const mapToTable = (item) => {
         else if (key === 'pdfPath') mapped.pdf_path = item[key];
         else if (key === 'deckId') mapped.deck_id = item[key];
         else if (key === 'supabaseId') mapped.supabase_id = item[key];
+        else if (key === 'targetHours') mapped.target_hours = item[key];
+        else if (key === 'totalHoursStudied') mapped.total_hours_studied = item[key];
         else if (key === 'id') mapped.id = item[key];
         else mapped[key] = item[key];
     }
