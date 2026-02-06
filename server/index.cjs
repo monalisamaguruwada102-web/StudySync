@@ -1030,6 +1030,76 @@ app.get(/.*/, (req, res, next) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
+// --- BACKGROUND SYNC (Local to Cloud) ---
+const syncLocalDataToCloud = async () => {
+    if (!supabasePersistence.initSupabase()) return;
+
+    console.log('🔄 Starting background synchronization to Supabase...');
+
+    try {
+        // 1. Sync Groups
+        const groups = db.get('groups') || [];
+        for (const localGroup of groups) {
+            if (!localGroup.supabaseId) {
+                console.log(`📡 Syncing group: ${localGroup.name}`);
+                const cloudGroup = await supabasePersistence.createGroup(localGroup);
+                if (cloudGroup) {
+                    db.update('groups', localGroup.id, { supabaseId: cloudGroup.id });
+                    // Update any local conversations that reference this group
+                    const convs = db.get('conversations') || [];
+                    convs.forEach(c => {
+                        if (c.groupId === localGroup.id) {
+                            db.update('conversations', c.id, { groupId: cloudGroup.id });
+                        }
+                    });
+                }
+            }
+        }
+
+        // 2. Sync Conversations
+        const conversations = db.get('conversations') || [];
+        for (const localConv of conversations) {
+            if (!localConv.supabaseId) {
+                console.log(`📡 Syncing conversation: ${localConv.id}`);
+                const cloudConv = await supabasePersistence.createConversation(localConv);
+                if (cloudConv) {
+                    db.update('conversations', localConv.id, { supabaseId: cloudConv.id });
+                    // Update any local messages that reference this conversation
+                    const messages = db.get('messages') || [];
+                    messages.forEach(m => {
+                        if (m.conversationId === localConv.id) {
+                            db.update('messages', m.id, { conversationId: cloudConv.id });
+                        }
+                    });
+                }
+            }
+        }
+
+        // 3. Sync Messages
+        const messages = db.get('messages') || [];
+        for (const localMsg of messages) {
+            if (!localMsg.supabaseId) {
+                const messageData = {
+                    conversationId: localMsg.conversationId,
+                    senderId: localMsg.senderId,
+                    senderEmail: localMsg.senderEmail,
+                    content: localMsg.content,
+                    type: localMsg.type,
+                    sharedResource: localMsg.sharedResource
+                };
+                const cloudMsg = await supabasePersistence.insertMessage(messageData);
+                if (cloudMsg) {
+                    db.update('messages', localMsg.id, { supabaseId: cloudMsg.id });
+                }
+            }
+        }
+
+        console.log('✅ Background synchronization completed');
+    } catch (error) {
+        console.error('❌ Background sync error:', error);
+    }
+};
+
 // Final 404 handler
 app.use((req, res) => {
     res.status(404).send('Not Found');
@@ -1039,6 +1109,8 @@ app.use((req, res) => {
 // START SERVER
 const server = app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
+    // Run background sync
+    syncLocalDataToCloud();
 });
 
 // Graceful shutdown handling
