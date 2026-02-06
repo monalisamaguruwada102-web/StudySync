@@ -669,21 +669,28 @@ const tableMap = {
 genericCollections.forEach(collection => {
     app.get(`/api/${collection}`, authenticateToken, async (req, res) => {
         const supabaseTable = tableMap[collection];
+        let cloudItems = null;
         if (supabaseTable) {
             try {
-                const cloudItems = await supabasePersistence.fetchCollection(supabaseTable, req.user.id);
-                if (cloudItems) {
-                    return res.json(cloudItems);
-                }
+                cloudItems = await supabasePersistence.fetchCollection(supabaseTable, req.user.id);
             } catch (error) {
-                console.error(`⚠️ Supabase fetch failed for ${collection}, falling back to local:`, error);
+                console.error(`⚠️ Supabase fetch failed for ${collection}:`, error);
             }
         }
 
-        const items = db.get(collection);
-        // Filter by userId to ensure data isolation
-        const userItems = items.filter(i => i.userId === req.user.id);
-        res.json(userItems);
+        const localItems = (db.get(collection) || []).filter(i => i.userId === req.user.id);
+
+        if (!cloudItems) {
+            return res.json(localItems);
+        }
+
+        // Merge cloud and local items. Supabase is primary.
+        // Match by id or supabaseId to avoid duplicates.
+        const cloudIds = new Set(cloudItems.map(i => i.id));
+        const localOnly = localItems.filter(i => !cloudIds.has(i.supabaseId) && !cloudIds.has(i.id));
+
+        const mergedItems = [...cloudItems, ...localOnly];
+        res.json(mergedItems);
     });
 
     app.get(`/api/${collection}/:id`, authenticateToken, async (req, res) => {
