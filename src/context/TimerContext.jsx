@@ -3,7 +3,7 @@ import { pomodoroService } from '../services/firestoreService';
 
 const TimerContext = createContext();
 
-const FOCUS_TIME = 25 * 60; // 25 minutes
+const FOCUS_TIME = 60 * 60; // 60 minutes
 const BREAK_TIME = 5 * 60;  // 5 minutes
 const STORAGE_KEY = 'pomodoro_timer_state';
 
@@ -101,7 +101,7 @@ export const TimerProvider = ({ children }) => {
             try {
                 await pomodoroService.add({
                     taskId: selectedTask?.id || null,
-                    duration: 25,
+                    duration: 60,
                     completedAt: new Date().toISOString()
                 });
             } catch (error) {
@@ -154,7 +154,7 @@ export const TimerProvider = ({ children }) => {
     const formatTime = useCallback((seconds) => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        return `${mins.toString().padStart(2, '0')}.${secs.toString().padStart(2, '0')}`;
     }, []);
 
     const value = {
