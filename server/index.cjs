@@ -554,37 +554,82 @@ const tableMap = {
 };
 
 genericCollections.forEach(collection => {
-    app.get(`/api/${collection}`, authenticateToken, (req, res) => {
+    app.get(`/api/${collection}`, authenticateToken, async (req, res) => {
+        const supabaseTable = tableMap[collection];
+        if (supabaseTable) {
+            try {
+                const cloudItems = await supabasePersistence.fetchCollection(supabaseTable, req.user.id);
+                if (cloudItems) {
+                    return res.json(cloudItems);
+                }
+            } catch (error) {
+                console.error(`⚠️ Supabase fetch failed for ${collection}, falling back to local:`, error);
+            }
+        }
+
         const items = db.get(collection);
         // Filter by userId to ensure data isolation
         const userItems = items.filter(i => i.userId === req.user.id);
         res.json(userItems);
     });
 
+    app.get(`/api/${collection}/:id`, authenticateToken, async (req, res) => {
+        const supabaseTable = tableMap[collection];
+        if (supabaseTable) {
+            try {
+                // For now, fetchCollection fetches all, we filter for ID. 
+                // In a more mature system, we'd add fetchOne to supabasePersistence.
+                const cloudItems = await supabasePersistence.fetchCollection(supabaseTable, req.user.id);
+                const item = cloudItems ? cloudItems.find(i => i.id === req.params.id) : null;
+                if (item) {
+                    return res.json(item);
+                }
+            } catch (error) {
+                console.error(`⚠️ Supabase fetch by ID failed for ${collection}, falling back to local:`, error);
+            }
+        }
+
+        const item = db.getById(collection, req.params.id);
+        if (item && item.userId === req.user.id) {
+            res.json(item);
+        } else {
+            res.sendStatus(404);
+        }
+    });
+
     app.post(`/api/${collection}`, authenticateToken, async (req, res) => {
         // Attach userId to new items
-        const item = db.insert(collection, { ...req.body, userId: req.user.id });
+        const rawItem = { ...req.body, userId: req.user.id };
+
+        let finalItem = db.insert(collection, rawItem);
 
         // Sync to Supabase
         const supabaseTable = tableMap[collection];
         if (supabaseTable) {
-            const cloudItem = await supabasePersistence.upsertToCollection(supabaseTable, item);
-            if (cloudItem) {
-                db.update(collection, item.id, { supabaseId: cloudItem.id });
-                return res.json({ ...item, supabaseId: cloudItem.id });
+            try {
+                const cloudItem = await supabasePersistence.upsertToCollection(supabaseTable, finalItem);
+                if (cloudItem) {
+                    finalItem = db.update(collection, finalItem.id, { supabaseId: cloudItem.id });
+                }
+            } catch (error) {
+                console.error(`❌ Supabase sync failed during POST for ${collection}:`, error);
             }
         }
 
-        res.json(item);
+        res.json(finalItem);
     });
 
     app.put(`/api/${collection}/:id`, authenticateToken, async (req, res) => {
-        const item = db.update(collection, req.params.id, req.body);
+        let item = db.update(collection, req.params.id, req.body);
         if (item) {
             // Sync update to Supabase
             const supabaseTable = tableMap[collection];
             if (supabaseTable) {
-                await supabasePersistence.upsertToCollection(supabaseTable, item);
+                try {
+                    await supabasePersistence.upsertToCollection(supabaseTable, item);
+                } catch (error) {
+                    console.error(`❌ Supabase sync failed during PUT for ${collection}:`, error);
+                }
             }
             res.json(item);
         } else {
@@ -598,7 +643,11 @@ genericCollections.forEach(collection => {
         // Sync delete to Supabase
         const supabaseTable = tableMap[collection];
         if (supabaseTable) {
-            await supabasePersistence.deleteFromCollection(supabaseTable, req.params.id);
+            try {
+                await supabasePersistence.deleteFromCollection(supabaseTable, req.params.id);
+            } catch (error) {
+                console.error(`❌ Supabase sync failed during DELETE for ${collection}:`, error);
+            }
         }
 
         res.sendStatus(204);
