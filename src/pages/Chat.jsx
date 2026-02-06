@@ -64,10 +64,6 @@ const Chat = () => {
         }
     }, [showUserSelector]);
 
-    console.log('Current users state:', users);
-    console.log('Filtered users:', filteredUsers);
-    console.log('Current UI user:', currentUser);
-
     // Handle sending message
     const handleSendMessage = async () => {
         if (!messageInput.trim() || !activeConversation) return;
@@ -139,6 +135,16 @@ const Chat = () => {
     const filteredUsers = users.filter(u =>
         u.email.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    useEffect(() => {
+        console.log('Chat Mount - API_URL:', API_URL);
+        console.log('Current UI user:', currentUser);
+    }, []);
+
+    useEffect(() => {
+        console.log('Users state updated:', users);
+        console.log('Filtered users count:', filteredUsers.length);
+    }, [users, filteredUsers.length]);
 
     return (
         <div className="flex h-[calc(100vh-120px)] gap-4 p-6">
