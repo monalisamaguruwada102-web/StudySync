@@ -20,7 +20,8 @@ import {
     CloudRain,
     Sparkles,
     Eye,
-    EyeOff
+    EyeOff,
+    LayoutDashboard
 } from 'lucide-react';
 
 const SOUNDS = {
@@ -180,10 +181,16 @@ const DeepFocus = () => {
                         exit={{ opacity: 0, y: -20 }}
                         className="absolute top-6 left-6 right-6 flex justify-between items-center z-50 px-4"
                     >
-                        <a href="/" className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors bg-black/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/5">
-                            <X size={18} />
-                            <span className="text-xs font-bold uppercase tracking-widest">End Session</span>
-                        </a>
+                        <div className="flex items-center gap-3">
+                            <a href="/" className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors bg-black/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/5">
+                                <LayoutDashboard size={18} />
+                                <span className="text-xs font-bold uppercase tracking-widest text-[10px]">Dashboard</span>
+                            </a>
+                            <a href="/" className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors bg-black/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/5">
+                                <X size={18} />
+                                <span className="text-xs font-bold uppercase tracking-widest text-[10px]">End Session</span>
+                            </a>
+                        </div>
 
                         <div className="flex items-center gap-3 bg-black/20 backdrop-blur-md p-1.5 rounded-full border border-white/5">
                             {/* Sound Presets */}
