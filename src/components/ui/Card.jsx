@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 
-const Card = ({ children, className = '', title = '', HeaderAction = null }) => {
+function Card({ children, className = '', title = '', HeaderAction = null }) {
     const divRef = useRef(null);
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const [opacity, setOpacity] = useState(0);

@@ -12,7 +12,7 @@ import ResourceShareModal from '../components/chat/ResourceShareModal';
 import api from '../services/api';
 
 // Resource Card Component (for shared items)
-function ResourceCard({ resource, onClick }) {
+function ChatMessageResourceCard({ resource, onClick }) {
     const getTypeStyles = (type) => {
         switch (type) {
             case 'note': return { icon: <FileText size={14} />, color: 'border-emerald-500 text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-900/10' };
@@ -72,7 +72,7 @@ function MessageBubble({ message, isOwn, handleOpenResource, formatTime }) {
                         }`}
                 >
                     {message.sharedResource ? (
-                        <ResourceCard
+                        <ChatMessageResourceCard
                             resource={message.sharedResource}
                             onClick={() => handleOpenResource(message.sharedResource)}
                         />

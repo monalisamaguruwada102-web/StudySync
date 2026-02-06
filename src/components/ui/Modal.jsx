@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import Button from './Button';
 
-const Modal = ({ isOpen, onClose, title, children, footer, size }) => {
+function Modal({ isOpen, onClose, title, children, footer, size }) {
     return (
         <AnimatePresence>
             {isOpen && (

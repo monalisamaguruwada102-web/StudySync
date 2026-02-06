@@ -7,7 +7,7 @@ import Input from '../ui/Input';
 import Card from '../ui/Card';
 import api from '../../services/api';
 
-const ResourceShareModal = ({ isOpen, onClose, onShare }) => {
+function ResourceShareModal({ isOpen, onClose, onShare }) {
     const [activeTab, setActiveTab] = useState('notes');
     const [notes, setNotes] = useState([]);
     const [flashcards, setFlashcards] = useState([]);
@@ -130,7 +130,7 @@ const ResourceShareModal = ({ isOpen, onClose, onShare }) => {
 };
 
 // Resource Card Component
-const ResourceCard = ({ resource, type, onShare }) => {
+function ResourceCard({ resource, type, onShare }) {
     const getIcon = () => {
         switch (type) {
             case 'notes':

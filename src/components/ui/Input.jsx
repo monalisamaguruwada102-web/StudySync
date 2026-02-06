@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Input = ({ label, error, className = '', ...props }) => {
+function Input({ label, error, className = '', ...props }) {
     return (
         <div className={`flex flex-col gap-1.5 ${className}`}>
             {label && (

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-const Button = ({ children, variant = 'primary', className = '', ...props }) => {
+function Button({ children, variant = 'primary', className = '', ...props }) {
     const baseStyles = 'px-6 py-3 rounded-xl font-semibold outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:pointer-events-none relative overflow-hidden transition-all duration-300 tracking-wide';
 
     const variants = {
