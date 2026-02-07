@@ -144,6 +144,10 @@ const db = {
         return readDB()[collection].find(predicate);
     },
 
+    filter: (collection, predicate) => {
+        return readDB()[collection].filter(predicate);
+    },
+
     insert: (collection, item) => {
         const data = readDB();
         // Use UUID for compatibility with Supabase
