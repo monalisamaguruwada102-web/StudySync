@@ -7,14 +7,20 @@ import Modal from '../components/ui/Modal';
 import QuizModal from '../components/ui/QuizModal';
 import { useFirestore } from '../hooks/useFirestore';
 import { noteService, moduleService } from '../services/firestoreService';
-import { Plus, StickyNote, Trash2, Book, ExternalLink, FileText, Code, Play, Sparkles, Wand2, Mic, MicOff, BrainCircuit } from 'lucide-react';
+import { Plus, StickyNote, Trash2, Book, ExternalLink, FileText, Code, Play, Sparkles, Wand2, Mic, MicOff, BrainCircuit, Share2, Link } from 'lucide-react';
 import aiService from '../services/aiService';
 import { supabase } from '../services/supabase';
+import { useSearchParams } from 'react-router-dom';
+import ShareToChatModal from '../components/ui/ShareToChatModal';
 
 const Notes = () => {
     const { data: notes, loading, refresh } = useFirestore(noteService.getAll);
     const { data: modules } = useFirestore(moduleService.getAll);
+    const [searchParams] = useSearchParams();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [noteToShare, setNoteToShare] = useState(null);
+    const [highlightedNoteId, setHighlightedNoteId] = useState(null);
 
     const getYouTubeId = (url) => {
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -221,6 +227,24 @@ const Notes = () => {
         }
     };
 
+    const handleCopyExternalLink = (note) => {
+        const url = `${window.location.origin}/notes?id=${note.id}`;
+        navigator.clipboard.writeText(url);
+        alert('External link copied to clipboard! Anyone who clicks it will be redirected here after logging in.');
+    };
+
+    // Deep Link Effect
+    useEffect(() => {
+        const noteId = searchParams.get('id');
+        if (noteId && notes.length > 0) {
+            setHighlightedNoteId(noteId);
+            const element = document.getElementById(`note-${noteId}`);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    }, [searchParams, notes]);
+
     return (
         <Layout title="Notes & Resources">
             <div className="flex justify-between items-center mb-8">
@@ -239,13 +263,36 @@ const Notes = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {notes.map((note) => (
-                    <Card key={note.id} className="flex flex-col h-full hover:shadow-xl transition-all duration-300 border-none bg-white dark:bg-slate-900/50 shadow-sm hover:-translate-y-1">
+                    <Card
+                        key={note.id}
+                        id={`note-${note.id}`}
+                        className={`flex flex-col h-full hover:shadow-xl transition-all duration-300 border-none bg-white dark:bg-slate-900/50 shadow-sm hover:-translate-y-1 ${highlightedNoteId === note.id ? 'ring-2 ring-primary-500 shadow-lg shadow-primary-500/20' : ''}`}
+                    >
                         <div className="flex justify-between items-start mb-4">
                             <div className="flex items-center gap-2 px-3 py-1.5 bg-[#f1f5f9] dark:bg-slate-800/80 rounded-lg text-[10px] uppercase font-black tracking-wider text-[#475569] dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50">
                                 <Book size={10} />
                                 <span>{getModuleName(note.moduleId)}</span>
                             </div>
                             <div className="flex items-center gap-1">
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => {
+                                        setNoteToShare({ ...note, type: 'note' });
+                                        setShowShareModal(true);
+                                    }}
+                                    className="!p-1.5 text-slate-400 hover:text-emerald-500"
+                                    title="Share to Chat"
+                                >
+                                    <Share2 size={14} />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => handleCopyExternalLink(note)}
+                                    className="!p-1.5 text-slate-400 hover:text-blue-500"
+                                    title="Copy Share Link"
+                                >
+                                    <Link size={14} />
+                                </Button>
                                 <Button
                                     variant="ghost"
                                     onClick={() => handleGenerateQuiz(note)}
@@ -533,6 +580,12 @@ const Notes = () => {
                 onClose={() => setIsQuizOpen(false)}
                 quizData={quizData}
                 noteTitle={quizNoteTitle}
+            />
+
+            <ShareToChatModal
+                isOpen={showShareModal}
+                onClose={() => setShowShareModal(false)}
+                resource={noteToShare}
             />
 
         </Layout>

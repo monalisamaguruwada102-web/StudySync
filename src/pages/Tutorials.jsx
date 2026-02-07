@@ -6,7 +6,8 @@ import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
 import { useFirestore } from '../hooks/useFirestore';
 import { tutorialService, moduleService } from '../services/firestoreService';
-import { Plus, Youtube, Trash2, Book, ExternalLink, Search, LayoutDashboard, Play } from 'lucide-react';
+import { Plus, Youtube, Trash2, Book, ExternalLink, Search, LayoutDashboard, Play, Share2 } from 'lucide-react';
+import ShareToChatModal from '../components/ui/ShareToChatModal';
 
 const Tutorials = () => {
     const { data: tutorials, loading, refresh } = useFirestore(tutorialService.getAll);
@@ -15,6 +16,8 @@ const Tutorials = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterModule, setFilterModule] = useState('');
     const [playingId, setPlayingId] = useState(null);
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [tutorialToShare, setTutorialToShare] = useState(null);
     const [formData, setFormData] = useState({
         url: '',
         title: '',
@@ -168,13 +171,26 @@ const Tutorials = () => {
                                             <Book size={10} />
                                             <span>{getModuleName(tutorial.moduleId)}</span>
                                         </div>
-                                        <Button
-                                            variant="ghost"
-                                            onClick={() => handleDelete(tutorial.id)}
-                                            className="!p-1.5 text-slate-400 hover:text-red-500"
-                                        >
-                                            <Trash2 size={14} />
-                                        </Button>
+                                        <div className="flex items-center gap-1">
+                                            <Button
+                                                variant="ghost"
+                                                onClick={() => {
+                                                    setTutorialToShare({ ...tutorial, type: 'tutorial' });
+                                                    setShowShareModal(true);
+                                                }}
+                                                className="!p-1.5 text-slate-400 hover:text-emerald-500"
+                                                title="Share to Chat"
+                                            >
+                                                <Share2 size={14} />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                onClick={() => handleDelete(tutorial.id)}
+                                                className="!p-1.5 text-slate-400 hover:text-red-500"
+                                            >
+                                                <Trash2 size={14} />
+                                            </Button>
+                                        </div>
                                     </div>
 
                                     <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-2 line-clamp-2">
@@ -298,6 +314,11 @@ const Tutorials = () => {
                     </div>
                 </form>
             </Modal>
+            <ShareToChatModal
+                isOpen={showShareModal}
+                onClose={() => setShowShareModal(false)}
+                resource={tutorialToShare}
+            />
         </Layout>
     );
 };

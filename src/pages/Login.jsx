@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { login, register } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/ui/Button';
@@ -14,7 +14,10 @@ const Login = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
     const { refreshAuth } = useAuth();
+
+    const from = location.state?.from || '/';
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -33,7 +36,7 @@ const Login = () => {
                 await login(email, password);
             }
             await refreshAuth();
-            navigate('/');
+            navigate(from, { replace: true });
         } catch (err) {
             setError(err.response?.data?.error || `Failed to ${isRegisterMode ? 'register' : 'log in'}. Please check your credentials.`);
             setLoading(false);

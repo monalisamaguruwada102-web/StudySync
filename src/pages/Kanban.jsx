@@ -139,9 +139,21 @@ const Kanban = () => {
                                         <div className="flex items-center gap-2 text-[10px] font-bold text-primary-500 uppercase tracking-widest bg-primary-50 dark:bg-primary-900/20 px-2 py-0.5 rounded">
                                             {modules.find(m => m.id === task.moduleId)?.name?.split(' ')[0] || 'Task'}
                                         </div>
-                                        <button onClick={() => deleteTask(task.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
-                                            <Trash2 size={14} />
-                                        </button>
+                                        <div className="flex items-center gap-2">
+                                            <select
+                                                value={task.status}
+                                                onChange={(e) => onDrop({ dataTransfer: { getData: () => task.id }, preventDefault: () => { } }, e.target.value)}
+                                                className="text-[10px] font-bold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-primary-500/30 text-slate-500 hover:text-primary-600 transition-colors cursor-pointer"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                {columns.map(col => (
+                                                    <option key={col.id} value={col.id}>{col.title}</option>
+                                                ))}
+                                            </select>
+                                            <button onClick={() => deleteTask(task.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
                                     </div>
                                     <h4 className={`text-sm font-bold text-slate-800 dark:text-slate-100 mb-2 ${task.status === 'Completed' ? 'line-through opacity-50' : ''}`}>
                                         {task.title}
