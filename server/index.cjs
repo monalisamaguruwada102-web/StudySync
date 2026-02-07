@@ -201,6 +201,36 @@ app.post('/api/user/settings', authenticateToken, (req, res) => {
     res.json(updatedUser.settings);
 });
 
+// --- TUTORIAL STATUS ---
+app.post('/api/users/tutorial-status', authenticateToken, async (req, res) => {
+    try {
+        const { visited } = req.body;
+        const user = db.find('users', u => u.id === req.user.id);
+
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const updatedUser = db.update('users', user.id, {
+            tutorial_completed: !!visited
+        });
+
+        // Sync to Supabase if possible
+        try {
+            await supabasePersistence.upsertToCollection('users', {
+                id: user.id,
+                tutorial_completed: !!visited
+            });
+        } catch (syncErr) {
+            console.warn('Could not sync tutorial status to Supabase:', syncErr.message);
+        }
+
+        const { password, ...safeUser } = updatedUser;
+        res.json({ success: true, user: safeUser });
+    } catch (error) {
+        console.error('Error updating tutorial status:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // Update Tutorial Status
 app.post('/api/users/tutorial-status', authenticateToken, async (req, res) => {
     const { visited } = req.body;
@@ -1021,19 +1051,27 @@ app.post('/api/studyLogs', authenticateToken, (req, res) => {
     res.json({ item, xpGain: xpAmount, ...result });
 });
 
-app.put('/api/tasks/:id', authenticateToken, (req, res) => {
-    const oldTask = db.find('tasks', t => t.id === req.params.id);
-    const item = db.update('tasks', req.params.id, req.body);
+app.put('/api/tasks/:id', authenticateToken, async (req, res) => {
+    try {
+        const oldTask = db.find('tasks', t => t.id === req.params.id);
+        const item = db.update('tasks', req.params.id, req.body);
 
-    let xpGain = 0;
-    let gamification = null;
+        // Sync to Supabase
+        await supabasePersistence.upsertToCollection('tasks', item);
 
-    if (oldTask && oldTask.status !== 'Completed' && req.body.status === 'Completed') {
-        xpGain = 100;
-        gamification = db.addXP(req.user.id, xpGain);
+        let xpGain = 0;
+        let gamification = null;
+
+        if (oldTask && oldTask.status !== 'Completed' && req.body.status === 'Completed') {
+            xpGain = 100;
+            gamification = db.addXP(req.user.id, xpGain);
+        }
+
+        res.json({ item, xpGain, ...gamification });
+    } catch (error) {
+        console.error('Error updating task:', error);
+        res.status(500).json({ error: 'Failed to update task and sync to cloud' });
     }
-
-    res.json({ item, xpGain, ...gamification });
 });
 
 app.put('/api/flashcards/:id', authenticateToken, (req, res) => {
@@ -1346,6 +1384,27 @@ app.post('/api/ai/process', authenticateToken, async (req, res) => {
                    [{"type": "exam_prep" | "review" | "task", "title": "string", "duration": "string", "reason": "string"}]
                 
                 Make the plan realistic and evidence-based.`;
+                break;
+
+            case 'chat':
+                prompt = `You are "ChatBoat", a premium AI Study Assistant for the StudySync platform.
+                Your goal is to help users with their studies, explain platform features, and provide motivation.
+                
+                Guidelines:
+                1. Be concise, friendly, and professional.
+                2. Use markdown for better readability (bolding, lists, etc.).
+                3. If asked about platform features:
+                   - Modules: Track subjects and progress.
+                   - Kanban: Drag & drop task management.
+                   - Notes: PDF uploads and rich text editing.
+                   - Flashcards: Spaced repetition for better recall.
+                   - Chat: Join study groups and share resources.
+                
+                User Message: "${payload.message}"
+                
+                Current Context: ${JSON.stringify(payload.context || {})}
+                
+                Respond as ChatBoat:`;
                 break;
 
             default:

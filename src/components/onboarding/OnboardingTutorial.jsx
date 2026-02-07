@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight, Check, Rocket, Zap, MessageCircle } from 'lucide-react';
 import Button from '../ui/Button';
-import { useAuth } from '../../context/AuthContext';Context';
+import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 
 const steps = [
@@ -63,10 +63,17 @@ export default function OnboardingTutorial() {
             await api.post('/users/tutorial-status', { visited: true });
 
             // Update local user state to prevent showing again
-            const updatedUser = { ...user, tutorial_completed: true };
-            localStorage.setItem('user', JSON.stringify(updatedUser)); // Crude local update
-            // Ideally useAuth would expose a method to update user part
-            // For now, closing the modal is visually sufficient
+            if (user) {
+                const updatedUser = { ...user, tutorial_completed: true };
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+
+                // Refresh auth state if method exists (assuming it triggers re-render)
+                if (typeof login === 'function') {
+                    // This is a bit hacky but ensures the context sees the update
+                    // In a real app, useAuth should have an updateUserData(updates) method
+                    window.dispatchEvent(new Event('storage'));
+                }
+            }
 
             setIsOpen(false);
         } catch (error) {

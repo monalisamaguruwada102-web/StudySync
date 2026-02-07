@@ -58,22 +58,18 @@ export const aiService = {
     },
 
     /**
-     * Generates a personalized study plan based on tasks, exams, and flashcards.
+     * Generic chat method for the ChatBoat assistant.
      */
-    generateStudyPlan: async (tasks, modules, cards) => {
+    chat: async (message, context = {}) => {
         try {
             const response = await api.post('/ai/process', {
-                action: 'generateStudyPlan',
-                payload: {
-                    tasks: tasks.filter(t => t.status !== 'Completed').map(t => ({ title: t.title, dueDate: t.dueDate })),
-                    modules: modules.map(m => m.name),
-                    cardCount: cards.length
-                }
+                action: 'chat',
+                payload: { message, context }
             });
 
-            return response.data;
+            return response.data.text;
         } catch (error) {
-            console.error("AI Study Plan error:", error);
+            console.error("AI Chat error:", error);
             throw error;
         }
     }

@@ -44,20 +44,26 @@ export default function HelpAssistant() {
         setInput('');
         setIsTyping(true);
 
-        // Simple Keyword Matching Logic
-        setTimeout(() => {
-            const lowerText = text.toLowerCase();
-            let response = KNOWLEDGE_BASE.default;
-
-            if (lowerText.includes('module') || lowerText.includes('subject')) response = KNOWLEDGE_BASE.module;
-            else if (lowerText.includes('note') || lowerText.includes('write')) response = KNOWLEDGE_BASE.note;
-            else if (lowerText.includes('group') || lowerText.includes('chat') || lowerText.includes('friend')) response = KNOWLEDGE_BASE.group;
-            else if (lowerText.includes('flash') || lowerText.includes('card') || lowerText.includes('study')) response = KNOWLEDGE_BASE.flashcard;
+        try {
+            const { aiService } = await import('../../services/aiService');
+            const response = await aiService.chat(text, {
+                currentPath: window.location.pathname,
+                timestamp: new Date().toISOString()
+            });
 
             const botMsg = { id: Date.now() + 1, type: 'bot', content: response };
             setMessages(prev => [...prev, botMsg]);
+        } catch (error) {
+            console.error('ChatBoat Error:', error);
+            const errorMsg = {
+                id: Date.now() + 1,
+                type: 'bot',
+                content: "I'm having a bit of trouble connecting to my brain right now. Please try again in a moment!"
+            };
+            setMessages(prev => [...prev, errorMsg]);
+        } finally {
             setIsTyping(false);
-        }, 1000); // Simulate network delay
+        }
     };
 
     const handleTopicClick = (query) => {
@@ -113,8 +119,8 @@ export default function HelpAssistant() {
                                     className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
                                     <div className={`max-w-[85%] p-3 rounded-2xl text-sm leading-relaxed ${msg.type === 'user'
-                                            ? 'bg-blue-600 text-white rounded-tr-none'
-                                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-sm border border-slate-100 dark:border-slate-700 rounded-tl-none'
+                                        ? 'bg-blue-600 text-white rounded-tr-none'
+                                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-sm border border-slate-100 dark:border-slate-700 rounded-tl-none'
                                         }`}>
                                         {msg.content}
                                     </div>
