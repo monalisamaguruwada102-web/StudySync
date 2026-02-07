@@ -398,34 +398,62 @@ app.get('/api/groups', authenticateToken, async (req, res) => {
     }
 });
 
-// Join group via invite code
 app.post('/api/groups/join/:inviteCode', authenticateToken, async (req, res) => {
     try {
-        let group = await supabasePersistence.findGroupByInviteCode(req.params.inviteCode);
+        const { inviteCode } = req.params;
+        const userId = req.user.id;
+
+        let group = await supabasePersistence.findGroupByInviteCode(inviteCode);
         if (!group) {
-            const groups = db.get('groups');
-            group = groups.find(g => (g.inviteCode || g.invite_code) === req.params.inviteCode);
+            const groups = db.get('groups') || [];
+            group = groups.find(g => (g.inviteCode || g.invite_code) === inviteCode);
         }
 
-        if (!group) return res.status(404).json({ error: 'Invalid invite code' });
+        if (!group) {
+            return res.status(404).json({ error: 'Invalid invite code. Please check the code and try again.' });
+        }
 
         const members = group.members || [];
-        if (members.includes(req.user.id)) {
-            return res.status(400).json({ error: 'Already a member of this group' });
+        if (members.includes(userId)) {
+            return res.status(400).json({ error: 'You are already a member of this group.' });
         }
 
-        // Update group
-        const newMembers = [...members, req.user.id];
+        // Update group members
+        const newMembers = [...members, userId];
         let updatedGroup = await supabasePersistence.updateGroup(group.id, { members: newMembers });
+
         if (!updatedGroup) {
+            // Fallback to local update
             updatedGroup = db.update('groups', group.id, { members: newMembers });
         }
 
-        // Update conversation
+        if (!updatedGroup) {
+            return res.status(500).json({ error: 'Failed to update group membership.' });
+        }
+
+        // Update or create group conversation
         let conversation;
-        const userConvs = await supabasePersistence.getConversations(req.user.id);
-        if (userConvs) {
-            conversation = userConvs.find(c => c.group_id === group.id || c.groupId === group.id);
+        // Search Supabase first (try finding any conversation for this group)
+        try {
+            const client = supabasePersistence.initSupabase();
+            if (client) {
+                const { data, error } = await client
+                    .from('conversations')
+                    .select('*')
+                    .eq('group_id', group.id)
+                    .single();
+
+                if (data && !error) {
+                    conversation = {
+                        id: data.id,
+                        type: data.type,
+                        groupId: data.group_id,
+                        participants: data.participants || []
+                    };
+                }
+            }
+        } catch (err) {
+            console.error('Error finding group conversation in Supabase:', err);
         }
 
         if (!conversation) {
@@ -435,19 +463,35 @@ app.post('/api/groups/join/:inviteCode', authenticateToken, async (req, res) => 
 
         if (conversation) {
             const participants = conversation.participants || [];
-            if (!participants.includes(req.user.id)) {
-                const newParticipants = [...participants, req.user.id];
-                const updatedConv = await supabasePersistence.updateConversation(conversation.id, { participants: newParticipants });
+            if (!participants.includes(userId)) {
+                const newParticipants = [...participants, userId];
+                const updatedConv = await supabasePersistence.updateConversation(conversation.id, {
+                    participants: newParticipants,
+                    lastMessage: `${req.user.email} joined the group`,
+                    lastMessageTime: new Date().toISOString()
+                });
+
                 if (!updatedConv) {
-                    db.update('conversations', conversation.id, { participants: newParticipants });
+                    db.update('conversations', conversation.id, {
+                        participants: newParticipants,
+                        lastMessage: `${req.user.email} joined the group`,
+                        lastMessageTime: new Date().toISOString()
+                    });
                 }
             }
         }
 
-        res.json({ message: 'Successfully joined group', group: updatedGroup });
+        res.json({
+            message: 'Successfully joined group',
+            group: updatedGroup,
+            conversationId: conversation?.id
+        });
     } catch (error) {
         console.error('Error joining group:', error);
-        res.status(500).json({ error: 'Failed to join group' });
+        res.status(500).json({
+            error: 'Failed to join group due to a server error.',
+            details: error.message
+        });
     }
 });
 
