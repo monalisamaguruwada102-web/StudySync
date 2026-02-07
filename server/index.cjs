@@ -719,6 +719,20 @@ app.get('/api/tutorials/shared/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// --- REST OF ROUTES ---
+
+// Flashcard Decks
+app.get('/api/flashcardDecks', authenticateToken, (req, res) => {
+    const decks = db.filter('flashcardDecks', d => d.userId === req.user.id);
+    res.json(decks);
+});
+
+// Notes
+app.get('/api/notes', authenticateToken, (req, res) => {
+    const notes = db.filter('notes', n => n.userId === req.user.id);
+    res.json(notes);
+});
+
 // Shared flashcard deck fetch (Read-only access to any deck by ID)
 app.get('/api/flashcardDecks/shared/:id', authenticateToken, async (req, res) => {
     try {
