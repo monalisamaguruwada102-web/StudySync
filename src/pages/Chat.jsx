@@ -504,6 +504,8 @@ function Chat() {
             await respondToRequest(activeConversation.id, status);
             if (status === 'rejected') {
                 setActiveConversation(null);
+            } else if (status === 'active') {
+                setActiveConversation(prev => ({ ...prev, status: 'active' }));
             }
         } catch (error) {
             console.error('Error responding:', error);

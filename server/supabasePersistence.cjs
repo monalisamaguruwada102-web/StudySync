@@ -147,6 +147,8 @@ const mapToTable = (item, table = null) => {
         if (key === 'thumbnail') continue;
         if (key === 'tutorialCompleted') continue;
         if (key === 'tutorial_completed') continue;
+        if (key === 'initiatorId') continue;
+        if (key === 'updatedAt' && table === 'users') continue;
         if (key === 'password' && table === 'users') {
             // Include password for users table as it exists there locally and we sync it
             mapped.password = item[key];
