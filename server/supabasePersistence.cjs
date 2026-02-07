@@ -104,7 +104,7 @@ const deleteTutorial = async (id) => {
     return !error;
 };
 
-const mapRow = (row) => {
+const mapRow = (row, table = null) => {
     if (!row) return null;
     const mapped = {};
     for (const key in row) {
@@ -130,23 +130,31 @@ const mapRow = (row) => {
         else if (key === 'audio_episodes') mapped.audioEpisodes = row[key];
         else if (key === 'audio_path') mapped.audioPath = row[key];
         else if (key === 'tutorial_completed') mapped.tutorialCompleted = row[key];
+        else if (key === 'activity' && table === 'study_logs') mapped.topic = row[key];
         else mapped[key] = row[key];
     }
     return mapped;
 };
 
-const mapToTable = (item) => {
+const mapToTable = (item, table = null) => {
     if (!item) return null;
     const mapped = {};
     for (const key in item) {
         // Skip internal tracking fields that don't exist in Supabase tables
         if (key === 'supabaseId') continue;
         if (key === 'newly_registered') continue;
+        if (key === 'videoId') continue;
+        if (key === 'thumbnail') continue;
+        if (key === 'password' && table === 'users') {
+            // Include password for users table as it exists there locally and we sync it
+            mapped.password = item[key];
+            continue;
+        }
 
         if (key === 'userId') mapped.user_id = item[key];
         else if (key === 'moduleId') mapped.module_id = item[key];
         else if (key === 'createdAt') mapped.created_at = item[key];
-        else if (key === 'updated_at') mapped.updated_at = item[key];
+        else if (key === 'updatedAt') mapped.updated_at = item[key];
         else if (key === 'videoId') mapped.video_id = item[key];
         else if (key === 'dueDate') mapped.due_date = item[key];
         else if (key === 'startTime') mapped.start_time = item[key];
@@ -170,7 +178,7 @@ const mapToTable = (item) => {
             mapped.tutorial_completed = item[key];
         }
         else if (key === 'id') mapped.id = item[key];
-        else if (key === 'topic') mapped.activity = item[key];
+        else if (key === 'topic' && table === 'study_logs') mapped.activity = item[key];
         else mapped[key] = item[key];
     }
     return mapped;
@@ -220,7 +228,7 @@ const fetchAll = async (table) => {
         console.error(`Error fetching all from ${table}:`, error);
         return null;
     }
-    return data.map(mapRow);
+    return data.map(row => mapRow(row, table));
 };
 
 const fetchCollection = async (table, userId) => {
@@ -237,7 +245,7 @@ const fetchCollection = async (table, userId) => {
         console.error(`Error fetching from ${table}:`, error);
         return null;
     }
-    return data.map(mapRow);
+    return data.map(row => mapRow(row, table));
 };
 
 const getById = async (table, id) => {
@@ -257,14 +265,14 @@ const getById = async (table, id) => {
         }
         return null;
     }
-    return mapRow(data);
+    return mapRow(data, table);
 };
 
 const upsertToCollection = async (table, item) => {
     const client = initSupabase();
     if (!client) return null;
 
-    const row = mapToTable(item);
+    const row = mapToTable(item, table);
     const { data, error } = await client
         .from(table)
         .upsert([row])
@@ -275,7 +283,7 @@ const upsertToCollection = async (table, item) => {
         console.error(`Error upserting to ${table}:`, error);
         return null;
     }
-    return mapRow(data);
+    return mapRow(data, table);
 };
 
 const deleteFromCollection = async (table, id) => {
