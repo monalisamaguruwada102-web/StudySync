@@ -148,7 +148,12 @@ const db = {
         const data = readDB();
         // Use UUID for compatibility with Supabase
         const id = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
-        const newItem = { ...item, id, createdAt: new Date().toISOString() };
+        const newItem = {
+            ...item,
+            id,
+            createdAt: new Date().toISOString(),
+            tutorial_completed: false // Default for new users
+        };
         data[collection].push(newItem);
         writeDB(data);
         return newItem;

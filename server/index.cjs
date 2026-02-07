@@ -201,6 +201,28 @@ app.post('/api/user/settings', authenticateToken, (req, res) => {
     res.json(updatedUser.settings);
 });
 
+// Update Tutorial Status
+app.post('/api/users/tutorial-status', authenticateToken, async (req, res) => {
+    const { visited } = req.body;
+    try {
+        const user = db.getById('users', req.user.id);
+        if (user) {
+            db.update('users', req.user.id, { tutorial_completed: true });
+        }
+
+        // Also try to update Supabase if connected
+        const client = supabasePersistence.initSupabase();
+        if (client) {
+            await client.from('users').update({ tutorial_completed: true }).eq('id', req.user.id);
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error updating tutorial status:', error);
+        res.status(500).json({ error: 'Failed to update tutorial status' });
+    }
+});
+
 // --- XP ENDPOINT ---
 app.post('/api/user/xp', authenticateToken, (req, res) => {
     const { amount } = req.body;

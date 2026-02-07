@@ -4,6 +4,8 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import BackgroundBubbles from '../ui/BackgroundBubbles';
 import FloatingParticles from '../ui/FloatingParticles';
+import OnboardingTutorial from '../onboarding/OnboardingTutorial';
+import HelpAssistant from '../help/HelpAssistant';
 
 const Layout = ({ children, title = 'Dashboard' }) => {
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
@@ -39,6 +41,8 @@ const Layout = ({ children, title = 'Dashboard' }) => {
                     </AnimatePresence>
                 </main>
             </div>
+            <OnboardingTutorial />
+            <HelpAssistant />
         </div>
     );
 };
