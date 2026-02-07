@@ -520,6 +520,28 @@ app.get('/api/notes/shared/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// Shared tutorial fetch (Read-only access to any tutorial by ID)
+app.get('/api/tutorials/shared/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        let tutorial = await supabasePersistence.getById('tutorials', id);
+
+        if (!tutorial) {
+            tutorial = db.getById('tutorials', id);
+        }
+
+        if (!tutorial) {
+            return res.status(404).json({ error: 'Tutorial not found or link has expired.' });
+        }
+
+        // Return tutorial without ownership restriction for this specific path
+        res.json(tutorial);
+    } catch (error) {
+        console.error('Error fetching shared tutorial:', error);
+        res.status(500).json({ error: 'System error fetching shared tutorial.' });
+    }
+});
+
 // Create or get direct conversation
 app.get('/api/conversations', authenticateToken, async (req, res) => {
     try {

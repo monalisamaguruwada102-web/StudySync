@@ -59,6 +59,7 @@ function App() {
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/modules" element={<Modules />} />
                     <Route path="/tutorials" element={<Tutorials />} />
+                    <Route path="/tutorials/shared/:id" element={<Tutorials />} />
                     <Route path="/notes" element={<Notes />} />
                     <Route path="/notes/shared/:id" element={<Notes />} />
                     <Route path="/logs" element={<StudyLogs />} />
