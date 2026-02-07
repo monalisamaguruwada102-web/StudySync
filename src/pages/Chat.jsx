@@ -279,6 +279,10 @@ function Chat() {
     else if (activeTab === 'groups') displayList = joinedGroups;
     else if (activeTab === 'requests') displayList = pendingRequests;
 
+    const filteredUsers = users.filter(user =>
+        user.email?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     // --- Hoisted Functions ---
     function formatMessageTime(timestamp) {
         if (!timestamp) return '';
