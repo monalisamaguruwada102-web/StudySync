@@ -1558,6 +1558,59 @@ app.get(/.*/, (req, res, next) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
+// --- RESTORE CLOUD DATA ---
+const restoreCloudData = async () => {
+    if (!supabasePersistence.initSupabase()) return;
+    console.log('🔄 Restoring groups and conversations from Supabase...');
+
+    try {
+        // 1. Restore Groups
+        const cloudGroups = await supabasePersistence.getGroups() || [];
+        const localGroups = db.get('groups') || [];
+
+        for (const cloudGroup of cloudGroups) {
+            const localMatch = localGroups.find(g => g.id === cloudGroup.id || g.supabaseId === cloudGroup.id);
+            if (!localMatch) {
+                console.log(`📥 Restoring group: ${cloudGroup.name}`);
+                db.insert('groups', { ...cloudGroup, supabaseId: cloudGroup.id });
+            } else if (!localMatch.supabaseId) {
+                db.update('groups', localMatch.id, { supabaseId: cloudGroup.id });
+            }
+        }
+
+        // 2. Restore Group Conversations
+        const cloudConvs = await supabasePersistence.fetchAll('conversations') || [];
+        const localConvs = db.get('conversations') || [];
+
+        for (const cloudConv of cloudConvs) {
+            if (cloudConv.type === 'group') {
+                const localMatch = localConvs.find(c => c.id === cloudConv.id || c.supabaseId === cloudConv.id);
+                if (!localMatch) {
+                    console.log(`📥 Restoring conversation: ${cloudConv.id}`);
+                    db.insert('conversations', {
+                        id: cloudConv.id,
+                        supabaseId: cloudConv.id,
+                        type: cloudConv.type,
+                        groupId: cloudConv.group_id,
+                        participants: cloudConv.participants,
+                        lastMessage: cloudConv.last_message,
+                        lastMessageTime: cloudConv.last_message_time,
+                        status: cloudConv.status,
+                        initiatorId: cloudConv.initiator_id,
+                        createdAt: cloudConv.created_at
+                    });
+                } else if (!localMatch.supabaseId) {
+                    db.update('conversations', localMatch.id, { supabaseId: cloudConv.id });
+                }
+            }
+        }
+
+        console.log('✅ Cloud data restoration completed');
+    } catch (error) {
+        console.error('❌ Error restoring cloud data:', error);
+    }
+};
+
 // --- BACKGROUND SYNC (Local to Cloud) ---
 const syncLocalDataToCloud = async () => {
     if (!supabasePersistence.initSupabase()) return;
@@ -1664,6 +1717,8 @@ app.use((req, res) => {
 // START SERVER
 const server = app.listen(PORT, async () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
+    // Restore data from cloud first
+    await restoreCloudData();
     // Run background sync immediately
     await syncLocalDataToCloud();
     // Then every 5 minutes
