@@ -1,34 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '../components/layout/Layout';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { Users, MessageSquare, Trophy, Star, Share2, Plus, Send, ChevronLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import useChat from '../hooks/useChat';
 
 const StudyGroups = () => {
     const { user } = useAuth();
+    const {
+        conversations,
+        messages,
+        activeConversation,
+        setActiveConversation,
+        sendMessage,
+        loading,
+        availableGroups,
+        fetchAvailableGroups,
+        joinGroup
+    } = useChat();
+
     const [activeTab, setActiveTab] = useState('groups');
     const [message, setMessage] = useState('');
-    const [chatHistory, setChatHistory] = useState([
-        { id: 1, user: 'Alice', text: 'Hey everyone, anyone studying for the SQL exam?', time: '10:30 AM' },
-        { id: 2, user: 'Bob', text: 'Yes! I created a flashcard deck for Joins.', time: '10:32 AM' },
-        { id: 3, user: 'You', text: 'That sounds great, can you share it?', time: '10:33 AM', isMe: true },
-    ]);
+    const [showJoinModal, setShowJoinModal] = useState(false);
+    const [inviteCode, setInviteCode] = useState('');
 
-    const [selectedGroup, setSelectedGroup] = useState(null); // Add state for mobile master-detail
+    const groupConversations = conversations.filter(c => c.type === 'group');
 
-    const handleSendMessage = (e) => {
+    const handleSendMessage = async (e) => {
         e.preventDefault();
-        if (!message.trim()) return;
-        setChatHistory([...chatHistory, {
-            id: Date.now(),
-            user: 'You',
-            text: message,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            isMe: true
-        }]);
-        setMessage('');
+        if (!message.trim() || !activeConversation) return;
+
+        try {
+            await sendMessage(activeConversation.id, message);
+            setMessage('');
+        } catch (err) {
+            console.error('Failed to send message:', err);
+        }
     };
+
+    const handleJoinGroup = async () => {
+        try {
+            await joinGroup(inviteCode);
+            setShowJoinModal(false);
+            setInviteCode('');
+        } catch (err) {
+            alert(err.message || 'Failed to join group');
+        }
+    };
+
+    useEffect(() => {
+        fetchAvailableGroups();
+    }, [fetchAvailableGroups]);
 
     return (
         <Layout title="Community & Groups">
@@ -53,55 +76,62 @@ const StudyGroups = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)] lg:h-[calc(100vh-140px)]">
                     {/* Groups List - Hidden on mobile if group selected */}
                     <div className={`lg:col-span-1 space-y-4 overflow-y-auto ${selectedGroup ? 'hidden lg:block' : 'block'}`}>
-                        <Card
-                            className={`p-4 border-l-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all ${selectedGroup?.id === 1 ? 'border-l-primary-500 bg-slate-50 dark:bg-slate-800/50' : 'border-l-transparent'}`}
-                            onClick={() => setSelectedGroup({ id: 1, name: 'Database Wizards' })}
-                        >
-                            <div className="flex justify-between items-start mb-2">
-                                <h3 className="font-bold text-slate-800 dark:text-slate-100">Database Wizards</h3>
-                                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Active</span>
-                            </div>
-                            <p className="text-xs text-slate-500 mb-3">Mastering SQL, NoSQL and normalization.</p>
-                            <div className="flex items-center gap-2 text-xs text-slate-400">
-                                <Users size={14} /> 5 Members
-                            </div>
-                        </Card>
 
-                        <Card
-                            className={`p-4 opacity-70 hover:opacity-100 cursor-pointer transition-all ${selectedGroup?.id === 2 ? 'border-l-4 border-l-primary-500 bg-slate-50 dark:bg-slate-800/50 opacity-100' : ''}`}
-                            onClick={() => setSelectedGroup({ id: 2, name: 'React Developers' })}
-                        >
-                            <div className="flex justify-between items-start mb-2">
-                                <h3 className="font-bold text-slate-800 dark:text-slate-100">React Developers</h3>
-                                <span className="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">2h ago</span>
-                            </div>
-                            <p className="text-xs text-slate-500 mb-3">Frontend architecture and hooks.</p>
-                            <div className="flex items-center gap-2 text-xs text-slate-400">
-                                <Users size={14} /> 12 Members
-                            </div>
-                        </Card>
 
-                        <Button className="w-full gap-2 border-dashed border-2 border-slate-300 dark:border-slate-700 text-slate-500 hover:text-primary-600 hover:border-primary-500 bg-transparent">
-                            <Plus size={18} /> Create New Group
+                        {groupConversations.length === 0 ? (
+                            <div className="p-8 text-center text-slate-500">
+                                <p>You haven't joined any groups yet.</p>
+                                <Button
+                                    variant="primary"
+                                    className="mt-4"
+                                    onClick={() => setShowJoinModal(true)}
+                                >
+                                    Join a Group
+                                </Button>
+                            </div>
+                        ) : (
+                            groupConversations.map(conv => (
+                                <Card
+                                    key={conv.id}
+                                    className={`p-4 border-l-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all ${activeConversation?.id === conv.id ? 'border-l-primary-500 bg-slate-50 dark:bg-slate-800/50' : 'border-l-transparent'}`}
+                                    onClick={() => setActiveConversation(conv)}
+                                >
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h3 className="font-bold text-slate-800 dark:text-slate-100">{conv.groupName || 'Unnamed Group'}</h3>
+                                        <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Active</span>
+                                    </div>
+                                    <p className="text-xs text-slate-500 mb-3 truncate">{conv.lastMessage || 'No messages yet'}</p>
+                                    <div className="flex items-center gap-2 text-xs text-slate-400">
+                                        <Users size={14} /> {conv.participants?.length || 0} Members
+                                    </div>
+                                </Card>
+                            ))
+                        )}
+
+                        <Button
+                            className="w-full gap-2 border-dashed border-2 border-slate-300 dark:border-slate-700 text-slate-500 hover:text-primary-600 hover:border-primary-500 bg-transparent"
+                            onClick={() => setShowJoinModal(true)}
+                        >
+                            <Plus size={18} /> Join New Group
                         </Button>
                     </div>
 
                     {/* Chat Area - Hidden on mobile if NO group selected */}
-                    <Card className={`lg:col-span-2 flex-col h-full overflow-hidden !p-0 ${selectedGroup ? 'flex' : 'hidden lg:flex'}`}>
+                    <Card className={`lg:col-span-2 flex-col h-full overflow-hidden !p-0 ${activeConversation ? 'flex' : 'hidden lg:flex'}`}>
                         <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
                             <div className="flex items-center gap-3">
                                 <button
-                                    onClick={() => setSelectedGroup(null)}
+                                    onClick={() => setActiveConversation(null)}
                                     className="lg:hidden p-1 -ml-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"
                                 >
                                     <ChevronLeft size={24} />
                                 </button>
                                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold shrink-0">
-                                    {selectedGroup ? selectedGroup.name.substring(0, 2).toUpperCase() : 'DW'}
+                                    {activeConversation ? activeConversation.groupName?.substring(0, 2).toUpperCase() : '??'}
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-slate-800 dark:text-slate-100">{selectedGroup ? selectedGroup.name : 'Select a Group'}</h3>
-                                    <p className="text-xs text-slate-500">5 members online</p>
+                                    <h3 className="font-bold text-slate-800 dark:text-slate-100">{activeConversation ? activeConversation.groupName : 'Select a Group'}</h3>
+                                    <p className="text-xs text-slate-500">{activeConversation?.participants?.length || 0} members</p>
                                 </div>
                             </div>
                             <div className="flex gap-2">
@@ -111,20 +141,31 @@ const StudyGroups = () => {
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/30 dark:bg-black/10">
-                            {chatHistory.map(msg => (
-                                <div key={msg.id} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[85%] sm:max-w-[70%] rounded-2xl p-3 ${msg.isMe
-                                        ? 'bg-primary-600 text-white rounded-br-none'
-                                        : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-bl-none'
-                                        }`}>
-                                        <p className="text-sm">{msg.text}</p>
-                                        <div className={`text-[10px] mt-1 ${msg.isMe ? 'text-primary-100' : 'text-slate-400'}`}>
-                                            {!msg.isMe && <span className="font-bold mr-2">{msg.user}</span>}
-                                            {msg.time}
-                                        </div>
-                                    </div>
+                            {messages.length === 0 ? (
+                                <div className="h-full flex flex-col items-center justify-center text-slate-400 opacity-50">
+                                    <MessageSquare size={48} className="mb-4" />
+                                    <p>No messages in this group yet.</p>
+                                    <p className="text-xs">Say hi to your study group!</p>
                                 </div>
-                            ))}
+                            ) : (
+                                messages.map(msg => {
+                                    const isMe = msg.senderId === user?.id;
+                                    return (
+                                        <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                            <div className={`max-w-[85%] sm:max-w-[70%] rounded-2xl p-3 ${isMe
+                                                ? 'bg-primary-600 text-white rounded-br-none'
+                                                : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-bl-none'
+                                                }`}>
+                                                <p className="text-sm">{msg.content}</p>
+                                                <div className={`text-[10px] mt-1 ${isMe ? 'text-primary-100' : 'text-slate-400'}`}>
+                                                    {!isMe && <span className="font-bold mr-2">{msg.senderEmail || 'Member'}</span>}
+                                                    {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
                         </div>
 
                         <form onSubmit={handleSendMessage} className="p-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 flex gap-2">
@@ -187,6 +228,32 @@ const StudyGroups = () => {
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    </Card>
+                </div>
+            )}
+            {showJoinModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <Card className="w-full max-w-sm p-6 space-y-4 shadow-2xl border-none">
+                        <h2 className="text-xl font-bold">Join a Study Group</h2>
+                        <p className="text-sm text-slate-500">Enter the invite code provided by your group admin.</p>
+                        <input
+                            type="text"
+                            className="w-full p-3 bg-slate-100 dark:bg-slate-800 rounded-xl border-none outline-none focus:ring-2 focus:ring-primary-500 dark:text-white"
+                            placeholder="Invite Code (e.g. STUDY123)"
+                            value={inviteCode}
+                            onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                        />
+                        <div className="flex gap-3 pt-2">
+                            <Button variant="ghost" className="flex-1 text-slate-500" onClick={() => setShowJoinModal(false)}>Cancel</Button>
+                            <Button
+                                variant="primary"
+                                className="flex-1"
+                                onClick={handleJoinGroup}
+                                disabled={!inviteCode.trim()}
+                            >
+                                Join Group
+                            </Button>
                         </div>
                     </Card>
                 </div>

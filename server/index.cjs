@@ -157,6 +157,17 @@ app.post('/api/auth/register', async (req, res) => {
     });
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
+
+    // Sync to Supabase immediately to avoid data loss
+    try {
+        const cloudUser = await supabasePersistence.upsertToCollection('users', user);
+        if (cloudUser) {
+            db.update('users', user.id, { supabaseId: cloudUser.id });
+        }
+    } catch (syncErr) {
+        console.error('❌ Failed to sync new user to Supabase:', syncErr.message);
+    }
+
     const { password: _, ...userWithoutPassword } = user;
     res.status(201).json({ token, user: userWithoutPassword });
 });
@@ -174,8 +185,19 @@ app.post('/api/auth/login', async (req, res) => {
     if (!validPassword) return res.status(401).json({ error: 'Invalid credentials' });
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
+
+    // Sync to Supabase immediately to avoid data loss
+    try {
+        const cloudUser = await supabasePersistence.upsertToCollection('users', user);
+        if (cloudUser) {
+            db.update('users', user.id, { supabaseId: cloudUser.id });
+        }
+    } catch (syncErr) {
+        console.error('❌ Failed to sync new user to Supabase:', syncErr.message);
+    }
+
     const { password: _, ...userWithoutPassword } = user;
-    res.json({ token, user: userWithoutPassword });
+    res.json({ user: userWithoutPassword, token });
 });
 
 app.get('/api/auth/me', authenticateToken, (req, res) => {
@@ -525,7 +547,14 @@ app.post('/api/groups/join/:inviteCode', authenticateToken, async (req, res) => 
                     lastMessageTime: new Date().toISOString()
                 });
 
-                if (!updatedConv) {
+                if (updatedConv) {
+                    db.update('conversations', conversation.id, {
+                        participants: newParticipants,
+                        lastMessage: `${req.user.email} joined the group`,
+                        lastMessageTime: new Date().toISOString(),
+                        supabaseId: updatedConv.id
+                    });
+                } else {
                     db.update('conversations', conversation.id, {
                         participants: newParticipants,
                         lastMessage: `${req.user.email} joined the group`,
@@ -1341,25 +1370,8 @@ app.post('/api/ai/process', authenticateToken, async (req, res) => {
                 break;
 
             case 'chat':
-                prompt = `You are "ChatBoat", a premium AI Study Assistant for the StudySync platform.
-                Your goal is to help users with their studies, explain platform features, and provide motivation.
-                
-                Guidelines:
-                1. Be concise, friendly, and professional.
-                2. Use markdown for better readability (bolding, lists, etc.).
-                3. If asked about platform features:
-                   - Modules: Track subjects and progress.
-                   - Kanban: Drag & drop task management.
-                   - Notes: PDF uploads and rich text editing.
-                   - Flashcards: Spaced repetition for better recall.
-                   - Chat: Join study groups and share resources.
-                
-                User Message: "${payload.message}"
-                
-                Current Context: ${JSON.stringify(payload.context || {})}
-                
-                Respond as ChatBoat:`;
-                break;
+                const localResponse = getLocalChatBoatResponse(payload.message, payload.context);
+                return res.json({ text: localResponse });
 
             default:
                 return res.status(400).json({ error: 'Invalid AI action' });
@@ -1402,6 +1414,43 @@ app.post('/api/ai/process', authenticateToken, async (req, res) => {
         });
     }
 });
+
+// --- LOCAL AI BRAIN (ChatBoat) ---
+const getLocalChatBoatResponse = (message, context = {}) => {
+    const msg = message.toLowerCase();
+
+    // Feature explanations
+    if (msg.includes('module') || msg.includes('subject')) {
+        return "Modules help you organize your subjects! You can track your target study hours and see your progress for each topic. Try creating a new module to get started.";
+    }
+    if (msg.includes('kanban') || msg.includes('task') || msg.includes('board')) {
+        return "The Kanban board is your mission control for tasks! Drag and drop tasks between 'To Do', 'In Progress', and 'Completed' to stay organized.";
+    }
+    if (msg.includes('note') || msg.includes('pdf')) {
+        return "Notes let you upload PDFs and write rich-text summaries. Our AI can even help you generate quizzes and flashcards from your notes!";
+    }
+    if (msg.includes('flashcard') || msg.includes('recall')) {
+        return "Flashcards use spaced repetition to help you memorize critical info. Go to many of your modules and click 'Flashcards' to start practicing.";
+    }
+    if (msg.includes('chat') || msg.includes('group') || msg.includes('community')) {
+        return "Chat and Study Groups allow you to collaborate with others! You can join groups, start direct chats, and share your notes or flashcards with friends.";
+    }
+    if (msg.includes('xp') || msg.includes('level') || msg.includes('gamify')) {
+        return "You earn XP for studying and completing tasks! Level up to show off your progress on the leaderboard.";
+    }
+
+    // Motivational & Generic
+    const responses = [
+        "That's a great question! Keep pushing forward with your studies. Consistency is key!",
+        "I'm here to help you ace your exams. What else would you like to know about StudySync?",
+        "Remember to take breaks using the Pomodoro timer. A rested mind learns faster!",
+        "StudySync is designed to make your learning journey smoother. Is there a specific feature I can explain?",
+        "Focused study sessions today will lead to success tomorrow. You've got this!",
+        "Hello! I'm ChatBoat, your StudySync assistant. I can help you navigate the platform and stay motivated."
+    ];
+
+    return responses[Math.floor(Math.random() * responses.length)];
+};
 
 // SPA Catch-all (Ignore assets and API)
 app.get(/.*/, (req, res, next) => {
@@ -1503,27 +1552,35 @@ app.use((req, res) => {
 
 
 // START SERVER
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, async () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
-    // Run background sync
-    syncLocalDataToCloud();
+    // Run background sync immediately
+    await syncLocalDataToCloud();
+    // Then every 5 minutes
+    setInterval(syncLocalDataToCloud, 5 * 60 * 1000);
 });
 
 // Graceful shutdown handling
 const gracefulShutdown = (signal) => {
     console.log(`\n${signal} received. Starting graceful shutdown...`);
 
-    // Create final backup
-    console.log('📦 Creating final backup...');
+    // Create final backup and sync
+    console.log('📦 Creating final backup and syncing...');
     const backupPath = db.createBackup();
     if (backupPath) {
         console.log('✅ Final backup created successfully');
     }
 
-    // Close server
-    server.close(() => {
-        console.log('👋 Server closed. All data saved.');
-        process.exit(0);
+    syncLocalDataToCloud().then(() => {
+        console.log('☁️ Final sync completed');
+        // Close server
+        server.close(() => {
+            console.log('👋 Server closed. All data saved.');
+            process.exit(0);
+        });
+    }).catch(err => {
+        console.error('❌ Final sync failed:', err);
+        server.close(() => process.exit(1));
     });
 
     // Force close after 10 seconds
