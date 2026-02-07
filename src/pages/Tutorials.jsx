@@ -162,9 +162,9 @@ const Tutorials = () => {
                             className="px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 dark:text-slate-100"
                         >
                             <option value="">All Modules</option>
-                            {modules.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
                         </select>
                     </div>
+                )}
 
                 {/* Tutorial Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
