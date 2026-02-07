@@ -152,7 +152,8 @@ app.post('/api/auth/register', async (req, res) => {
         password: hashedPassword,
         xp: 0,
         level: 1,
-        badges: []
+        badges: [],
+        newly_registered: true
     });
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
@@ -228,28 +229,6 @@ app.post('/api/users/tutorial-status', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Error updating tutorial status:', error);
         res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-// Update Tutorial Status
-app.post('/api/users/tutorial-status', authenticateToken, async (req, res) => {
-    const { visited } = req.body;
-    try {
-        const user = db.getById('users', req.user.id);
-        if (user) {
-            db.update('users', req.user.id, { tutorial_completed: true });
-        }
-
-        // Also try to update Supabase if connected
-        const client = supabasePersistence.initSupabase();
-        if (client) {
-            await client.from('users').update({ tutorial_completed: true }).eq('id', req.user.id);
-        }
-
-        res.json({ success: true });
-    } catch (error) {
-        console.error('Error updating tutorial status:', error);
-        res.status(500).json({ error: 'Failed to update tutorial status' });
     }
 });
 
@@ -820,6 +799,92 @@ const collections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 'flashc
 
 const genericCollections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 'flashcardDecks', 'flashcards', 'calendarEvents', 'pomodoroSessions', 'tutorials'];
 
+app.get('/api/tutorials', authenticateToken, async (req, res) => {
+    try {
+        let tutorials = await supabasePersistence.getTutorials(req.user.id);
+        if (!tutorials) {
+            tutorials = db.get('tutorials').filter(t => t.userId === req.user.id);
+        }
+        res.json(tutorials);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch tutorials' });
+    }
+});
+
+app.post('/api/tutorials', authenticateToken, async (req, res) => {
+    try {
+        const tutorialData = { ...req.body, userId: req.user.id };
+        let tutorial = await supabasePersistence.insertTutorial(tutorialData);
+        if (!tutorial) {
+            tutorial = db.insert('tutorials', tutorialData);
+        }
+        res.json(tutorial);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to save tutorial' });
+    }
+});
+
+app.delete('/api/tutorials/:id', authenticateToken, async (req, res) => {
+    try {
+        const removed = await supabasePersistence.deleteTutorial(req.params.id);
+        if (!removed) {
+            db.delete('tutorials', req.params.id);
+        }
+        res.sendStatus(204);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to delete tutorial' });
+    }
+});
+
+app.get('/api/tutorials/:id', authenticateToken, async (req, res) => {
+    try {
+        let tutorial = await supabasePersistence.getTutorialById(req.params.id);
+        if (!tutorial) {
+            tutorial = db.find('tutorials', t => t.id === req.params.id);
+        }
+        if (!tutorial) return res.sendStatus(404);
+        if (tutorial.user_id === req.user.id || tutorial.userId === req.user.id) {
+            return res.json(tutorial);
+        }
+        const messages = db.get('messages') || [];
+        const conversations = db.get('conversations') || [];
+        const isShared = messages.some(m =>
+            m.sharedResource &&
+            String(m.sharedResource.id) === String(req.params.id) &&
+            conversations.some(c => c.id === m.conversationId && c.participants.includes(req.user.id))
+        );
+        if (isShared) return res.json(tutorial);
+        res.status(403).json({ error: 'Access denied' });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.post('/api/studyLogs', authenticateToken, (req, res) => {
+    const item = db.insert('studyLogs', { ...req.body, userId: req.user.id });
+    const xpAmount = Math.round(parseFloat(req.body.hours || 0) * 100);
+    const result = db.addXP(req.user.id, xpAmount);
+    res.json({ item, xpGain: xpAmount, ...result });
+});
+
+app.put('/api/tasks/:id', authenticateToken, async (req, res) => {
+    try {
+        const oldTask = db.find('tasks', t => t.id === req.params.id);
+        const item = db.update('tasks', req.params.id, req.body);
+        await supabasePersistence.upsertToCollection('tasks', item);
+        let xpGain = 0;
+        let gamification = null;
+        if (oldTask && oldTask.status !== 'Completed' && req.body.status === 'Completed') {
+            xpGain = 100;
+            gamification = db.addXP(req.user.id, xpGain);
+        }
+        res.json({ item, xpGain, ...gamification });
+    } catch (error) {
+        console.error('Error updating task:', error);
+        res.status(500).json({ error: 'Failed to update task and sync to cloud' });
+    }
+});
+
 const tableMap = {
     'modules': 'modules',
     'studyLogs': 'study_logs',
@@ -967,112 +1032,7 @@ genericCollections.forEach(collection => {
     });
 });
 
-// --- TUTORIALS OVERRIDES (Supabase) ---
-app.get('/api/tutorials', authenticateToken, async (req, res) => {
-    try {
-        let tutorials = await supabasePersistence.getTutorials(req.user.id);
-        if (!tutorials) {
-            tutorials = db.get('tutorials').filter(t => t.userId === req.user.id);
-        }
-        res.json(tutorials);
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch tutorials' });
-    }
-});
 
-app.post('/api/tutorials', authenticateToken, async (req, res) => {
-    try {
-        const tutorialData = { ...req.body, userId: req.user.id };
-        let tutorial = await supabasePersistence.insertTutorial(tutorialData);
-        if (!tutorial) {
-            tutorial = db.insert('tutorials', tutorialData);
-        }
-        res.json(tutorial);
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to save tutorial' });
-    }
-});
-
-app.delete('/api/tutorials/:id', authenticateToken, async (req, res) => {
-    try {
-        const removed = await supabasePersistence.deleteTutorial(req.params.id);
-        if (!removed) {
-            db.delete('tutorials', req.params.id);
-        }
-        res.sendStatus(204);
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to delete tutorial' });
-    }
-});
-
-// Single tutorial GET (Supabase + Local fallback)
-app.get('/api/tutorials/:id', authenticateToken, async (req, res) => {
-    try {
-        // Try Supabase first
-        let tutorial = await supabasePersistence.getTutorialById(req.params.id);
-
-        // Fallback to local
-        if (!tutorial) {
-            tutorial = db.find('tutorials', t => t.id === req.params.id);
-        }
-
-        if (!tutorial) return res.sendStatus(404);
-
-        if (tutorial.user_id === req.user.id || tutorial.userId === req.user.id) {
-            return res.json(tutorial);
-        }
-
-        // Check sharing permissions
-        const messages = db.get('messages') || [];
-        const conversations = db.get('conversations') || [];
-
-        const isShared = messages.some(m =>
-            m.sharedResource &&
-            String(m.sharedResource.id) === String(req.params.id) &&
-            conversations.some(c => c.id === m.conversationId && c.participants.includes(req.user.id))
-        );
-
-        if (isShared) {
-            return res.json(tutorial);
-        }
-
-        res.status(403).json({ error: 'Access denied' });
-    } catch (error) {
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-// --- GAMIFICATION OVERRIDES ---
-
-app.post('/api/studyLogs', authenticateToken, (req, res) => {
-    const item = db.insert('studyLogs', { ...req.body, userId: req.user.id });
-    const xpAmount = Math.round(parseFloat(req.body.hours || 0) * 100);
-    const result = db.addXP(req.user.id, xpAmount);
-    res.json({ item, xpGain: xpAmount, ...result });
-});
-
-app.put('/api/tasks/:id', authenticateToken, async (req, res) => {
-    try {
-        const oldTask = db.find('tasks', t => t.id === req.params.id);
-        const item = db.update('tasks', req.params.id, req.body);
-
-        // Sync to Supabase
-        await supabasePersistence.upsertToCollection('tasks', item);
-
-        let xpGain = 0;
-        let gamification = null;
-
-        if (oldTask && oldTask.status !== 'Completed' && req.body.status === 'Completed') {
-            xpGain = 100;
-            gamification = db.addXP(req.user.id, xpGain);
-        }
-
-        res.json({ item, xpGain, ...gamification });
-    } catch (error) {
-        console.error('Error updating task:', error);
-        res.status(500).json({ error: 'Failed to update task and sync to cloud' });
-    }
-});
 
 app.put('/api/flashcards/:id', authenticateToken, (req, res) => {
     const oldCard = db.find('flashcards', c => c.id === req.params.id);

@@ -37,13 +37,13 @@ const steps = [
 ];
 
 export default function OnboardingTutorial() {
-    const { user, login } = useAuth(); // login used to update user state locally if needed
+    const { user, login, updateUser } = useAuth(); // login used to update user state locally if needed
     const [isOpen, setIsOpen] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
 
     useEffect(() => {
-        // Check if tutorial has been completed
-        if (user && !user.tutorial_completed) {
+        // Only show tutorial if user is newly registered and hasn't completed it
+        if (user && user.newly_registered && !user.tutorial_completed) {
             // Small delay for better UX
             const timer = setTimeout(() => setIsOpen(true), 1500);
             return () => clearTimeout(timer);
@@ -62,17 +62,13 @@ export default function OnboardingTutorial() {
         try {
             await api.post('/users/tutorial-status', { visited: true });
 
-            // Update local user state to prevent showing again
+            // Update local user state immediately via context
             if (user) {
-                const updatedUser = { ...user, tutorial_completed: true };
-                localStorage.setItem('user', JSON.stringify(updatedUser));
+                updateUser({ tutorial_completed: true, newly_registered: false });
 
-                // Refresh auth state if method exists (assuming it triggers re-render)
-                if (typeof login === 'function') {
-                    // This is a bit hacky but ensures the context sees the update
-                    // In a real app, useAuth should have an updateUserData(updates) method
-                    window.dispatchEvent(new Event('storage'));
-                }
+                // Also update localStorage as a backup
+                const updatedUser = { ...user, tutorial_completed: true, newly_registered: false };
+                localStorage.setItem('user', JSON.stringify(updatedUser));
             }
 
             setIsOpen(false);

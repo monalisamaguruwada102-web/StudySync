@@ -25,6 +25,10 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
     };
 
+    const updateUser = (updates) => {
+        setUser(prev => prev ? { ...prev, ...updates } : null);
+    };
+
     useEffect(() => {
         checkAuth();
 
@@ -40,7 +44,8 @@ export const AuthProvider = ({ children }) => {
         user,
         authorized,
         loading,
-        refreshAuth: checkAuth
+        refreshAuth: checkAuth,
+        updateUser
     }), [user, authorized, loading]);
 
     return (
