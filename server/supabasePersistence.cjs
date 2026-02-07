@@ -129,6 +129,7 @@ const mapRow = (row) => {
         else if (key === 'completed_at') mapped.completedAt = row[key];
         else if (key === 'audio_episodes') mapped.audioEpisodes = row[key];
         else if (key === 'audio_path') mapped.audioPath = row[key];
+        else if (key === 'tutorial_completed') mapped.tutorialCompleted = row[key];
         else mapped[key] = row[key];
     }
     return mapped;
@@ -159,6 +160,8 @@ const mapToTable = (item) => {
         else if (key === 'completedAt') mapped.completed_at = item[key];
         else if (key === 'audioEpisodes') mapped.audio_episodes = item[key];
         else if (key === 'audioPath') mapped.audio_path = item[key];
+        else if (key === 'tutorialCompleted') mapped.tutorial_completed = item[key];
+        else if (key === 'tutorial_completed') mapped.tutorial_completed = item[key];
         else if (key === 'id') mapped.id = item[key];
         else if (key === 'topic') mapped.activity = item[key];
         else mapped[key] = item[key];
@@ -197,6 +200,22 @@ const mapMessage = (msg) => {
 
 
 // Generic Collection Helpers
+const fetchAll = async (table) => {
+    const client = initSupabase();
+    if (!client) return null;
+
+    const { data, error } = await client
+        .from(table)
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error(`Error fetching all from ${table}:`, error);
+        return null;
+    }
+    return data.map(mapRow);
+};
+
 const fetchCollection = async (table, userId) => {
     const client = initSupabase();
     if (!client) return null;
@@ -545,6 +564,7 @@ module.exports = {
     getGroup,
     getGroups,
     // Generic
+    fetchAll,
     fetchCollection,
     getById,
     upsertToCollection,

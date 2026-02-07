@@ -4,19 +4,25 @@
       "email": "joshuamujakari15@gmail.com",
       "password": "$2b$10$l03GqpkdfeZx1yv31CUq4eDSmUL.6pANJMiZqERFGNCvu1bHCOY0u",
       "id": "1769561085648",
-      "createdAt": "2026-01-28T00:44:45.648Z"
+      "createdAt": "2026-01-28T00:44:45.648Z",
+      "supabaseId": "1769561085648",
+      "updatedAt": "2026-02-07T19:04:31.907Z"
     },
     {
       "email": "monalisamaguruwada@gmail.com",
       "password": "$2b$10$1A8q/9vTzMc5sfmVdn8hzuVZk41Ict4CV06Ipztb9IaL1YZWR8W0S",
       "id": "1769561085649",
-      "createdAt": "2026-01-28T00:45:00.000Z"
+      "createdAt": "2026-01-28T00:45:00.000Z",
+      "supabaseId": "1769561085649",
+      "updatedAt": "2026-02-07T19:04:32.318Z"
     },
     {
       "email": "andrewmaposa27@gmail.com",
       "password": "$2b$10$B81YDknsPmNqcvVbNi/SYeV0Udw3oRAVoPNQ5TGYo7oJZYBXUMkmK",
       "id": "1738640325000",
-      "createdAt": "2026-02-03T19:38:45.000Z"
+      "createdAt": "2026-02-03T19:38:45.000Z",
+      "supabaseId": "1738640325000",
+      "updatedAt": "2026-02-07T19:04:32.634Z"
     },
     {
       "email": "test_verified_ps@example.com",
@@ -25,7 +31,9 @@
       "level": 1,
       "badges": [],
       "id": "1770285120974",
-      "createdAt": "2026-02-05T09:52:00.975Z"
+      "createdAt": "2026-02-05T09:52:00.975Z",
+      "supabaseId": "1770285120974",
+      "updatedAt": "2026-02-07T19:04:33.029Z"
     },
     {
       "email": "testuser_local@example.com",
@@ -34,7 +42,9 @@
       "level": 1,
       "badges": [],
       "id": "1770288071029",
-      "createdAt": "2026-02-05T10:41:11.029Z"
+      "createdAt": "2026-02-05T10:41:11.029Z",
+      "supabaseId": "1770288071029",
+      "updatedAt": "2026-02-07T19:04:33.332Z"
     },
     {
       "email": "test-agent-1770288292269@example.com",

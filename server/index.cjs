@@ -255,31 +255,48 @@ app.post('/api/users/tutorial-status', authenticateToken, async (req, res) => {
 });
 
 // --- XP ENDPOINT ---
-app.post('/api/user/xp', authenticateToken, (req, res) => {
+app.post('/api/user/xp', authenticateToken, async (req, res) => {
     const { amount } = req.body;
     if (!amount || typeof amount !== 'number') {
         return res.status(400).json({ error: 'Invalid XP amount' });
     }
     const result = db.addXP(req.user.id, amount);
     if (!result) return res.status(404).json({ error: 'User not found' });
+
+    // Sync to Supabase immediately
+    try {
+        await supabasePersistence.upsertToCollection('users', result.user);
+    } catch (syncErr) {
+        console.warn('Could not sync XP to Supabase:', syncErr.message);
+    }
+
     res.json(result);
 });
 
 // --- CHAT ENDPOINTS ---
 
 // Get all users (for user selector)
-app.get('/api/users/all', authenticateToken, (req, res) => {
-    const users = db.get('users') || [];
-    // Return basic user info (no passwords) and remove test accounts
-    const userList = users
-        .filter(u => u.email && !u.email.endsWith('@example.com'))
-        .map(u => ({
-            id: u.id,
-            email: u.email,
-            level: u.level || 1,
-            xp: u.xp || 0
-        }));
-    res.json(userList);
+app.get('/api/users/all', authenticateToken, async (req, res) => {
+    try {
+        let users = await supabasePersistence.fetchAll('users');
+        if (!users || users.length === 0) {
+            users = db.get('users') || [];
+        }
+
+        // Return basic user info (no passwords) and remove test accounts
+        const userList = users
+            .filter(u => u.email && !u.email.endsWith('@example.com'))
+            .map(u => ({
+                id: u.id,
+                email: u.email,
+                level: u.level || 1,
+                xp: u.xp || 0
+            }));
+        res.json(userList);
+    } catch (error) {
+        console.error('Error in /api/users/all:', error);
+        res.status(500).json({ error: 'Failed to fetch users' });
+    }
 });
 
 // Get user conversations (with participant details)
@@ -870,10 +887,18 @@ app.get('/api/tutorials/:id', authenticateToken, async (req, res) => {
     }
 });
 
-app.post('/api/studyLogs', authenticateToken, (req, res) => {
+app.post('/api/studyLogs', authenticateToken, async (req, res) => {
     const item = db.insert('studyLogs', { ...req.body, userId: req.user.id });
     const xpAmount = Math.round(parseFloat(req.body.hours || 0) * 100);
     const result = db.addXP(req.user.id, xpAmount);
+
+    // Sync to Supabase
+    try {
+        await supabasePersistence.upsertToCollection('users', result.user);
+    } catch (err) {
+        console.warn('XP sync failed for study logs:', err.message);
+    }
+
     res.json({ item, xpGain: xpAmount, ...result });
 });
 
@@ -899,6 +924,13 @@ app.put('/api/tasks/:id', authenticateToken, async (req, res) => {
         if (req.body.status === 'Completed') {
             xpGain = 100;
             gamification = db.addXP(req.user.id, xpGain);
+
+            // Sync user state with new XP to Supabase
+            try {
+                await supabasePersistence.upsertToCollection('users', gamification.user);
+            } catch (syncErr) {
+                console.warn('Could not sync user XP to Supabase during task update:', syncErr.message);
+            }
         }
 
         res.json({ item, xpGain, ...gamification });
@@ -909,6 +941,7 @@ app.put('/api/tasks/:id', authenticateToken, async (req, res) => {
 });
 
 const tableMap = {
+    'users': 'users',
     'modules': 'modules',
     'studyLogs': 'study_logs',
     'tasks': 'tasks',
@@ -1057,7 +1090,7 @@ genericCollections.forEach(collection => {
 
 
 
-app.put('/api/flashcards/:id', authenticateToken, (req, res) => {
+app.put('/api/flashcards/:id', authenticateToken, async (req, res) => {
     const oldCard = db.find('flashcards', c => c.id === req.params.id);
     const item = db.update('flashcards', req.params.id, req.body);
 
@@ -1067,15 +1100,30 @@ app.put('/api/flashcards/:id', authenticateToken, (req, res) => {
     if (oldCard && req.body.level > oldCard.level) {
         xpGain = 50;
         gamification = db.addXP(req.user.id, xpGain);
+
+        // Sync to Supabase
+        try {
+            await supabasePersistence.upsertToCollection('users', gamification.user);
+        } catch (err) {
+            console.warn('XP sync failed for flashcard level up:', err.message);
+        }
     }
 
     res.json({ item, xpGain, ...gamification });
 });
 
-app.post('/api/pomodoroSessions', authenticateToken, (req, res) => {
+app.post('/api/pomodoroSessions', authenticateToken, async (req, res) => {
     const item = db.insert('pomodoroSessions', { ...req.body, userId: req.user.id });
     const xpGain = 50;
     const result = db.addXP(req.user.id, xpGain);
+
+    // Sync to Supabase
+    try {
+        await supabasePersistence.upsertToCollection('users', result.user);
+    } catch (err) {
+        console.warn('XP sync failed for pomodoro session:', err.message);
+    }
+
     res.json({ item, xpGain, ...result });
 });
 
@@ -1468,6 +1516,19 @@ const syncLocalDataToCloud = async () => {
     console.log('🔄 Starting background synchronization to Supabase...');
 
     try {
+        // 0. Sync Users
+        const users = db.get('users') || [];
+        for (const localUser of users) {
+            if (!localUser.supabaseId) {
+                console.log(`📡 Syncing user: ${localUser.email}`);
+                // Use upsert to handle existing emails or new mappings
+                const cloudUser = await supabasePersistence.upsertToCollection('users', localUser);
+                if (cloudUser) {
+                    db.update('users', localUser.id, { supabaseId: cloudUser.id });
+                }
+            }
+        }
+
         // 1. Sync Groups
         const groups = db.get('groups') || [];
         for (const localGroup of groups) {
