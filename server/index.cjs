@@ -175,7 +175,22 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
 
-    const user = db.find('users', u => u.email === email);
+    let user = db.find('users', u => u.email === email);
+
+    // Initial check: if not found locally, try finding in Supabase (Cloud Fallback)
+    if (!user) {
+        console.log(`User ${email} not found locally, checking Supabase...`);
+        const cloudUser = await supabasePersistence.getItemByField('users', 'email', email);
+
+        if (cloudUser) {
+            // Found in cloud! Sync it down.
+            console.log(`User ${email} found in Supabase. Syncing to local DB.`);
+            user = db.insert('users', {
+                ...cloudUser,
+                supabaseId: cloudUser.id // Ensure we track the cloud ID
+            });
+        }
+    }
 
     if (!user) {
         return res.status(401).json({ error: 'Invalid credentials' });

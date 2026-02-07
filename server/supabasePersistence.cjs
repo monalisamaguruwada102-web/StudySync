@@ -274,6 +274,25 @@ const getById = async (table, id) => {
     return mapRow(data, table);
 };
 
+const getItemByField = async (table, field, value) => {
+    const client = initSupabase();
+    if (!client) return null;
+
+    const { data, error } = await client
+        .from(table)
+        .select('*')
+        .eq(field, value)
+        .single();
+
+    if (error) {
+        if (error.code !== 'PGRST116') {
+            console.error(`Error fetching by ${field} from ${table}:`, error);
+        }
+        return null;
+    }
+    return mapRow(data, table);
+};
+
 const upsertToCollection = async (table, item) => {
     const client = initSupabase();
     if (!client) return null;
@@ -588,6 +607,7 @@ module.exports = {
     fetchAll,
     fetchCollection,
     getById,
+    getItemByField,
     upsertToCollection,
     deleteFromCollection
 };
