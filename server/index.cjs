@@ -283,8 +283,8 @@ app.get('/api/flashcardDecks/shared/:id', authenticateToken, async (req, res) =>
 
 // --- TUTORIALS ---
 app.get('/api/tutorials', authenticateToken, (req, res) => {
-    const user = db.find('users', u => u.id === req.user.id);
-    res.json(user.settings || {});
+    const tutorials = db.filter('tutorials', t => t.userId === req.user.id);
+    res.json(tutorials);
 });
 
 // --- PER-USER SETTINGS ---
@@ -682,7 +682,7 @@ app.get('/api/notes/shared/:id', authenticateToken, async (req, res) => {
         let note = await supabasePersistence.getById('notes', id);
 
         if (!note) {
-            note = db.getById('notes', id);
+            note = db.find('notes', n => n.id === id);
         }
 
         if (!note) {
@@ -704,7 +704,7 @@ app.get('/api/tutorials/shared/:id', authenticateToken, async (req, res) => {
         let tutorial = await supabasePersistence.getById('tutorials', id);
 
         if (!tutorial) {
-            tutorial = db.getById('tutorials', id);
+            tutorial = db.find('tutorials', t => t.id === id);
         }
 
         if (!tutorial) {
@@ -728,7 +728,7 @@ app.get('/api/flashcardDecks/shared/:id', authenticateToken, async (req, res) =>
 
         if (!deck) {
             // Check "flashcardDecks" collection in local DB
-            deck = db.getById('flashcardDecks', id);
+            deck = db.find('flashcardDecks', d => d.id === id);
         }
 
         if (!deck) {
