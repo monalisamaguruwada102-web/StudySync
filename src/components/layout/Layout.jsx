@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import BackgroundBubbles from '../ui/BackgroundBubbles';
 import FloatingParticles from '../ui/FloatingParticles';
+import ImageSlideshow from '../ui/ImageSlideshow';
 import OnboardingTutorial from '../onboarding/OnboardingTutorial';
 import HelpAssistant from '../help/HelpAssistant';
 
@@ -12,6 +13,7 @@ const Layout = ({ children, title = 'Dashboard' }) => {
 
     return (
         <div className="min-h-screen bg-transparent flex transition-colors duration-300">
+            <ImageSlideshow />
             <BackgroundBubbles />
             <FloatingParticles count={15} />
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
