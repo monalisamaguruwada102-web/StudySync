@@ -824,66 +824,8 @@ const collections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 'flashc
 
 const genericCollections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 'flashcardDecks', 'flashcards', 'calendarEvents', 'pomodoroSessions', 'tutorials'];
 
-app.get('/api/tutorials', authenticateToken, async (req, res) => {
-    try {
-        let tutorials = await supabasePersistence.getTutorials(req.user.id);
-        if (!tutorials) {
-            tutorials = db.get('tutorials').filter(t => t.userId === req.user.id);
-        }
-        res.json(tutorials);
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch tutorials' });
-    }
-});
+// Redundant specific tutorial routes removed to use consolidated generic routes
 
-app.post('/api/tutorials', authenticateToken, async (req, res) => {
-    try {
-        const tutorialData = { ...req.body, userId: req.user.id };
-        let tutorial = await supabasePersistence.insertTutorial(tutorialData);
-        if (!tutorial) {
-            tutorial = db.insert('tutorials', tutorialData);
-        }
-        res.json(tutorial);
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to save tutorial' });
-    }
-});
-
-app.delete('/api/tutorials/:id', authenticateToken, async (req, res) => {
-    try {
-        const removed = await supabasePersistence.deleteTutorial(req.params.id);
-        if (!removed) {
-            db.delete('tutorials', req.params.id);
-        }
-        res.sendStatus(204);
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to delete tutorial' });
-    }
-});
-
-app.get('/api/tutorials/:id', authenticateToken, async (req, res) => {
-    try {
-        let tutorial = await supabasePersistence.getTutorialById(req.params.id);
-        if (!tutorial) {
-            tutorial = db.find('tutorials', t => t.id === req.params.id);
-        }
-        if (!tutorial) return res.sendStatus(404);
-        if (tutorial.user_id === req.user.id || tutorial.userId === req.user.id) {
-            return res.json(tutorial);
-        }
-        const messages = db.get('messages') || [];
-        const conversations = db.get('conversations') || [];
-        const isShared = messages.some(m =>
-            m.sharedResource &&
-            String(m.sharedResource.id) === String(req.params.id) &&
-            conversations.some(c => c.id === m.conversationId && c.participants.includes(req.user.id))
-        );
-        if (isShared) return res.json(tutorial);
-        res.status(403).json({ error: 'Access denied' });
-    } catch (error) {
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
 
 app.post('/api/studyLogs', authenticateToken, async (req, res) => {
     const item = db.insert('studyLogs', { ...req.body, userId: req.user.id });
