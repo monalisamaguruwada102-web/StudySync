@@ -478,6 +478,9 @@ app.post('/api/groups/join/:inviteCode', authenticateToken, async (req, res) => 
                         lastMessageTime: new Date().toISOString()
                     });
                 }
+            } else {
+                // User is already a participant in the conversation, possibly a retry
+                return res.status(400).json({ error: 'You are already in this group chat.' });
             }
         }
 
@@ -492,6 +495,28 @@ app.post('/api/groups/join/:inviteCode', authenticateToken, async (req, res) => 
             error: 'Failed to join group due to a server error.',
             details: error.message
         });
+    }
+});
+
+// Shared note fetch (Read-only access to any note by ID)
+app.get('/api/notes/shared/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        let note = await supabasePersistence.getById('notes', id);
+
+        if (!note) {
+            note = db.getById('notes', id);
+        }
+
+        if (!note) {
+            return res.status(404).json({ error: 'Note not found or link has expired.' });
+        }
+
+        // Return note without ownership restriction for this specific path
+        res.json(note);
+    } catch (error) {
+        console.error('Error fetching shared note:', error);
+        res.status(500).json({ error: 'System error fetching shared note.' });
     }
 });
 

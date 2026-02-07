@@ -142,7 +142,10 @@ const Kanban = () => {
                                         <div className="flex items-center gap-2">
                                             <select
                                                 value={task.status}
-                                                onChange={(e) => onDrop({ dataTransfer: { getData: () => task.id }, preventDefault: () => { } }, e.target.value)}
+                                                onChange={async (e) => {
+                                                    await taskService.update(task.id, { status: e.target.value });
+                                                    refreshTasks();
+                                                }}
                                                 className="text-[10px] font-bold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-primary-500/30 text-slate-500 hover:text-primary-600 transition-colors cursor-pointer"
                                                 onClick={(e) => e.stopPropagation()}
                                             >

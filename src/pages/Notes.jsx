@@ -10,17 +10,20 @@ import { noteService, moduleService } from '../services/firestoreService';
 import { Plus, StickyNote, Trash2, Book, ExternalLink, FileText, Code, Play, Sparkles, Wand2, Mic, MicOff, BrainCircuit, Share2, Link } from 'lucide-react';
 import aiService from '../services/aiService';
 import { supabase } from '../services/supabase';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import ShareToChatModal from '../components/ui/ShareToChatModal';
 
 const Notes = () => {
     const { data: notes, loading, refresh } = useFirestore(noteService.getAll);
     const { data: modules } = useFirestore(moduleService.getAll);
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showShareModal, setShowShareModal] = useState(false);
     const [noteToShare, setNoteToShare] = useState(null);
     const [highlightedNoteId, setHighlightedNoteId] = useState(null);
+    const [sharedNote, setSharedNote] = useState(null);
+    const [sharedNoteLoading, setSharedNoteLoading] = useState(false);
 
     const getYouTubeId = (url) => {
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -229,206 +232,338 @@ const Notes = () => {
 
     const handleCopyExternalLink = (note) => {
         const url = `${window.location.origin}/notes?id=${note.id}`;
-        navigator.clipboard.writeText(url);
-        alert('External link copied to clipboard! Anyone who clicks it will be redirected here after logging in.');
+        const shareText = `Check out this note on StudySync: ${note.title}\n${url}`;
+        navigator.clipboard.writeText(shareText);
+        alert('External link copied to clipboard! The link includes the note title and StudySync branding.');
     };
 
-    // Deep Link Effect
+    // Deep Link & Isolation Effect
     useEffect(() => {
         const noteId = searchParams.get('id');
-        if (noteId && notes.length > 0) {
+        if (noteId) {
             setHighlightedNoteId(noteId);
-            const element = document.getElementById(`note-${noteId}`);
-            if (element) {
-                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Check if note is already in the list
+            const existingNote = notes.find(n => n.id === noteId);
+            if (existingNote) {
+                setSharedNote(existingNote);
+                document.title = `StudySync - ${existingNote.title}`;
+                const element = document.getElementById(`note-${noteId}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            } else {
+                // Fetch shared note directly from backend
+                setSharedNoteLoading(true);
+                import('../services/api').then(api => {
+                    api.default.get(`/notes/shared/${noteId}`)
+                        .then(res => {
+                            setSharedNote(res.data);
+                            document.title = `StudySync - ${res.data.title}`;
+                        })
+                        .catch(err => {
+                            console.error('Failed to fetch shared note:', err);
+                        })
+                        .finally(() => setSharedNoteLoading(false));
+                });
             }
+        } else {
+            setSharedNote(null);
+            document.title = 'StudySync - Notes';
         }
     }, [searchParams, notes]);
 
     return (
-        <Layout title="Notes & Resources">
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Personal Notes</h1>
-                    <p className="text-slate-500 dark:text-slate-400">Capture key concepts and link important resources.</p>
+        <Layout title={sharedNote ? `Shared Note: ${sharedNote.title}` : "Notes & Resources"}>
+            {!sharedNote && (
+                <div className="flex justify-between items-center mb-8">
+                    <h2 className="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tighter">My Library</h2>
+                    <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2">
+                        <Plus size={20} />
+                        Add Note
+                    </Button>
                 </div>
-                <Button
-                    onClick={() => setIsModalOpen(true)}
-                    className="flex items-center gap-2 bg-[#ff5a1f] hover:bg-[#e64a19] text-white border-none shadow-lg shadow-orange-500/20 px-6 py-3 rounded-2xl transition-all"
-                >
-                    <Plus size={20} />
-                    <span className="font-bold">Add Note</span>
-                </Button>
-            </div>
+            )}
+
+            {!sharedNote && (
+                <div className="mb-8 p-6 bg-white dark:bg-slate-900/50 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-4 items-center">
+                    <div className="relative flex-1 w-full">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                            <Book size={18} />
+                        </div>
+                        <Input
+                            placeholder="Search your notes..."
+                            className="pl-11 rounded-2xl border-slate-100 dark:border-slate-700 focus:ring-primary-500/10"
+                        // Search logic would go here
+                        />
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {notes.map((note) => (
+                {sharedNote ? (
                     <Card
-                        key={note.id}
-                        id={`note-${note.id}`}
-                        className={`flex flex-col h-full hover:shadow-xl transition-all duration-300 border-none bg-white dark:bg-slate-900/50 shadow-sm hover:-translate-y-1 ${highlightedNoteId === note.id ? 'ring-2 ring-primary-500 shadow-lg shadow-primary-500/20' : ''}`}
+                        id={`note-${sharedNote.id}`}
+                        className="flex flex-col h-full ring-2 ring-primary-500 shadow-xl shadow-primary-500/10 border-none bg-white dark:bg-slate-900/50"
                     >
+                        {/* Note card content here (I need to verify the card content structure) */}
                         <div className="flex justify-between items-start mb-4">
-                            <div className="flex items-center gap-2 px-3 py-1.5 bg-[#f1f5f9] dark:bg-slate-800/80 rounded-lg text-[10px] uppercase font-black tracking-wider text-[#475569] dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50">
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 dark:bg-primary-900/20 rounded-lg text-[10px] uppercase font-black tracking-wider text-primary-600 dark:text-primary-400 border border-primary-100 dark:border-primary-800/50">
                                 <Book size={10} />
-                                <span>{getModuleName(note.moduleId)}</span>
+                                <span>{getModuleName(sharedNote.moduleId)}</span>
                             </div>
-                            <div className="flex items-center gap-1">
-                                <Button
-                                    variant="ghost"
-                                    onClick={() => {
-                                        setNoteToShare({ ...note, type: 'note' });
-                                        setShowShareModal(true);
-                                    }}
-                                    className="!p-1.5 text-slate-400 hover:text-emerald-500"
-                                    title="Share to Chat"
-                                >
-                                    <Share2 size={14} />
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    onClick={() => handleCopyExternalLink(note)}
-                                    className="!p-1.5 text-slate-400 hover:text-blue-500"
-                                    title="Copy Share Link"
-                                >
-                                    <Link size={14} />
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    onClick={() => handleGenerateQuiz(note)}
-                                    className={`!p-1.5 ${generatingQuizId === note.id ? 'text-purple-500 animate-spin' : 'text-slate-400 hover:text-purple-500'}`}
-                                    disabled={generatingQuizId !== null}
-                                    title="Generate AI Quiz"
-                                >
-                                    <BrainCircuit size={14} />
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    onClick={() => handleSummarize(note)}
-                                    className={`!p-1.5 ${summarizingId === note.id ? 'text-primary-500 animate-pulse' : 'text-slate-400 hover:text-primary-500'}`}
-                                    disabled={summarizingId !== null}
-                                    title="AI Summarize"
-                                >
-                                    <Wand2 size={14} />
-                                </Button>
-                                <Button variant="ghost" onClick={() => handleDelete(note.id)} className="!p-1.5 text-slate-400 hover:text-red-500">
-                                    <Trash2 size={14} />
-                                </Button>
+                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-slate-800/50 px-2 py-1 rounded-md flex items-center gap-1">
+                                <ExternalLink size={10} /> Shared Resource
                             </div>
                         </div>
 
-                        <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
-                            <StickyNote size={18} className="text-primary-500" />
-                            {note.title}
+                        <h3 className="text-xl font-black text-slate-800 dark:text-white mb-3">
+                            {sharedNote.title}
                         </h3>
 
-                        {getYouTubeId(note.resourceLink) && (
-                            <div className="mb-4 aspect-video rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800">
-                                <iframe
-                                    className="w-full h-full"
-                                    src={`https://www.youtube.com/embed/${getYouTubeId(note.resourceLink)}`}
-                                    title="YouTube video player"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                ></iframe>
-                            </div>
-                        )}
-
-                        <div className="flex-1">
-                            {note.content.includes('```') || note.content.includes('{') ? (
-                                <div className="relative group/code">
-                                    <pre className="text-[11px] font-mono bg-slate-900 text-slate-100 p-3 rounded-xl overflow-x-auto border border-slate-700">
-                                        <code>{note.content}</code>
-                                    </pre>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); handleRunCode(note.content); }}
-                                        className="absolute top-2 right-2 p-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg opacity-0 group-hover/code:opacity-100 transition-all flex items-center gap-1.5 text-[10px] font-bold"
-                                    >
-                                        <Play size={10} fill="currentColor" />
-                                        RUN
-                                    </button>
-                                </div>
-                            ) : (
-                                <p className="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-wrap line-clamp-6">
-                                    {note.content}
-                                </p>
-                            )}
+                        <div className="flex-1 text-sm text-slate-600 dark:text-slate-400 whitespace-pre-wrap leading-relaxed mb-6">
+                            {sharedNote.content}
                         </div>
 
-                        {note.resourceLink && (
-                            <a
-                                href={note.resourceLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="mt-4 flex items-center gap-2 text-primary-600 text-xs font-semibold hover:underline"
-                            >
-                                {getYouTubeId(note.resourceLink) ? <Play size={12} /> : <ExternalLink size={12} />}
-                                {getYouTubeId(note.resourceLink) ? 'Watch Tutorial' : 'Linked Resource'}
-                            </a>
+                        {sharedNote.resourceLink && (
+                            <div className="mb-4">
+                                {getYouTubeId(sharedNote.resourceLink) ? (
+                                    <iframe
+                                        className="w-full aspect-video rounded-2xl shadow-lg border-2 border-slate-100 dark:border-slate-800"
+                                        src={`https://www.youtube.com/embed/${getYouTubeId(sharedNote.resourceLink)}`}
+                                        allowFullScreen
+                                        title="YouTube video player"
+                                    />
+                                ) : (
+                                    <a
+                                        href={sharedNote.resourceLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/80 rounded-2xl group transition-all hover:bg-white dark:hover:bg-slate-800 border border-transparent hover:border-primary-500/20 shadow-sm"
+                                    >
+                                        <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/40 flex items-center justify-center text-primary-600 group-hover:scale-110 transition-transform">
+                                            <ExternalLink size={20} />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-0.5">Reference Link</p>
+                                            <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{sharedNote.resourceLink}</p>
+                                        </div>
+                                    </a>
+                                )}
+                            </div>
                         )}
 
-                        {/* Display audio episodes if available */}
-                        {note.audioEpisodes && note.audioEpisodes.length > 0 && (
-                            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
-                                    <Mic size={10} /> Voice Notes ({note.audioEpisodes.length} {note.audioEpisodes.length === 1 ? 'Episode' : 'Episodes'})
-                                </p>
-                                <div className="space-y-2">
-                                    {note.audioEpisodes.map((ep, idx) => (
-                                        <div key={idx} className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg">
-                                            <p className="text-[9px] text-slate-500 dark:text-slate-400 mb-1 font-medium">
-                                                Episode {ep.episode || idx + 1}
-                                            </p>
-                                            <audio
-                                                controls
-                                                preload="metadata"
-                                                src={ep.url}
-                                                className="w-full h-7"
-                                                onError={(e) => {
-                                                    console.error('Audio playback error:', e);
-                                                    e.target.style.opacity = '0.5';
-                                                }}
-                                                controlsList="nodownload"
-                                            />
-                                        </div>
-                                    ))}
+                        {sharedNote.pdfPath && (
+                            <div className="mb-4">
+                                <a
+                                    href={sharedNote.pdfPath}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl group transition-all hover:bg-white dark:hover:bg-emerald-900/30 border border-emerald-100/50 dark:border-emerald-800/50 shadow-sm"
+                                >
+                                    <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
+                                        <FileText size={20} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-bold text-emerald-600/60 dark:text-emerald-400/60 uppercase tracking-widest mb-0.5">Attached PDF</p>
+                                        <p className="text-sm font-bold text-emerald-700 dark:text-emerald-200 truncate">View Document</p>
+                                    </div>
+                                    <ExternalLink size={16} className="text-emerald-400" />
+                                </a>
+                            </div>
+                        )}
+
+                        {sharedNote.audioEpisodes && sharedNote.audioEpisodes.length > 0 && (
+                            <div className="space-y-2 mt-2">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-1">Audio Sessions</p>
+                                {sharedNote.audioEpisodes.map((ep, idx) => (
+                                    <div key={idx} className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700/50 group hover:border-primary-500/30 transition-all">
+                                        <audio controls src={ep.url} className="h-8 flex-1" />
+                                        <span className="text-[10px] font-black text-slate-400 pr-2">EP{ep.episode}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+                            <Button
+                                variant="ghost"
+                                className="w-full text-slate-400 hover:text-primary-500"
+                                onClick={() => navigate('/notes')}
+                            >
+                                Back to My Library
+                            </Button>
+                        </div>
+                    </Card>
+                ) : (
+                    notes.map((note) => (
+                        <Card
+                            key={note.id}
+                            id={`note-${note.id}`}
+                            className={`flex flex-col h-full hover:shadow-xl transition-all duration-300 border-none bg-white dark:bg-slate-900/50 shadow-sm hover:-translate-y-1 ${highlightedNoteId === note.id ? 'ring-2 ring-primary-500 shadow-lg shadow-primary-500/20' : ''}`}
+                        >
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-[#f1f5f9] dark:bg-slate-800/80 rounded-lg text-[10px] uppercase font-black tracking-wider text-[#475569] dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50">
+                                    <Book size={10} />
+                                    <span>{getModuleName(note.moduleId)}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <Button
+                                        variant="ghost"
+                                        onClick={() => {
+                                            setNoteToShare({ ...note, type: 'note' });
+                                            setShowShareModal(true);
+                                        }}
+                                        className="!p-1.5 text-slate-400 hover:text-emerald-500"
+                                        title="Share to Chat"
+                                    >
+                                        <Share2 size={14} />
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        onClick={() => handleCopyExternalLink(note)}
+                                        className="!p-1.5 text-slate-400 hover:text-blue-500"
+                                        title="Copy Share Link"
+                                    >
+                                        <Link size={14} />
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        onClick={() => handleGenerateQuiz(note)}
+                                        className={`!p-1.5 ${generatingQuizId === note.id ? 'text-purple-500 animate-spin' : 'text-slate-400 hover:text-purple-500'}`}
+                                        disabled={generatingQuizId !== null}
+                                        title="Generate AI Quiz"
+                                    >
+                                        <BrainCircuit size={14} />
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        onClick={() => handleSummarize(note)}
+                                        className={`!p-1.5 ${summarizingId === note.id ? 'text-primary-500 animate-pulse' : 'text-slate-400 hover:text-primary-500'}`}
+                                        disabled={summarizingId !== null}
+                                        title="AI Summarize"
+                                    >
+                                        <Wand2 size={14} />
+                                    </Button>
+                                    <Button variant="ghost" onClick={() => handleDelete(note.id)} className="!p-1.5 text-slate-400 hover:text-red-500">
+                                        <Trash2 size={14} />
+                                    </Button>
                                 </div>
                             </div>
-                        )}
 
-                        {/* Fallback for old single audioPath format */}
-                        {note.audioPath && !note.audioEpisodes && (
-                            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-                                    <Mic size={10} /> Voice Note
-                                </p>
-                                <audio
-                                    controls
-                                    preload="metadata"
-                                    src={note.audioPath}
-                                    className="w-full h-8"
-                                    onError={(e) => {
-                                        console.error('Audio playback error:', e);
-                                        e.target.style.opacity = '0.5';
-                                    }}
-                                    controlsList="nodownload"
-                                />
+                            <h3 className="font-bold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
+                                <StickyNote size={18} className="text-primary-500" />
+                                {note.title}
+                            </h3>
+
+                            {getYouTubeId(note.resourceLink) && (
+                                <div className="mb-4 aspect-video rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800">
+                                    <iframe
+                                        className="w-full h-full"
+                                        src={`https://www.youtube.com/embed/${getYouTubeId(note.resourceLink)}`}
+                                        title="YouTube video player"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                    ></iframe>
+                                </div>
+                            )}
+
+                            <div className="flex-1">
+                                {note.content.includes('```') || note.content.includes('{') ? (
+                                    <div className="relative group/code">
+                                        <pre className="text-[11px] font-mono bg-slate-900 text-slate-100 p-3 rounded-xl overflow-x-auto border border-slate-700">
+                                            <code>{note.content}</code>
+                                        </pre>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleRunCode(note.content); }}
+                                            className="absolute top-2 right-2 p-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg opacity-0 group-hover/code:opacity-100 transition-all flex items-center gap-1.5 text-[10px] font-bold"
+                                        >
+                                            <Play size={10} fill="currentColor" />
+                                            RUN
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-wrap line-clamp-6">
+                                        {note.content}
+                                    </p>
+                                )}
                             </div>
-                        )}
 
-                        {note.pdfPath && (
-                            <a
-                                href={note.pdfPath}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="mt-4 w-full flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400 text-[11px] font-bold bg-[#edf2ff] dark:bg-blue-900/30 py-2.5 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all shadow-sm border border-blue-100 dark:border-blue-800/50"
-                            >
-                                <FileText size={16} />
-                                <span>View PDF Document</span>
-                            </a>
-                        )}
-                    </Card>
-                ))}
+                            {note.resourceLink && (
+                                <a
+                                    href={note.resourceLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-4 flex items-center gap-2 text-primary-600 text-xs font-semibold hover:underline"
+                                >
+                                    {getYouTubeId(note.resourceLink) ? <Play size={12} /> : <ExternalLink size={12} />}
+                                    {getYouTubeId(note.resourceLink) ? 'Watch Tutorial' : 'Linked Resource'}
+                                </a>
+                            )}
+
+                            {/* Display audio episodes if available */}
+                            {note.audioEpisodes && note.audioEpisodes.length > 0 && (
+                                <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                                        <Mic size={10} /> Voice Notes ({note.audioEpisodes.length} {note.audioEpisodes.length === 1 ? 'Episode' : 'Episodes'})
+                                    </p>
+                                    <div className="space-y-2">
+                                        {note.audioEpisodes.map((ep, idx) => (
+                                            <div key={idx} className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg">
+                                                <p className="text-[9px] text-slate-500 dark:text-slate-400 mb-1 font-medium">
+                                                    Episode {ep.episode || idx + 1}
+                                                </p>
+                                                <audio
+                                                    controls
+                                                    preload="metadata"
+                                                    src={ep.url}
+                                                    className="w-full h-7"
+                                                    onError={(e) => {
+                                                        console.error('Audio playback error:', e);
+                                                        e.target.style.opacity = '0.5';
+                                                    }}
+                                                    controlsList="nodownload"
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Fallback for old single audioPath format */}
+                            {note.audioPath && !note.audioEpisodes && (
+                                <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                                        <Mic size={10} /> Voice Note
+                                    </p>
+                                    <audio
+                                        controls
+                                        preload="metadata"
+                                        src={note.audioPath}
+                                        className="w-full h-8"
+                                        onError={(e) => {
+                                            console.error('Audio playback error:', e);
+                                            e.target.style.opacity = '0.5';
+                                        }}
+                                        controlsList="nodownload"
+                                    />
+                                </div>
+                            )}
+
+                            {note.pdfPath && (
+                                <a
+                                    href={note.pdfPath}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-4 w-full flex items-center justify-center gap-2 text-blue-600 dark:text-blue-400 text-[11px] font-bold bg-[#edf2ff] dark:bg-blue-900/30 py-2.5 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all shadow-sm border border-blue-100 dark:border-blue-800/50"
+                                >
+                                    <FileText size={16} />
+                                    <span>View PDF Document</span>
+                                </a>
+                            )}
+                        </Card>
+                    ))
+                )}
                 {notes.length === 0 && !loading && (
                     <div className="col-span-full text-center py-20 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
                         <FileText size={48} className="mx-auto text-slate-300 mb-4" />
