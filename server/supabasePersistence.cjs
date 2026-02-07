@@ -139,6 +139,10 @@ const mapToTable = (item) => {
     if (!item) return null;
     const mapped = {};
     for (const key in item) {
+        // Skip internal tracking fields that don't exist in Supabase tables
+        if (key === 'supabaseId') continue;
+        if (key === 'newly_registered') continue;
+
         if (key === 'userId') mapped.user_id = item[key];
         else if (key === 'moduleId') mapped.module_id = item[key];
         else if (key === 'createdAt') mapped.created_at = item[key];
@@ -154,14 +158,17 @@ const mapToTable = (item) => {
         else if (key === 'resourceLink') mapped.resource_link = item[key];
         else if (key === 'pdfPath') mapped.pdf_path = item[key];
         else if (key === 'deckId') mapped.deck_id = item[key];
-        else if (key === 'supabaseId') mapped.supabase_id = item[key];
         else if (key === 'targetHours') mapped.target_hours = item[key];
         else if (key === 'totalHoursStudied') mapped.total_hours_studied = item[key];
         else if (key === 'completedAt') mapped.completed_at = item[key];
         else if (key === 'audioEpisodes') mapped.audio_episodes = item[key];
         else if (key === 'audioPath') mapped.audio_path = item[key];
-        else if (key === 'tutorialCompleted') mapped.tutorial_completed = item[key];
-        else if (key === 'tutorial_completed') mapped.tutorial_completed = item[key];
+        else if (key === 'tutorialCompleted' || key === 'tutorial_completed') {
+            // Only map this if it's likely a user object or we are syncing users
+            // However, since table is not passed here, we'll keep it but it might cause issues if polluted
+            // We already fixed database.cjs to prevent pollution.
+            mapped.tutorial_completed = item[key];
+        }
         else if (key === 'id') mapped.id = item[key];
         else if (key === 'topic') mapped.activity = item[key];
         else mapped[key] = item[key];

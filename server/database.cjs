@@ -151,9 +151,14 @@ const db = {
         const newItem = {
             ...item,
             id,
-            createdAt: new Date().toISOString(),
-            tutorial_completed: false // Default for new users
+            createdAt: new Date().toISOString()
         };
+
+        // Add user-specific defaults
+        if (collection === 'users') {
+            newItem.tutorial_completed = false;
+        }
+
         data[collection].push(newItem);
         writeDB(data);
         return newItem;

@@ -906,11 +906,22 @@ app.put('/api/tasks/:id', authenticateToken, async (req, res) => {
     try {
         let item = db.update('tasks', req.params.id, req.body);
 
-        // If not found locally, it might be in Supabase or we need to create it
+        // If not found locally, it might be in Supabase
         if (!item) {
-            console.log(`⚠️ Task ${req.params.id} not found locally, upserting...`);
-            item = { ...req.body, id: req.params.id, userId: req.user.id };
-            db.insert('tasks', item);
+            console.log(`⚠️ Task ${req.params.id} not found locally, checking Supabase...`);
+            const cloudTask = await supabasePersistence.getById('tasks', req.params.id);
+            if (cloudTask) {
+                // Merge cloud task with updates and save locally
+                item = { ...cloudTask, ...req.body, id: req.params.id, userId: req.user.id };
+                db.insert('tasks', item);
+            } else {
+                // Truly new task or orphaned update - handle gracefully
+                console.log(`⚠️ Task ${req.params.id} not found in cloud either. Creating new.`);
+                item = { ...req.body, id: req.params.id, userId: req.user.id };
+                // Ensure a title exists if creating new
+                if (!item.title) item.title = 'Untitled Task';
+                db.insert('tasks', item);
+            }
         }
 
         // Sync to Supabase
