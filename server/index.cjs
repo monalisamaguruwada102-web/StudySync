@@ -247,14 +247,16 @@ app.post('/api/user/xp', authenticateToken, (req, res) => {
 
 // Get all users (for user selector)
 app.get('/api/users/all', authenticateToken, (req, res) => {
-    const users = db.get('users');
-    // Return basic user info (no passwords)
-    const userList = users.map(u => ({
-        id: u.id,
-        email: u.email,
-        level: u.level || 1,
-        xp: u.xp || 0
-    }));
+    const users = db.get('users') || [];
+    // Return basic user info (no passwords) and remove test accounts
+    const userList = users
+        .filter(u => u.email && !u.email.endsWith('@example.com'))
+        .map(u => ({
+            id: u.id,
+            email: u.email,
+            level: u.level || 1,
+            xp: u.xp || 0
+        }));
     res.json(userList);
 });
 
@@ -289,6 +291,16 @@ app.get('/api/conversations', authenticateToken, async (req, res) => {
                     group = groups.find(g => g.id === groupId);
                 }
 
+                // Filter check for unwanted groups
+                if (group && (
+                    group.name === 'DATABASE ADMIN GROUP' ||
+                    group.name === 'COMPUTER SECURITY GROUP' ||
+                    group.name === 'DATABASE ADMIN' ||
+                    group.name === 'COMPUTER SECURITY'
+                )) {
+                    return null;
+                }
+
                 return {
                     ...conv,
                     groupName: group?.name || 'Unknown Group',
@@ -298,7 +310,9 @@ app.get('/api/conversations', authenticateToken, async (req, res) => {
             } else {
                 // Direct message - find the other participant
                 const otherUserId = conv.participants.find(id => id !== req.user.id);
-                const otherUser = users.find(u => u.id === otherUserId || u.email === otherUserId);
+                const users = db.get('users') || [];
+                const otherUser = users.find(u => u.id === otherUserId);
+
                 return {
                     ...conv,
                     otherUser: otherUser ? {
@@ -311,7 +325,7 @@ app.get('/api/conversations', authenticateToken, async (req, res) => {
             }
         }));
 
-        res.json(enriched);
+        res.json(enriched.filter(Boolean));
     } catch (error) {
         console.error('Error in /api/conversations:', error);
         res.status(500).json({ error: 'Failed to fetch conversations' });
@@ -422,7 +436,16 @@ app.get('/api/groups', authenticateToken, async (req, res) => {
         if (!groups || groups.length === 0) {
             groups = db.get('groups') || [];
         }
-        res.json(groups);
+
+        // Filter out unwanted groups
+        const filteredGroups = groups.filter(g =>
+            g.name !== 'DATABASE ADMIN GROUP' &&
+            g.name !== 'COMPUTER SECURITY GROUP' &&
+            g.name !== 'DATABASE ADMIN' &&
+            g.name !== 'COMPUTER SECURITY'
+        );
+
+        res.json(filteredGroups);
     } catch (error) {
         console.error('Error fetching groups:', error);
         res.status(500).json({ error: 'Failed to fetch groups' });
@@ -597,49 +620,7 @@ app.get('/api/flashcardDecks/shared/:id', authenticateToken, async (req, res) =>
     }
 });
 
-// Create or get direct conversation
-app.get('/api/conversations', authenticateToken, async (req, res) => {
-    try {
-        // 1. Try Supabase
-        let conversations = await supabasePersistence.getConversations(req.user.id);
-
-        // 2. Fallback / Sync with Local
-        if (!conversations) {
-            const allConvs = db.get('conversations') || [];
-            conversations = allConvs.filter(c =>
-                c.participants && c.participants.includes(req.user.id)
-            ).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
-        }
-
-        // 3. Populate otherUser for direct messages
-        const users = db.get('users') || []; // Get all users for lookup
-
-        const populated = conversations.map(conv => {
-            if (conv.type === 'direct') {
-                const otherId = conv.participants.find(id => id !== req.user.id);
-                const otherUser = users.find(u => u.id === otherId);
-                if (otherUser) {
-                    return {
-                        ...conv,
-                        otherUser: {
-                            id: otherUser.id,
-                            email: otherUser.email,
-                            level: otherUser.level || 1,
-                            xp: otherUser.xp || 0
-                        }
-                    };
-                }
-            }
-            return conv;
-        });
-
-        res.json(populated);
-    } catch (error) {
-        console.error('Error fetching conversations:', error);
-        res.status(500).json({ error: 'Failed to fetch conversations' });
-    }
-});
-
+// Direct message creation logic starts below
 app.post('/api/conversations/direct', authenticateToken, async (req, res) => {
     const { otherUserId } = req.body;
     if (!otherUserId) return res.status(400).json({ error: 'Other user ID required' });
@@ -869,15 +850,28 @@ app.post('/api/studyLogs', authenticateToken, (req, res) => {
 
 app.put('/api/tasks/:id', authenticateToken, async (req, res) => {
     try {
-        const oldTask = db.find('tasks', t => t.id === req.params.id);
-        const item = db.update('tasks', req.params.id, req.body);
+        let item = db.update('tasks', req.params.id, req.body);
+
+        // If not found locally, it might be in Supabase or we need to create it
+        if (!item) {
+            console.log(`⚠️ Task ${req.params.id} not found locally, upserting...`);
+            item = { ...req.body, id: req.params.id, userId: req.user.id };
+            db.insert('tasks', item);
+        }
+
+        // Sync to Supabase
         await supabasePersistence.upsertToCollection('tasks', item);
+
         let xpGain = 0;
         let gamification = null;
-        if (oldTask && oldTask.status !== 'Completed' && req.body.status === 'Completed') {
+
+        // Note: we can't easily check 'oldTask' if it wasn't local, 
+        // but for XP we usually care about the transition to 'Completed'
+        if (req.body.status === 'Completed') {
             xpGain = 100;
             gamification = db.addXP(req.user.id, xpGain);
         }
+
         res.json({ item, xpGain, ...gamification });
     } catch (error) {
         console.error('Error updating task:', error);

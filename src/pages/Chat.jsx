@@ -736,14 +736,6 @@ function Chat() {
                                     <button className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                                         <Search size={18} />
                                     </button>
-                                    <Button
-                                        onClick={() => setShowResourceShare(true)}
-                                        variant="secondary"
-                                        className="text-[11px] h-8 px-3 rounded-full bg-slate-100 dark:bg-slate-800 border-none font-bold"
-                                    >
-                                        <Share2 size={13} />
-                                        SHARE
-                                    </Button>
                                 </div>
                             </div>
                         </div>
@@ -833,7 +825,10 @@ function Chat() {
                                 </div>
                             ) : (
                                 <div className="flex items-end gap-2 bg-slate-50 dark:bg-[#111b21] p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner">
-                                    <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
+                                    <button
+                                        onClick={() => setShowResourceShare(true)}
+                                        className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+                                    >
                                         <Plus size={20} />
                                     </button>
                                     <textarea
