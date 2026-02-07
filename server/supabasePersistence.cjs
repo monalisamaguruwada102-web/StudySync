@@ -119,7 +119,15 @@ const mapRow = (row, table = null) => {
         else if (key === 'last_message') mapped.lastMessage = row[key];
         else if (key === 'last_message_time') mapped.lastMessageTime = row[key];
         else if (key === 'group_id') mapped.groupId = row[key];
-        else if (key === 'youtube_url') mapped.youtubeUrl = row[key];
+        else if (key === 'youtube_url') {
+            mapped.youtubeUrl = row[key];
+            // Derive videoId for frontend playback
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
+            const match = row[key]?.match(regExp);
+            if (match && match[2].length === 11) {
+                mapped.videoId = match[2];
+            }
+        }
         else if (key === 'resource_link') mapped.resourceLink = row[key];
         else if (key === 'pdf_path') mapped.pdfPath = row[key];
         else if (key === 'deck_id') mapped.deckId = row[key];
