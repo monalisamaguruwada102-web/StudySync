@@ -724,6 +724,7 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
             return res.status(400).json({ error: 'Conversation ID and content required' });
         }
 
+        const now = new Date().toISOString();
         const messageData = {
             conversationId,
             senderId: req.user.id,
@@ -731,7 +732,9 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
             content,
             type: type || 'text',
             sharedResource: sharedResource || null,
-            status: 'sent'
+            status: 'sent',
+            timestamp: now,
+            createdAt: now
         };
 
         // 1. Insert message into Supabase (if conversationId is a valid UUID)
@@ -748,18 +751,13 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
             supabaseId: message?.id
         });
 
-        if (!message) {
-            message = { ...localMessage, timestamp: localMessage.createdAt };
-        } else {
-            // Ensure local copy also has the supabaseId
-            message.timestamp = message.timestamp || localMessage.createdAt;
-        }
+        // Use the most accurate message object for the response
+        const finalMessage = message || { ...localMessage, timestamp: now };
 
         // 3. Update conversation's last message (Dual-update)
-        const lastMessageTime = new Date().toISOString();
         const convUpdates = {
             lastMessage: content.substring(0, 50),
-            lastMessageTime
+            lastMessageTime: now
         };
 
         if (isUUID) {
@@ -767,7 +765,7 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
         }
         db.update('conversations', conversationId, convUpdates);
 
-        res.json(message);
+        res.json(finalMessage);
     } catch (error) {
         console.error('Error sending message:', error);
         res.status(500).json({ error: 'Failed to send message' });
@@ -1017,8 +1015,14 @@ genericCollections.forEach(collection => {
     });
 
     app.post(`/api/${collection}`, authenticateToken, async (req, res) => {
-        // Attach userId to new items
-        const rawItem = { ...req.body, userId: req.user.id };
+        const now = new Date().toISOString();
+        // Attach userId and timestamps to new items
+        const rawItem = {
+            ...req.body,
+            userId: req.user.id,
+            createdAt: now,
+            updatedAt: now
+        };
 
         let finalItem = db.insert(collection, rawItem);
 
@@ -1039,7 +1043,8 @@ genericCollections.forEach(collection => {
     });
 
     app.put(`/api/${collection}/:id`, authenticateToken, async (req, res) => {
-        let item = db.update(collection, req.params.id, req.body);
+        const updates = { ...req.body, updatedAt: new Date().toISOString() };
+        let item = db.update(collection, req.params.id, updates);
         if (item) {
             // Sync update to Supabase
             const supabaseTable = tableMap[collection];
