@@ -225,6 +225,68 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
     res.json({ user: userWithoutPassword, authorized: isAuthorized });
 });
 
+// --- SHARED RESOURCE ROUTES (With Cloud Fallback) ---
+app.get('/api/tutorials/shared/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        let item = db.find('tutorials', t => t.id === id);
+
+        if (!item) {
+            console.log(`Shared tutorial ${id} not found locally, checking Supabase...`);
+            item = await supabasePersistence.getById('tutorials', id);
+        }
+
+        if (!item) return res.status(404).json({ error: 'Tutorial not found' });
+        res.json(item);
+    } catch (err) {
+        console.error('Error fetching shared tutorial:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.get('/api/notes/shared/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        let item = db.find('notes', n => n.id === id);
+
+        if (!item) {
+            console.log(`Shared note ${id} not found locally, checking Supabase...`);
+            item = await supabasePersistence.getById('notes', id);
+        }
+
+        if (!item) return res.status(404).json({ error: 'Note not found' });
+        res.json(item);
+    } catch (err) {
+        console.error('Error fetching shared note:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.get('/api/flashcardDecks/shared/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        let item = db.find('flashcard_decks', d => d.id === id);
+
+        if (!item) {
+            console.log(`Shared deck ${id} not found locally, checking Supabase...`);
+            // Note: Supabase table is 'flashcard_decks'
+            item = await supabasePersistence.getById('flashcard_decks', id);
+        }
+
+        if (!item) return res.status(404).json({ error: 'Deck not found' });
+        res.json(item);
+    } catch (err) {
+        console.error('Error fetching shared deck:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// --- TUTORIALS ---
+app.get('/api/tutorials', authenticateToken, (req, res) => {
+    const user = db.find('users', u => u.id === req.user.id);
+    res.json(user.settings || {});
+});
+
 // --- PER-USER SETTINGS ---
 app.get('/api/user/settings', authenticateToken, (req, res) => {
     const user = db.find('users', u => u.id === req.user.id);

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { logout } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
+import useChat from '../../hooks/useChat';
 import PomodoroTimer from '../PomodoroTimer';
 import MusicPlayer from './MusicPlayer';
 import { navGroups } from '../../data/navigation';
@@ -15,6 +16,9 @@ import { NavLink } from 'react-router-dom';
 
 const Sidebar = ({ isOpen, onClose }) => {
     const { user } = useAuth();
+    const { unreadCounts } = useChat();
+
+    const totalUnread = Object.values(unreadCounts || {}).reduce((a, b) => a + b, 0);
 
     const nextLevelXP = (user?.level || 1) * 1000;
     const xpPercentage = ((user?.xp || 0) / nextLevelXP) * 100;
@@ -145,11 +149,24 @@ const Sidebar = ({ isOpen, onClose }) => {
                                                     }
                                                 `}>
                                                     <item.icon size={16} strokeWidth={isActive ? 2.5 : 2} />
+                                                    {/* Chat Unread Badge */}
+                                                    {item.label === 'Chat' && totalUnread > 0 && (
+                                                        <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-rose-500 border-2 border-white dark:border-slate-800 rounded-full animate-bounce" />
+                                                    )}
                                                 </div>
 
                                                 <span className={`relative z-10 text-xs tracking-wide uppercase font-black transition-colors duration-300 ${isActive ? 'text-slate-900 dark:text-white' : 'group-hover:text-slate-900 dark:group-hover:text-white'}`}>
                                                     {item.label}
                                                 </span>
+
+                                                {/* Chat Unread Counter Pill */}
+                                                {item.label === 'Chat' && totalUnread > 0 && (
+                                                    <div className="ml-auto relative z-10">
+                                                        <span className="bg-rose-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-md shadow-rose-500/30">
+                                                            {totalUnread > 99 ? '99+' : totalUnread}
+                                                        </span>
+                                                    </div>
+                                                )}
 
                                                 {/* Active Indicator */}
                                                 {isActive && (

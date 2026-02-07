@@ -777,21 +777,23 @@ function Chat() {
                             )}
                             <div ref={messagesEndRef} className="h-4" />
 
-                            {/* New Message Toast */}
+                            {/* New Message Toast (Polished) */}
                             <AnimatePresence>
                                 {showNewMessageToast && (
                                     <motion.button
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: 20 }}
+                                        initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 50, scale: 0.9 }}
+                                        whileHover={{ scale: 1.05 }}
                                         onClick={() => {
                                             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
                                             setShowNewMessageToast(false);
                                         }}
-                                        className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm hover:bg-blue-700 transition-colors z-10"
+                                        className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-blue-600/90 hover:bg-blue-600 backdrop-blur-md text-white pl-4 pr-5 py-2.5 rounded-full shadow-xl shadow-blue-500/30 flex items-center gap-3 text-xs font-bold transition-all z-20 border border-white/10"
                                     >
-                                        <ArrowDown size={14} />
-                                        New messages below
+                                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                                        <span>New messages received</span>
+                                        <ArrowDown size={14} className="animate-bounce" />
                                     </motion.button>
                                 )}
                             </AnimatePresence>
