@@ -432,7 +432,8 @@ function Chat() {
             alert(`Group "${groupName}" created successfully!\n\nInvite Code: ${result.group.inviteCode}\n\nShare this code with your friends so they can join!`);
         } catch (error) {
             console.error('Error creating group:', error);
-            alert(error.response?.data?.error || 'Failed to create group');
+            const errorMsg = error.response?.data?.error || error.message || 'Failed to create group';
+            alert(errorMsg);
         }
     }
 
@@ -461,7 +462,8 @@ function Chat() {
             alert('Successfully joined group!');
         } catch (error) {
             console.error('Error joining group:', error);
-            alert(error.response?.data?.error || 'Failed to join group');
+            const errorMsg = error.response?.data?.error || error.message || 'Failed to join group';
+            alert(errorMsg);
         }
     }
 
@@ -488,7 +490,8 @@ function Chat() {
             setSelectedResourceData({ ...response.data, type: resource.type });
         } catch (error) {
             console.error('Error fetching resource details:', error);
-            alert('Failed to load resource details. It might have been deleted.');
+            const errorMsg = error.response?.data?.error || error.message || 'Failed to load resource details. It might have been deleted.';
+            alert(errorMsg);
             setShowResourceViewer(false);
         } finally {
             setViewerLoading(false);

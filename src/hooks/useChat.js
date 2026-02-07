@@ -76,8 +76,9 @@ const useChat = () => {
             // Mark as read when fetching
             markAsRead(conversationId);
         } catch (err) {
-            console.error('Error fetching messages:', err);
-            setError(err.message);
+            const errorMessage = err.response?.data?.error || err.message;
+            console.error('Error fetching messages:', errorMessage);
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -175,8 +176,9 @@ const useChat = () => {
             await fetchConversations();
             return response.data;
         } catch (err) {
-            console.error('Error joining group:', err);
-            setError(err.message);
+            const errorMessage = err.response?.data?.error || err.message;
+            console.error('Error joining group:', errorMessage);
+            setError(errorMessage);
             throw err;
         }
     }, [fetchConversations]);

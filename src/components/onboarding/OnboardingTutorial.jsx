@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight, Check, Rocket, Zap, MessageCircle } from 'lucide-react';
 import Button from '../ui/Button';
-import useAuth from '../../hooks/useAuth';
+import { useAuth } from '../../context/AuthContext';Context';
 import api from '../../services/api';
 
 const steps = [

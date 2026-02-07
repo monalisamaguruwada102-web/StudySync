@@ -564,6 +564,30 @@ app.get('/api/tutorials/shared/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// Shared flashcard deck fetch (Read-only access to any deck by ID)
+app.get('/api/flashcardDecks/shared/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        // Check "flashcard_decks" table in Supabase
+        let deck = await supabasePersistence.getById('flashcard_decks', id);
+
+        if (!deck) {
+            // Check "flashcardDecks" collection in local DB
+            deck = db.getById('flashcardDecks', id);
+        }
+
+        if (!deck) {
+            return res.status(404).json({ error: 'Flashcard deck not found or link has expired.' });
+        }
+
+        // Return deck without ownership restriction for this specific path
+        res.json(deck);
+    } catch (error) {
+        console.error('Error fetching shared flashcard deck:', error);
+        res.status(500).json({ error: 'System error fetching shared flashcard deck.' });
+    }
+});
+
 // Create or get direct conversation
 app.get('/api/conversations', authenticateToken, async (req, res) => {
     try {
