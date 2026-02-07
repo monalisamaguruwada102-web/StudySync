@@ -59,9 +59,10 @@ function App() {
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/modules" element={<Modules />} />
                     <Route path="/tutorials" element={<Tutorials />} />
+                    <Route path="/notes" element={<Notes />} />
+                    <Route path="/notes/shared/:id" element={<Notes />} />
                     <Route path="/logs" element={<StudyLogs />} />
                     <Route path="/tasks" element={<Tasks />} />
-                    <Route path="/notes" element={<Notes />} />
                     <Route path="/grades" element={<Grades />} />
                     <Route path="/flashcards" element={<Flashcards />} />
                     <Route path="/calendar" element={<Calendar />} />

@@ -10,13 +10,14 @@ import { noteService, moduleService } from '../services/firestoreService';
 import { Plus, StickyNote, Trash2, Book, ExternalLink, FileText, Code, Play, Sparkles, Wand2, Mic, MicOff, BrainCircuit, Share2, Link } from 'lucide-react';
 import aiService from '../services/aiService';
 import { supabase } from '../services/supabase';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import ShareToChatModal from '../components/ui/ShareToChatModal';
 
 const Notes = () => {
     const { data: notes, loading, refresh } = useFirestore(noteService.getAll);
     const { data: modules } = useFirestore(moduleService.getAll);
     const [searchParams] = useSearchParams();
+    const { id: pathId } = useParams();
     const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showShareModal, setShowShareModal] = useState(false);
@@ -231,7 +232,7 @@ const Notes = () => {
     };
 
     const handleCopyExternalLink = (note) => {
-        const url = `${window.location.origin}/notes?id=${note.id}`;
+        const url = `${window.location.origin}/notes/shared/${note.id}`;
         const shareText = `Check out this note on StudySync: ${note.title}\n${url}`;
         navigator.clipboard.writeText(shareText);
         alert('External link copied to clipboard! The link includes the note title and StudySync branding.');
@@ -239,7 +240,7 @@ const Notes = () => {
 
     // Deep Link & Isolation Effect
     useEffect(() => {
-        const noteId = searchParams.get('id');
+        const noteId = pathId || searchParams.get('id');
         if (noteId) {
             setHighlightedNoteId(noteId);
 
@@ -271,7 +272,7 @@ const Notes = () => {
             setSharedNote(null);
             document.title = 'StudySync - Notes';
         }
-    }, [searchParams, notes]);
+    }, [pathId, searchParams, notes]);
 
     return (
         <Layout title={sharedNote ? `Shared Note: ${sharedNote.title}` : "Notes & Resources"}>
@@ -301,7 +302,12 @@ const Notes = () => {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {sharedNote ? (
+                {sharedNoteLoading ? (
+                    <div className="col-span-full flex flex-col items-center justify-center py-20 bg-white/50 dark:bg-slate-900/50 rounded-3xl border border-slate-100 dark:border-slate-800">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600 mb-4"></div>
+                        <p className="text-slate-500 font-medium">Fetching shared resource...</p>
+                    </div>
+                ) : sharedNote ? (
                     <Card
                         id={`note-${sharedNote.id}`}
                         className="flex flex-col h-full ring-2 ring-primary-500 shadow-xl shadow-primary-500/10 border-none bg-white dark:bg-slate-900/50"
