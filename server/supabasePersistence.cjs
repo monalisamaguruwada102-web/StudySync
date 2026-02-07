@@ -145,6 +145,8 @@ const mapToTable = (item, table = null) => {
         if (key === 'newly_registered') continue;
         if (key === 'videoId') continue;
         if (key === 'thumbnail') continue;
+        if (key === 'tutorialCompleted') continue;
+        if (key === 'tutorial_completed') continue;
         if (key === 'password' && table === 'users') {
             // Include password for users table as it exists there locally and we sync it
             mapped.password = item[key];
@@ -171,12 +173,6 @@ const mapToTable = (item, table = null) => {
         else if (key === 'completedAt') mapped.completed_at = item[key];
         else if (key === 'audioEpisodes') mapped.audio_episodes = item[key];
         else if (key === 'audioPath') mapped.audio_path = item[key];
-        else if (key === 'tutorialCompleted' || key === 'tutorial_completed') {
-            // Only map this if it's likely a user object or we are syncing users
-            // However, since table is not passed here, we'll keep it but it might cause issues if polluted
-            // We already fixed database.cjs to prevent pollution.
-            mapped.tutorial_completed = item[key];
-        }
         else if (key === 'id') mapped.id = item[key];
         else if (key === 'topic' && table === 'study_logs') mapped.activity = item[key];
         else mapped[key] = item[key];
