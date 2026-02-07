@@ -25,6 +25,7 @@ const Notes = () => {
     const [highlightedNoteId, setHighlightedNoteId] = useState(null);
     const [sharedNote, setSharedNote] = useState(null);
     const [sharedNoteLoading, setSharedNoteLoading] = useState(false);
+    const [sharedNoteError, setSharedNoteError] = useState(null);
 
     const getYouTubeId = (url) => {
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
@@ -256,6 +257,7 @@ const Notes = () => {
             } else {
                 // Fetch shared note directly from backend
                 setSharedNoteLoading(true);
+                setSharedNoteError(null);
                 import('../services/api').then(api => {
                     api.default.get(`/notes/shared/${noteId}`)
                         .then(res => {
@@ -264,12 +266,14 @@ const Notes = () => {
                         })
                         .catch(err => {
                             console.error('Failed to fetch shared note:', err);
+                            setSharedNoteError('Shared note not found or you do not have permission to view it.');
                         })
                         .finally(() => setSharedNoteLoading(false));
                 });
             }
         } else {
             setSharedNote(null);
+            setSharedNoteError(null);
             document.title = 'StudySync - Notes';
         }
     }, [pathId, searchParams, notes]);
@@ -306,6 +310,15 @@ const Notes = () => {
                     <div className="col-span-full flex flex-col items-center justify-center py-20 bg-white/50 dark:bg-slate-900/50 rounded-3xl border border-slate-100 dark:border-slate-800">
                         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600 mb-4"></div>
                         <p className="text-slate-500 font-medium">Fetching shared resource...</p>
+                    </div>
+                ) : sharedNoteError ? (
+                    <div className="col-span-full flex flex-col items-center justify-center py-20 bg-red-50 dark:bg-red-900/10 rounded-3xl border border-red-100 dark:border-red-900/30">
+                        <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4 text-red-500">
+                            <Trash2 size={32} />
+                        </div>
+                        <h3 className="text-xl font-bold text-red-600 dark:text-red-400 mb-2">Unavailable</h3>
+                        <p className="text-slate-600 dark:text-slate-400 max-w-md text-center mb-6">{sharedNoteError}</p>
+                        <Button onClick={() => navigate('/notes')} variant="secondary">Back to My Notes</Button>
                     </div>
                 ) : sharedNote ? (
                     <Card

@@ -7,7 +7,7 @@ import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
 import { useFirestore } from '../hooks/useFirestore';
 import { tutorialService, moduleService } from '../services/firestoreService';
-import { Plus, Youtube, Trash2, Book, ExternalLink, Search, LayoutDashboard, Play, Share2 } from 'lucide-react';
+import { Plus, Youtube, Trash2, Book, ExternalLink, Search, LayoutDashboard, Play, Share2, VideoOff } from 'lucide-react';
 import ShareToChatModal from '../components/ui/ShareToChatModal';
 
 const Tutorials = () => {
@@ -24,6 +24,7 @@ const Tutorials = () => {
     const navigate = useNavigate();
     const [sharedTutorial, setSharedTutorial] = useState(null);
     const [sharedTutorialLoading, setSharedTutorialLoading] = useState(false);
+    const [sharedTutorialError, setSharedTutorialError] = useState(null);
     const [formData, setFormData] = useState({
         url: '',
         title: '',
@@ -103,6 +104,7 @@ const Tutorials = () => {
                 document.title = `StudySync - ${existing.title}`;
             } else {
                 setSharedTutorialLoading(true);
+                setSharedTutorialError(null);
                 import('../services/api').then(api => {
                     api.default.get(`/tutorials/shared/${tutorialId}`)
                         .then(res => {
@@ -111,12 +113,14 @@ const Tutorials = () => {
                         })
                         .catch(err => {
                             console.error('Failed to fetch shared tutorial:', err);
+                            setSharedTutorialError('Shared tutorial not found or you do not have permission to view it.');
                         })
                         .finally(() => setSharedTutorialLoading(false));
                 });
             }
         } else {
             setSharedTutorial(null);
+            setSharedTutorialError(null);
             document.title = 'StudySync - Tutorials';
         }
     }, [pathId, searchParams, tutorials]);
@@ -172,6 +176,15 @@ const Tutorials = () => {
                         <div className="col-span-full flex flex-col items-center justify-center py-20 bg-white/50 dark:bg-slate-900/50 rounded-3xl border border-slate-100 dark:border-slate-800">
                             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600 mb-4"></div>
                             <p className="text-slate-500 font-medium">Fetching shared tutorial...</p>
+                        </div>
+                    ) : sharedTutorialError ? (
+                        <div className="col-span-full flex flex-col items-center justify-center py-20 bg-red-50 dark:bg-red-900/10 rounded-3xl border border-red-100 dark:border-red-900/30">
+                            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4 text-red-500">
+                                <VideoOff size={32} />
+                            </div>
+                            <h3 className="text-xl font-bold text-red-600 dark:text-red-400 mb-2">Unavailable</h3>
+                            <p className="text-slate-600 dark:text-slate-400 max-w-md text-center mb-6">{sharedTutorialError}</p>
+                            <Button onClick={() => navigate('/tutorials')} variant="secondary">Back to Tutorials</Button>
                         </div>
                     ) : sharedTutorial ? (
                         <div className="col-span-full flex flex-col gap-6">
