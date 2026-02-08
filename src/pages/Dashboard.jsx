@@ -41,7 +41,7 @@ import {
     PointElement,
     LineElement,
 } from 'chart.js';
-import { Bar, Doughnut } from 'react-chartjs-2';
+import { Bar, Doughnut, Line } from 'react-chartjs-2';
 import { motion } from 'framer-motion';
 import { getModuleColor } from '../utils/colors';
 
@@ -312,29 +312,59 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                 <Card title="Weekly Study Trend" className="lg:col-span-2">
                     <div className="h-[300px]">
-                        <Bar
-                            data={barData}
+                        <Line
+                            data={{
+                                ...barData,
+                                datasets: barData.datasets.map((dataset, i) => ({
+                                    ...dataset,
+                                    fill: true,
+                                    borderColor: dataset.backgroundColor,
+                                    backgroundColor: (context) => {
+                                        const ctx = context.chart.ctx;
+                                        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                                        const color = dataset.backgroundColor;
+                                        gradient.addColorStop(0, color.replace(')', ', 0.2)').replace('rgb', 'rgba'));
+                                        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                                        return gradient;
+                                    },
+                                    tension: 0.4,
+                                    pointRadius: 4,
+                                    pointHoverRadius: 6,
+                                    borderWidth: 3
+                                }))
+                            }}
                             options={{
                                 maintainAspectRatio: false,
                                 plugins: {
-                                    legend: { display: false },
+                                    legend: {
+                                        display: true,
+                                        position: 'top',
+                                        labels: {
+                                            usePointStyle: true,
+                                            padding: 20,
+                                            color: isDarkMode ? '#94a3b8' : '#64748b',
+                                            font: { weight: 'bold' }
+                                        }
+                                    },
                                     tooltip: {
                                         backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
                                         titleColor: isDarkMode ? '#f8fafc' : '#0f172a',
                                         bodyColor: isDarkMode ? '#f8fafc' : '#0f172a',
                                         borderColor: isDarkMode ? '#334155' : '#e2e8f0',
-                                        borderWidth: 1
+                                        borderWidth: 1,
+                                        padding: 12
                                     }
                                 },
                                 scales: {
                                     y: {
-                                        stacked: true,
                                         beginAtZero: true,
                                         grid: { color: isDarkMode ? '#334155' : '#f1f5f9' },
-                                        ticks: { color: isDarkMode ? '#94a3b8' : '#64748b' }
+                                        ticks: {
+                                            color: isDarkMode ? '#94a3b8' : '#64748b',
+                                            callback: (value) => `${value}h`
+                                        }
                                     },
                                     x: {
-                                        stacked: true,
                                         grid: { display: false },
                                         ticks: { color: isDarkMode ? '#94a3b8' : '#64748b' }
                                     }

@@ -225,13 +225,33 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
     res.json({ user: userWithoutPassword, authorized: isAuthorized });
 });
 
-app.get('/api/users/all', authenticateToken, (req, res) => {
-    const users = db.get('users') || [];
-    const safeUsers = users.map(u => {
-        const { password, ...safe } = u;
-        return safe;
-    });
-    res.json(safeUsers);
+app.get('/api/users/all', authenticateToken, async (req, res) => {
+    try {
+        // Fetch all users from Supabase (source of truth)
+        let users = await supabasePersistence.fetchAll('users');
+
+        if (!users) {
+            // Fallback to local
+            users = db.get('users') || [];
+        }
+
+        const testPatterns = ['test', 'example.com', 'agent', 'andrew27@gmail.com', 'tayzielol774@gmail.com'];
+
+        const safeUsers = users
+            .filter(u => {
+                const email = u.email?.toLowerCase() || '';
+                return !testPatterns.some(pattern => email.includes(pattern));
+            })
+            .map(u => {
+                const { password, ...safe } = u;
+                return safe;
+            });
+
+        res.json(safeUsers);
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({ error: 'Failed to fetch users' });
+    }
 });
 
 // --- SHARED RESOURCE ROUTES (With Cloud Fallback) ---
