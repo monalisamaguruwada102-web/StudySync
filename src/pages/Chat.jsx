@@ -220,8 +220,8 @@ function ResourceViewerModal({ isOpen, onClose, resource, loading, onNavigate })
 
 function Chat() {
     const navigate = useNavigate();
-    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-    const isAdmin = currentUser.email === (import.meta.env.VITE_ADMIN_EMAIL || 'joshuamujakari15@gmail.com');
+    const { user: currentUser } = useAuth();
+    const isAdmin = currentUser?.email === (import.meta.env.VITE_ADMIN_EMAIL || 'joshuamujakari15@gmail.com');
 
     // --- State & Refs ---
     const [activeTab, setActiveTab] = useState('chats'); // 'chats', 'groups', 'explore', 'requests'
@@ -350,7 +350,6 @@ function Chat() {
             return () => clearTimeout(timer);
         } else if (messages.length > 0) {
             const lastMessage = messages[messages.length - 1];
-            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
             if (lastMessage.senderId !== currentUser.id) {
                 setShowNewMessageToast(true);
             }

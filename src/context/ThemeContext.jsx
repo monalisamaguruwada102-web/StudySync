@@ -17,13 +17,9 @@ export const ThemeProvider = ({ children }) => {
                 if (response.data.theme) setTheme(response.data.theme);
                 if (response.data.dark_mode !== undefined) setIsDarkMode(response.data.dark_mode);
             } catch (error) {
-                console.error('Failed to fetch theme from cloud:', error);
-                // Fallback to local if absolutely necessary or match hardware
-                const saved = localStorage.getItem('theme');
-                if (saved) setTheme(saved);
-                const savedDark = localStorage.getItem('darkMode');
-                if (savedDark !== null) setIsDarkMode(savedDark === 'true');
-                else setIsDarkMode(window.matchMedia('(prefers-color-scheme: dark)').matches);
+                console.warn('Theme fetch failed or unauthorized:', error.message);
+                // System default as fallback
+                setIsDarkMode(window.matchMedia('(prefers-color-scheme: dark)').matches);
             }
         };
         fetchSettings();
@@ -40,17 +36,16 @@ export const ThemeProvider = ({ children }) => {
             document.documentElement.classList.remove('dark');
         }
 
-        // Only save to cloud if we have a token (avoid errors on login page)
-        if (localStorage.getItem('token')) {
-            api.post('/user/settings', {
-                theme,
-                dark_mode: isDarkMode
-            }).catch(err => console.error('Failed to sync theme to cloud:', err));
-        }
-
-        // Keep localStorage as a secondary fallback for flicker-free initial load
-        localStorage.setItem('theme', theme);
-        localStorage.setItem('darkMode', isDarkMode.toString());
+        // Only save to cloud if we are authenticated
+        api.post('/user/settings', {
+            theme,
+            dark_mode: isDarkMode
+        }).catch(err => {
+            // Silently fail if not logged in (e.g. on login page)
+            if (err.response?.status !== 401) {
+                console.error('Failed to sync theme to cloud:', err);
+            }
+        });
     }, [theme, isDarkMode]);
 
     const toggleTheme = (newTheme) => setTheme(newTheme);

@@ -65,10 +65,6 @@ export default function OnboardingTutorial() {
             // Update local user state immediately via context
             if (user) {
                 updateUser({ tutorial_completed: true, newly_registered: false });
-
-                // Also update localStorage as a backup
-                const updatedUser = { ...user, tutorial_completed: true, newly_registered: false };
-                localStorage.setItem('user', JSON.stringify(updatedUser));
             }
 
             setIsOpen(false);

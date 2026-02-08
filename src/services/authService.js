@@ -2,42 +2,39 @@ import api from "./api";
 
 export const login = async (email, password) => {
     const response = await api.post('/auth/login', { email, password });
-    const { token, user: initialUser } = response.data;
-    localStorage.setItem('token', token);
+    const { user: initialUser } = response.data;
 
     // Fetch full profile (includes cloud-stored settings)
     try {
         const profileRes = await api.get('/user/profile');
         const fullUser = { ...initialUser, ...profileRes.data };
-        localStorage.setItem('user', JSON.stringify(fullUser));
         return fullUser;
     } catch (error) {
         console.error('Failed to fetch full profile during login:', error);
-        localStorage.setItem('user', JSON.stringify(initialUser));
         return initialUser;
     }
 };
 
 export const register = async (email, password) => {
     const response = await api.post('/auth/register', { email, password });
-    const { token, user: initialUser } = response.data;
-    localStorage.setItem('token', token);
+    const { user: initialUser } = response.data;
 
     // Fetch full profile
     try {
         const profileRes = await api.get('/user/profile');
         const fullUser = { ...initialUser, ...profileRes.data };
-        localStorage.setItem('user', JSON.stringify(fullUser));
         return fullUser;
     } catch (error) {
-        localStorage.setItem('user', JSON.stringify(initialUser));
         return initialUser;
     }
 };
 
 export const logout = async () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    try {
+        await api.post('/auth/logout');
+    } catch (err) {
+        console.error('Logout request failed:', err);
+    }
     window.location.reload();
 };
 

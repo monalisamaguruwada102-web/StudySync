@@ -11,14 +11,8 @@ export const BASE_URL = API_URL.replace('/api', '');
 
 const api = axios.create({
     baseURL: API_URL,
+    withCredentials: true, // Crucial for sending secure cookies
 });
 
-api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-});
-
+// Interceptor removed since tokens are now handled by Secure HttpOnly Cookies automatically by the browser
 export default api;

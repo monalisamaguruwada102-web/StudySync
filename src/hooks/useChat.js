@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../services/api';
-import { supabase } from '../services/supabase';
+import { supabase } from '../services/supabaseClient';
+import { useAuth } from '../context/AuthContext';
 
 const useChat = () => {
+    const { user } = useAuth(); // Get user from AuthContext
+
     const [conversations, setConversations] = useState([]);
     const [messages, setMessages] = useState([]);
     const [activeConversation, setActiveConversation] = useState(null);
@@ -87,7 +90,7 @@ const useChat = () => {
     // Send a message
     const sendMessage = useCallback(async (conversationId, content, type = 'text', sharedResource = null) => {
         try {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (!user) throw new Error('Not authenticated');
 
             const message = {
                 conversationId,
@@ -119,10 +122,9 @@ const useChat = () => {
 
     // Send typing indicator
     const sendTyping = useCallback(async (conversationId, isTyping) => {
-        if (!supabase || !conversationId) return;
+        if (!supabase || !conversationId || !user) return;
 
         const channel = supabase.channel(`chat:${conversationId}`);
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
 
         await channel.track({
             user: user.email,
@@ -233,7 +235,7 @@ const useChat = () => {
         channel
             .on('broadcast', { event: 'typing' }, ({ payload }) => {
                 const { userId, isTyping } = payload;
-                const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                const currentUser = user; // Use the 'user' state directly
                 if (userId === currentUser.id) return;
 
                 if (isTyping) {
@@ -345,10 +347,9 @@ const useChat = () => {
 
     // Global User Presence
     useEffect(() => {
-        if (!supabase) return;
+        if (!supabase || !user) return;
 
         const globalChannel = supabase.channel('global_presence');
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
 
         globalChannel
             .on('presence', { event: 'sync' }, () => {
@@ -373,7 +374,7 @@ const useChat = () => {
         return () => {
             globalChannel.unsubscribe();
         };
-    }, []);
+    }, [user]);
 
     // Initial fetch
     useEffect(() => {

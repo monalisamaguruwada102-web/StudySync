@@ -9,6 +9,7 @@ const supabasePersistence = require('./supabasePersistence.cjs');
 const multer = require('multer');
 const ical = require('node-ical');
 const axios = require('axios');
+const cookieParser = require('cookie-parser');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();
 
@@ -19,9 +20,10 @@ if (!GEMINI_API_KEY) {
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
 const app = express();
+app.use(cookieParser());
 
 // --- VERSIONING (For Auto-Push Updates) ---
-const SYSTEM_VERSION = "1.2.0";
+const SYSTEM_VERSION = "1.3.0";
 app.get('/api/version', (req, res) => res.json({ version: SYSTEM_VERSION }));
 
 // Serve uploads folder statically
@@ -63,9 +65,11 @@ const jsonUpload = multer({
 
 const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'study-secret-key';
+const IS_PROD = process.env.NODE_ENV === 'production';
 
 app.use(cors({
-    origin: '*', // Allow all origins for simplicity in deployment
+    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'], // Restrict origins for cookie security
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -120,8 +124,8 @@ app.post('/api/upload', (req, res) => {
 
 // Auth Middleware
 const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    // Check cookies first, then header fallback
+    const token = req.cookies.auth_token || (req.headers['authorization'] && req.headers['authorization'].split(' ')[1]);
 
     if (!token) return res.sendStatus(401);
 
@@ -158,6 +162,14 @@ app.post('/api/auth/register', async (req, res) => {
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
 
+    // Set Secure HttpOnly Cookie
+    res.cookie('auth_token', token, {
+        httpOnly: true,
+        secure: IS_PROD,
+        sameSite: 'lax',
+        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
+
     // Sync to Supabase immediately to avoid data loss
     try {
         const cloudUser = await supabasePersistence.upsertToCollection('users', user);
@@ -169,7 +181,7 @@ app.post('/api/auth/register', async (req, res) => {
     }
 
     const { password: _, ...userWithoutPassword } = user;
-    res.status(201).json({ token, user: userWithoutPassword });
+    res.status(201).json({ user: userWithoutPassword });
 });
 
 app.post('/api/auth/login', async (req, res) => {
@@ -201,6 +213,14 @@ app.post('/api/auth/login', async (req, res) => {
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
 
+    // Set Secure HttpOnly Cookie
+    res.cookie('auth_token', token, {
+        httpOnly: true,
+        secure: IS_PROD,
+        sameSite: 'lax',
+        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
+
     // Sync to Supabase immediately to avoid data loss
     try {
         const cloudUser = await supabasePersistence.upsertToCollection('users', user);
@@ -212,7 +232,12 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     const { password: _, ...userWithoutPassword } = user;
-    res.json({ user: userWithoutPassword, token });
+    res.json({ user: userWithoutPassword });
+});
+
+app.post('/api/auth/logout', (req, res) => {
+    res.clearCookie('auth_token');
+    res.json({ success: true });
 });
 
 app.get('/api/auth/me', authenticateToken, (req, res) => {
