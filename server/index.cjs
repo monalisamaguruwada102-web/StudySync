@@ -20,10 +20,12 @@ if (!GEMINI_API_KEY) {
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(cookieParser());
+app.use(express.json());
 
 // --- VERSIONING (For Auto-Push Updates) ---
-const SYSTEM_VERSION = "1.3.0";
+const SYSTEM_VERSION = "1.3.1";
 app.get('/api/version', (req, res) => res.json({ version: SYSTEM_VERSION }));
 
 // Serve uploads folder statically
