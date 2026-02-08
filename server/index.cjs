@@ -725,6 +725,18 @@ genericCollections.forEach(collection => {
 
         let finalItem = db.insert(collection, rawItem);
 
+        // Award XP for specific actions
+        if (collection === 'studyLogs') {
+            // Reward +50 XP per study log
+            db.addXP(req.user.id, 50);
+        } else if (collection === 'tasks' && finalItem.status === 'Completed') {
+            // Reward +30 XP per completed task
+            db.addXP(req.user.id, 30);
+        } else if (collection === 'pomodoroSessions') {
+            // Reward +40 XP per pomodoro session
+            db.addXP(req.user.id, 40);
+        }
+
         // Sync to Supabase
         const supabaseTable = tableMap[collection];
         if (supabaseTable) {
@@ -743,6 +755,16 @@ genericCollections.forEach(collection => {
 
     app.put(`/api/${collection}/:id`, authenticateToken, async (req, res) => {
         const updates = { ...req.body, updatedAt: new Date().toISOString() };
+
+        // Check if task is being marked as completed
+        if (collection === 'tasks' && updates.status === 'Completed') {
+            const existingTask = db.getById(collection, req.params.id);
+            if (existingTask && existingTask.status !== 'Completed') {
+                // Award +30 XP for task completion
+                db.addXP(req.user.id, 30);
+            }
+        }
+
         let item = db.update(collection, req.params.id, updates);
         if (item) {
             // Sync update to Supabase

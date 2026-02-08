@@ -56,6 +56,17 @@
       "createdAt": "2026-02-05T10:44:52.523Z",
       "supabaseId": "1770288292523",
       "updatedAt": "2026-02-08T09:16:00.161Z"
+    },
+    {
+      "id": "3d6ed092-db5d-4c1e-9768-5a3be209827a",
+      "email": "joshwebsinfo@gmail.com",
+      "password": "$2b$10$LJC967y18V/Y5Tjh/ufjzuivX8iwVg.es4YZ7wlvTaAF9lVEh1rma",
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-02-08T09:47:22.910Z",
+      "supabaseId": "c766d9fa-d2ba-49e4-90eb-35fa9b553e92",
+      "tutorial_completed": false
     }
   ],
   "modules": [
