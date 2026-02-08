@@ -581,6 +581,29 @@ const getGroup = async (id) => {
     return mapGroup(data);
 };
 
+const uploadFile = async (bucket, path, fileBuffer, contentType) => {
+    const client = initSupabase();
+    if (!client) return null;
+
+    const { data, error } = await client.storage
+        .from(bucket)
+        .upload(path, fileBuffer, {
+            contentType,
+            upsert: true
+        });
+
+    if (error) {
+        console.error('Error uploading file to Supabase:', error);
+        return null;
+    }
+
+    const { data: { publicUrl } } = client.storage
+        .from(bucket)
+        .getPublicUrl(path);
+
+    return publicUrl;
+};
+
 module.exports = {
     initSupabase,
     // Tutorials
@@ -609,5 +632,7 @@ module.exports = {
     getById,
     getItemByField,
     upsertToCollection,
-    deleteFromCollection
+    deleteFromCollection,
+    // Storage
+    uploadFile
 };

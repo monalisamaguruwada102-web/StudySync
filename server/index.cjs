@@ -30,45 +30,12 @@ app.get('/api/version', (req, res) => res.json({ version: SYSTEM_VERSION }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, '../dist')));
 
-// Configure Multer for PDF uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, './server/uploads/');
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
-});
-
-const upload = multer({
-    storage: storage,
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype === 'application/pdf' || file.mimetype.startsWith('audio/')) {
-            cb(null, true);
-        } else {
-            cb(new Error('Only PDFs and Audio files are allowed'), false);
-        }
-    }
-});
-
-const jsonUpload = multer({
-    storage: storage,
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype === 'application/json' || path.extname(file.originalname).toLowerCase() === '.json') {
-            cb(null, true);
-        } else {
-            cb(new Error('Only JSON files are allowed'), false);
-        }
-    }
-});
-
 const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'study-secret-key';
 const IS_PROD = process.env.NODE_ENV === 'production';
 
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'], // Restrict origins for cookie security
+    origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'https://www.joshwebs.co.zw', 'https://joshwebs.co.zw'], // Restrict origins for cookie security
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -102,9 +69,32 @@ app.get('/api/download/installer', (req, res) => {
     res.download(path.join(distPath, latestFile.name), latestFile.name);
 });
 
-// --- UPLOAD ROUTE ---
-app.post('/api/upload', (req, res) => {
-    upload.single('file')(req, res, (err) => {
+const jsonUpload = multer({
+    storage: multer.memoryStorage(),
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype === 'application/json' || path.extname(file.originalname).toLowerCase() === '.json') {
+            cb(null, true);
+        } else {
+            cb(new Error('Only JSON files are allowed'), false);
+        }
+    }
+});
+
+// Configure Multer for In-Memory uploads (sending directly to Supabase)
+const memoryUpload = multer({
+    storage: multer.memoryStorage(),
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype === 'application/pdf' || file.mimetype.startsWith('audio/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only PDFs and Audio files are allowed'), false);
+        }
+    }
+});
+
+// --- UPLOAD ROUTE (Cloud-Powered) ---
+app.post('/api/upload', authenticateToken, (req, res) => {
+    memoryUpload.single('file')(req, res, async (err) => {
         if (err instanceof multer.MulterError) {
             return res.status(400).json({ error: err.message });
         } else if (err) {
@@ -115,10 +105,31 @@ app.post('/api/upload', (req, res) => {
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        res.json({
-            filePath: `/uploads/${req.file.filename}`,
-            fileName: req.file.originalname
-        });
+        try {
+            const file = req.file;
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+            const fileName = `${uniqueSuffix}${path.extname(file.originalname)}`;
+
+            // Upload to Supabase 'study-materials' bucket
+            const publicUrl = await supabasePersistence.uploadFile(
+                'study-materials',
+                fileName,
+                file.buffer,
+                file.mimetype
+            );
+
+            if (!publicUrl) {
+                return res.status(500).json({ error: 'Failed to upload to cloud storage' });
+            }
+
+            res.json({
+                filePath: publicUrl,
+                fileName: file.originalname
+            });
+        } catch (uploadErr) {
+            console.error('Upload error:', uploadErr);
+            res.status(500).json({ error: 'Internal server error during upload' });
+        }
     });
 });
 
@@ -139,7 +150,7 @@ const authenticateToken = (req, res, next) => {
 // --- AUTH ROUTES ---
 
 app.post('/api/auth/register', async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, name } = req.body;
 
     if (!email || !password) {
         return res.status(400).json({ error: 'Email and password are required' });
@@ -260,7 +271,7 @@ app.get('/api/users/all', authenticateToken, async (req, res) => {
             users = db.get('users') || [];
         }
 
-        const testPatterns = ['test', 'example.com', 'agent', 'andrew27@gmail.com', 'tayzielol774@gmail.com'];
+        const testPatterns = ['test', 'example.com', 'agent'];
 
         const safeUsers = users
             .filter(u => {
@@ -985,7 +996,7 @@ app.post('/api/admin/import', authenticateToken, jsonUpload.single('file'), asyn
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
     try {
-        const fileContent = fs.readFileSync(req.file.path, 'utf8');
+        const fileContent = req.file.buffer.toString('utf8');
         const imported = JSON.parse(fileContent);
 
         if (!imported.data) throw new Error('Invalid export format');
@@ -1004,8 +1015,7 @@ app.post('/api/admin/import', authenticateToken, jsonUpload.single('file'), asyn
         });
 
         await db.restore(allData);
-        fs.unlinkSync(req.file.path);
-        res.json({ message: 'Your study data has been restored successfully!' });
+        res.json({ success: true, message: 'Database restored successfully' });
     } catch (error) {
         console.error('Import error:', error);
         res.status(500).json({ error: 'Failed to restore your data: ' + error.message });

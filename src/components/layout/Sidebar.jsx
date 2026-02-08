@@ -9,6 +9,7 @@ import {
 import { logout } from '../../services/authService';
 import { useAuth } from '../../context/AuthContext';
 import useChat from '../../hooks/useChat';
+import { usePresence } from '../../hooks/usePresence';
 import PomodoroTimer from '../PomodoroTimer';
 import MusicPlayer from './MusicPlayer';
 import { navGroups } from '../../data/navigation';
@@ -17,6 +18,7 @@ import { NavLink } from 'react-router-dom';
 const Sidebar = ({ isOpen, onClose }) => {
     const { user } = useAuth();
     const { unreadCounts } = useChat();
+    const { onlineUsers } = usePresence();
 
     const totalUnread = Object.values(unreadCounts || {}).reduce((a, b) => a + b, 0);
 
@@ -182,6 +184,48 @@ const Sidebar = ({ isOpen, onClose }) => {
                             </div>
                         </div>
                     ))}
+                </div>
+
+                {/* Study Buddies Section (Real-time Presence) */}
+                <div className="px-4 mb-4 shrink-0">
+                    <div className="px-1 mb-2">
+                        <h3 className="inline-flex items-center px-3 py-1 bg-emerald-100/50 dark:bg-emerald-800/50 backdrop-blur-md rounded-full text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em] border border-emerald-200/30 dark:border-white/5 shadow-sm">
+                            Study Buddies
+                        </h3>
+                    </div>
+                    <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
+                        {onlineUsers.filter(u => u.id !== user?.id).length === 0 ? (
+                            <div className="p-3 text-[10px] text-slate-400 italic text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                                No buddies online yet
+                            </div>
+                        ) : (
+                            onlineUsers.filter(u => u.id !== user?.id).map((buddy) => (
+                                <div key={buddy.id} className="flex items-center justify-between p-2 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 group transition-all hover:bg-white dark:hover:bg-slate-800">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <div className="relative">
+                                            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center text-[10px] font-bold text-white shadow-sm overflow-hidden">
+                                                {buddy.avatar_url ? (
+                                                    <img src={buddy.avatar_url} alt="" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    buddy.name?.substring(0, 2).toUpperCase()
+                                                )}
+                                            </div>
+                                            <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-500 border border-white dark:border-slate-800 rounded-full shadow-sm" />
+                                        </div>
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate">{buddy.name}</span>
+                                            <span className="text-[9px] font-medium text-slate-400 truncate">{buddy.activity || 'Online'}</span>
+                                        </div>
+                                    </div>
+                                    {buddy.status === 'studying' && (
+                                        <div className="w-4 h-4 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500">
+                                            <Sparkles size={10} className="animate-pulse" />
+                                        </div>
+                                    )}
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </div>
 
                 {/* Spacer to push footer to bottom */}

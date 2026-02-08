@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { pomodoroService } from '../services/firestoreService';
 import api from '../services/api';
+import { usePresence } from '../hooks/usePresence';
 
 const TimerContext = createContext();
 
@@ -69,6 +70,29 @@ export const TimerProvider = ({ children }) => {
 
         lastSaveRef.current = Date.now();
     }, [timeLeft, isRunning, isBreak, sessionsCompleted, selectedTask]);
+
+    // --- PHASE 2: Real-time Presence Sync ---
+    const { updateActivity } = usePresence();
+    useEffect(() => {
+        const syncPresence = async () => {
+            if (isRunning) {
+                const activityText = isBreak
+                    ? 'Taking a break ☕'
+                    : `Studying: ${selectedTask?.title || 'General Focus'}`;
+
+                await updateActivity({
+                    status: isBreak ? 'online' : 'studying',
+                    activity: activityText
+                });
+            } else {
+                await updateActivity({
+                    status: 'online',
+                    activity: 'Idle / Planning'
+                });
+            }
+        };
+        syncPresence();
+    }, [isRunning, isBreak, selectedTask, updateActivity]);
 
     // Timer countdown effect
     useEffect(() => {
