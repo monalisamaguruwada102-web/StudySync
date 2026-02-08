@@ -40,7 +40,42 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
+// --- MIDDLEWARE ---
+function authenticateToken(req, res, next) {
+    // Check cookies first, then header fallback
+    const token = req.cookies.auth_token || (req.headers['authorization'] && req.headers['authorization'].split(' ')[1]);
+
+    if (!token) return res.sendStatus(401);
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) return res.sendStatus(403);
+        req.user = user;
+        next();
+    });
+}
+
+const jsonUpload = multer({
+    storage: multer.memoryStorage(),
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype === 'application/json' || path.extname(file.originalname).toLowerCase() === '.json') {
+            cb(null, true);
+        } else {
+            cb(new Error('Only JSON files are allowed'), false);
+        }
+    }
+});
+
+// Configure Multer for In-Memory uploads (sending directly to Supabase)
+const memoryUpload = multer({
+    storage: multer.memoryStorage(),
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype === 'application/pdf' || file.mimetype.startsWith('audio/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only PDFs and Audio files are allowed'), false);
+        }
+    }
+});
 
 // --- HEALTH CHECK ---
 app.get('/api/health', (req, res) => {
@@ -67,29 +102,6 @@ app.get('/api/download/installer', (req, res) => {
     })).sort((a, b) => b.time - a.time)[0];
 
     res.download(path.join(distPath, latestFile.name), latestFile.name);
-});
-
-const jsonUpload = multer({
-    storage: multer.memoryStorage(),
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype === 'application/json' || path.extname(file.originalname).toLowerCase() === '.json') {
-            cb(null, true);
-        } else {
-            cb(new Error('Only JSON files are allowed'), false);
-        }
-    }
-});
-
-// Configure Multer for In-Memory uploads (sending directly to Supabase)
-const memoryUpload = multer({
-    storage: multer.memoryStorage(),
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype === 'application/pdf' || file.mimetype.startsWith('audio/')) {
-            cb(null, true);
-        } else {
-            cb(new Error('Only PDFs and Audio files are allowed'), false);
-        }
-    }
 });
 
 // --- UPLOAD ROUTE (Cloud-Powered) ---
@@ -133,19 +145,6 @@ app.post('/api/upload', authenticateToken, (req, res) => {
     });
 });
 
-// Auth Middleware
-const authenticateToken = (req, res, next) => {
-    // Check cookies first, then header fallback
-    const token = req.cookies.auth_token || (req.headers['authorization'] && req.headers['authorization'].split(' ')[1]);
-
-    if (!token) return res.sendStatus(401);
-
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.sendStatus(403);
-        req.user = user;
-        next();
-    });
-};
 
 // --- AUTH ROUTES ---
 
