@@ -10,6 +10,7 @@ import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
 import ResourceShareModal from '../components/chat/ResourceShareModal';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 // Resource Card Component (for shared items)
 function ChatMessageResourceCard({ resource, onClick }) {
