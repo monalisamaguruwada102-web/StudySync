@@ -254,6 +254,46 @@ app.get('/api/users/all', authenticateToken, async (req, res) => {
     }
 });
 
+// Cloud Settings Routes
+app.get('/api/user/profile', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        let profile = await supabasePersistence.getById('users', userId);
+
+        if (!profile) {
+            profile = db.getById('users', userId);
+        }
+
+        if (profile) {
+            const { password, ...safe } = profile;
+            res.json(safe);
+        } else {
+            res.status(404).json({ error: 'User not found' });
+        }
+    } catch (error) {
+        console.error('Error fetching profile:', error);
+        res.status(500).json({ error: 'Failed to fetch profile' });
+    }
+});
+
+app.post('/api/user/settings', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const updates = req.body; // { theme, dark_mode, timer_state }
+
+        // Update local DB
+        db.update('users', userId, updates);
+
+        // Update Supabase
+        await supabasePersistence.upsertToCollection('users', { id: userId, ...updates });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error updating settings:', error);
+        res.status(500).json({ error: 'Failed to update settings' });
+    }
+});
+
 // --- SHARED RESOURCE ROUTES (With Cloud Fallback) ---
 // These specific routes are kept for specialized sharing logic (fetching by ID regardless of owner)
 app.get('/api/tutorials/shared/:id', authenticateToken, async (req, res) => {

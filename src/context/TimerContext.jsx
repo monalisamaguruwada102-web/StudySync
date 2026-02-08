@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { pomodoroService } from '../services/firestoreService';
+import api from '../services/api';
 
 const TimerContext = createContext();
 
@@ -16,36 +17,37 @@ export const TimerProvider = ({ children }) => {
     const intervalRef = useRef(null);
     const lastSaveRef = useRef(Date.now());
 
-    // Load state from localStorage on mount
+    // Load state from cloud on mount
     useEffect(() => {
-        const savedState = localStorage.getItem(STORAGE_KEY);
-        if (savedState) {
+        const fetchState = async () => {
             try {
-                const parsed = JSON.parse(savedState);
-                const timeSinceLastSave = Date.now() - parsed.lastUpdate;
-                const secondsElapsed = Math.floor(timeSinceLastSave / 1000);
+                const response = await api.get('/user/profile');
+                const cloudState = response.data.timer_state;
+                if (cloudState) {
+                    const timeSinceLastSave = Date.now() - cloudState.lastUpdate;
+                    const secondsElapsed = Math.floor(timeSinceLastSave / 1000);
 
-                // Restore state
-                setIsBreak(parsed.isBreak || false);
-                setSessionsCompleted(parsed.sessionsCompleted || 0);
-                setSelectedTask(parsed.selectedTask || null);
+                    setIsBreak(cloudState.isBreak || false);
+                    setSessionsCompleted(cloudState.sessionsCompleted || 0);
+                    setSelectedTask(cloudState.selectedTask || null);
 
-                // Adjust time if timer was running
-                if (parsed.isRunning) {
-                    const adjustedTime = Math.max(0, parsed.timeLeft - secondsElapsed);
-                    setTimeLeft(adjustedTime);
-                    setIsRunning(true);
-                } else {
-                    setTimeLeft(parsed.timeLeft || FOCUS_TIME);
-                    setIsRunning(false);
+                    if (cloudState.isRunning) {
+                        const adjustedTime = Math.max(0, cloudState.timeLeft - secondsElapsed);
+                        setTimeLeft(adjustedTime);
+                        setIsRunning(true);
+                    } else {
+                        setTimeLeft(cloudState.timeLeft || FOCUS_TIME);
+                        setIsRunning(false);
+                    }
                 }
             } catch (error) {
-                console.error('Failed to restore timer state:', error);
+                console.error('Failed to restore timer state from cloud:', error);
             }
-        }
+        };
+        fetchState();
     }, []);
 
-    // Save state to localStorage whenever it changes
+    // Save state to cloud whenever it changes (with debounce/threshold)
     useEffect(() => {
         const state = {
             timeLeft,
@@ -55,7 +57,16 @@ export const TimerProvider = ({ children }) => {
             selectedTask,
             lastUpdate: Date.now()
         };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+        // Sync to cloud every 30 seconds or on major state changes
+        const shouldSync = !isRunning || timeLeft % 30 === 0 || timeLeft === 0;
+
+        if (shouldSync) {
+            api.post('/user/settings', { timer_state: state }).catch(err => {
+                console.error('Failed to sync timer to cloud:', err);
+            });
+        }
+
         lastSaveRef.current = Date.now();
     }, [timeLeft, isRunning, isBreak, sessionsCompleted, selectedTask]);
 
