@@ -4,23 +4,32 @@ values ('study-materials', 'study-materials', true)
 on conflict (id) do nothing;
 
 -- Set up RLS for the 'study-materials' bucket
--- Allow public access to read files (since it's a public bucket, this is default, but explicit for clarity)
-create policy "Public Access"
-on storage.objects for select
-using ( bucket_id = 'study-materials' );
+-- Allow public access to read files
+BEGIN;
+  DROP POLICY IF EXISTS "Public Access" ON storage.objects;
+  CREATE POLICY "Public Access"
+  ON storage.objects FOR SELECT
+  USING ( bucket_id = 'study-materials' );
+COMMIT;
 
 -- Allow authenticated users to upload files
-create policy "Authenticated Users Upload"
-on storage.objects for insert
-with check (
-    bucket_id = 'study-materials' 
-    AND auth.role() = 'authenticated'
-);
+BEGIN;
+  DROP POLICY IF EXISTS "Authenticated Users Upload" ON storage.objects;
+  CREATE POLICY "Authenticated Users Upload"
+  ON storage.objects FOR INSERT
+  WITH CHECK (
+      bucket_id = 'study-materials' 
+      AND auth.role() = 'authenticated'
+  );
+COMMIT;
 
 -- Allow users to delete their own files
-create policy "Users can delete their own files"
-on storage.objects for delete
-using (
-    bucket_id = 'study-materials'
-    AND (auth.uid())::text = owner::text
-);
+BEGIN;
+  DROP POLICY IF EXISTS "Users can delete their own files" ON storage.objects;
+  CREATE POLICY "Users can delete their own files"
+  ON storage.objects FOR DELETE
+  USING (
+      bucket_id = 'study-materials'
+      AND (auth.uid())::text = owner::text
+  );
+COMMIT;

@@ -7,6 +7,17 @@
       "createdAt": "2026-01-28T00:44:45.648Z",
       "supabaseId": "1769561085648",
       "updatedAt": "2026-02-07T19:04:31.907Z"
+    },
+    {
+      "id": "6e145a1e-645c-4e80-93bc-9500469b8a1b",
+      "email": "monalisamaguruwada@gmail.com",
+      "password": "$2b$10$1A8q/9vTzMc5sfmVdn8hzuVZk41Ict4CV06Ipztb9IaL1YZWR8W0S",
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-02-08T15:55:53.470Z",
+      "supabaseId": "1769561085649",
+      "tutorial_completed": false
     }
   ],
   "modules": [

@@ -7,7 +7,6 @@ const TimerContext = createContext();
 
 const FOCUS_TIME = 60 * 60; // 60 minutes
 const BREAK_TIME = 5 * 60;  // 5 minutes
-const STORAGE_KEY = 'pomodoro_timer_state';
 
 export const TimerProvider = ({ children }) => {
     const [timeLeft, setTimeLeft] = useState(FOCUS_TIME);
@@ -184,7 +183,6 @@ export const TimerProvider = ({ children }) => {
         setIsBreak(false);
         setSessionsCompleted(0);
         setSelectedTask(null);
-        localStorage.removeItem(STORAGE_KEY);
     }, []);
 
     const formatTime = useCallback((seconds) => {
