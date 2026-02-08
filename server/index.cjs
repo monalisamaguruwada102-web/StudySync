@@ -1227,6 +1227,33 @@ const restoreCloudData = async () => {
     console.log('🔄 Restoring groups and conversations from Supabase...');
 
     try {
+        // 0. Restore Users (Safe Merge for Chat Visibility)
+        const cloudUsers = await supabasePersistence.fetchAll('users') || [];
+        const localUsers = db.get('users') || [];
+        for (const cloudUser of cloudUsers) {
+            const localUser = localUsers.find(u => u.email === cloudUser.email || u.id === cloudUser.id);
+            if (localUser) {
+                if (!localUser.supabaseId) {
+                    db.update('users', localUser.id, { supabaseId: cloudUser.supabaseId || cloudUser.id });
+                }
+            } else {
+                // Insert new user from cloud (Note: Password will be missing/invalid for local auth, but visible in Chat)
+                db.insert('users', { ...cloudUser, supabaseId: cloudUser.id });
+            }
+        }
+
+        // 0.1 Restore Tasks (Kanban Persistence)
+        const cloudTasks = await supabasePersistence.fetchAll('tasks') || [];
+        const localTasks = db.get('tasks') || [];
+        for (const cloudTask of cloudTasks) {
+            const localTask = localTasks.find(t => t.id === cloudTask.id || (t.supabaseId && t.supabaseId === cloudTask.id));
+            if (!localTask) {
+                db.insert('tasks', { ...cloudTask, supabaseId: cloudTask.id });
+            } else if (!localTask.supabaseId) {
+                db.update('tasks', localTask.id, { supabaseId: cloudTask.id });
+            }
+        }
+
         // 1. Restore Groups
         const cloudGroups = await supabasePersistence.getGroups() || [];
         const localGroups = db.get('groups') || [];
