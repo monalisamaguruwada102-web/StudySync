@@ -63,6 +63,25 @@ DROP POLICY IF EXISTS "Allow all for anon" ON notes;
 CREATE POLICY "Allow all for anon" ON notes FOR ALL USING (true) WITH CHECK (true);
 
 
+
+-- 5. Study Logs Table
+CREATE TABLE IF NOT EXISTS study_logs (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  module_id TEXT REFERENCES modules(id) ON DELETE SET NULL,
+  date DATE,
+  hours NUMERIC,
+  topic TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Enable RLS for study_logs
+ALTER TABLE study_logs ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow all for anon" ON study_logs;
+CREATE POLICY "Allow all for anon" ON study_logs FOR ALL USING (true) WITH CHECK (true);
+
+
 -- 4. Ensure other tables have user_id and timestamps if missing
 DO $$ 
 BEGIN 

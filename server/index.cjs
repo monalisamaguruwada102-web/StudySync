@@ -225,6 +225,15 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
     res.json({ user: userWithoutPassword, authorized: isAuthorized });
 });
 
+app.get('/api/users/all', authenticateToken, (req, res) => {
+    const users = db.get('users') || [];
+    const safeUsers = users.map(u => {
+        const { password, ...safe } = u;
+        return safe;
+    });
+    res.json(safeUsers);
+});
+
 // --- SHARED RESOURCE ROUTES (With Cloud Fallback) ---
 // These specific routes are kept for specialized sharing logic (fetching by ID regardless of owner)
 app.get('/api/tutorials/shared/:id', authenticateToken, async (req, res) => {
@@ -378,6 +387,29 @@ app.get('/api/flashcardDecks/shared/:id', authenticateToken, async (req, res) =>
     } catch (error) {
         console.error('Error fetching shared flashcard deck:', error);
         res.status(500).json({ error: 'System error fetching shared flashcard deck.' });
+    }
+});
+
+// --- CONVERSATION ROUTES ---
+
+app.get('/api/conversations', authenticateToken, async (req, res) => {
+    try {
+        // 1. Fetch from Supabase
+        let conversations = await supabasePersistence.getConversations(req.user.id);
+
+        // 2. Fallback to local if Supabase returns null (error or not configured)
+        if (!conversations) {
+            // console.log('Fetching conversations from local DB (Supabase unavailable)');
+            const localConvs = db.get('conversations') || [];
+            conversations = localConvs.filter(c =>
+                c.participants && c.participants.includes(req.user.id)
+            ).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
+        }
+
+        res.json(conversations || []);
+    } catch (error) {
+        console.error('Error fetching conversations:', error);
+        res.status(500).json({ error: 'Failed to fetch conversations' });
     }
 });
 
@@ -543,15 +575,22 @@ const genericCollections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 
 
 
 app.post('/api/studyLogs', authenticateToken, async (req, res) => {
-    const item = db.insert('studyLogs', { ...req.body, userId: req.user.id });
+    let item = db.insert('studyLogs', { ...req.body, userId: req.user.id });
     const xpAmount = Math.round(parseFloat(req.body.hours || 0) * 100);
     const result = db.addXP(req.user.id, xpAmount);
 
     // Sync to Supabase
     try {
+        // 1. Sync User XP
         await supabasePersistence.upsertToCollection('users', result.user);
+
+        // 2. Sync Study Log Item
+        const cloudItem = await supabasePersistence.upsertToCollection('study_logs', item);
+        if (cloudItem) {
+            item = db.update('studyLogs', item.id, { supabaseId: cloudItem.id });
+        }
     } catch (err) {
-        console.warn('XP sync failed for study logs:', err.message);
+        console.warn('Sync failed for study logs:', err.message);
     }
 
     res.json({ item, xpGain: xpAmount, ...result });
@@ -1246,6 +1285,10 @@ const syncLocalDataToCloud = async () => {
         const users = db.get('users') || [];
         for (const localUser of users) {
             if (!localUser.supabaseId) {
+                if (!localUser.email) {
+                    console.warn(`⚠️ Skipping sync for user ${localUser.id} (missing email)`);
+                    continue;
+                }
                 console.log(`📡 Syncing user: ${localUser.email}`);
                 // Use upsert to handle existing emails or new mappings
                 const cloudUser = await supabasePersistence.upsertToCollection('users', localUser);
