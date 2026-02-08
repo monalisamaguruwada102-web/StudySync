@@ -25,39 +25,6 @@
       "updatedAt": "2026-02-07T19:04:32.634Z"
     },
     {
-      "email": "test_verified_ps@example.com",
-      "password": "$2b$10$wi/zg/EITv6YqLcacJhX7.glCgm3c.EAeMzkhHOrPz9T78vQX.fy.",
-      "xp": 0,
-      "level": 1,
-      "badges": [],
-      "id": "1770285120974",
-      "createdAt": "2026-02-05T09:52:00.975Z",
-      "supabaseId": "1770285120974",
-      "updatedAt": "2026-02-07T19:04:33.029Z"
-    },
-    {
-      "email": "testuser_local@example.com",
-      "password": "$2b$10$Q7FwBWTBZAO8kO2zJOx2c.Vc8wrEjHIAj9ZUfW0QwMv/X04Ocjzva",
-      "xp": 0,
-      "level": 1,
-      "badges": [],
-      "id": "1770288071029",
-      "createdAt": "2026-02-05T10:41:11.029Z",
-      "supabaseId": "1770288071029",
-      "updatedAt": "2026-02-07T19:04:33.332Z"
-    },
-    {
-      "email": "test-agent-1770288292269@example.com",
-      "password": "$2b$10$k5Zd1ugVQYCrjVjQ/jdITeypBJxFGXoIn8QVS/WuvS5P2HkDQfyBm",
-      "xp": 0,
-      "level": 1,
-      "badges": [],
-      "id": "1770288292523",
-      "createdAt": "2026-02-05T10:44:52.523Z",
-      "supabaseId": "1770288292523",
-      "updatedAt": "2026-02-08T09:16:00.161Z"
-    },
-    {
       "id": "3d6ed092-db5d-4c1e-9768-5a3be209827a",
       "email": "joshwebsinfo@gmail.com",
       "password": "$2b$10$LJC967y18V/Y5Tjh/ufjzuivX8iwVg.es4YZ7wlvTaAF9lVEh1rma",
