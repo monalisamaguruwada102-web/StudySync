@@ -656,7 +656,10 @@ const tableMap = {
     'flashcards': 'flashcards',
     'calendarEvents': 'calendar_events',
     'pomodoroSessions': 'pomodoro_sessions',
-    'tutorials': 'tutorials'
+    'tutorials': 'tutorials',
+    'conversations': 'conversations',
+    'messages': 'messages',
+    'groups': 'groups'
 };
 
 genericCollections.forEach(collection => {
