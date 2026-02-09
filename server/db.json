@@ -492,7 +492,9 @@
       "status": "pending",
       "initiatorId": "94b96706-33d1-4bed-bcc8-cd0c5281ea85",
       "id": "1e7015b4-4ae6-4f3e-a266-b6a2ae6f2bab",
-      "createdAt": "2026-02-09T06:04:45.911Z"
+      "createdAt": "2026-02-09T06:04:45.911Z",
+      "supabaseId": "cbe67069-3379-4261-aa0c-37bfb3fe34cc",
+      "updatedAt": "2026-02-09T06:45:26.546Z"
     }
   ],
   "messages": [],
