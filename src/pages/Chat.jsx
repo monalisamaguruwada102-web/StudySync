@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Send, Share2, Users, Plus, Search, X, Copy, Check, FileText, Brain, Youtube, ExternalLink, LayoutDashboard, CheckCheck, Play, ArrowDown } from 'lucide-react';
+import { MessageCircle, Send, Share2, Users, Plus, Search, X, Copy, Check, FileText, Brain, Youtube, ExternalLink, LayoutDashboard, CheckCheck, Play, ArrowDown, RefreshCw, Loader2, Clock, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, isToday, isYesterday } from 'date-fns';
 import useChat from '../hooks/useChat';
@@ -242,6 +242,7 @@ function Chat() {
     const [copied, setCopied] = useState(false);
     const [isAtBottom, setIsAtBottom] = useState(true);
     const [showNewMessageToast, setShowNewMessageToast] = useState(false);
+    const [isRefreshingUsers, setIsRefreshingUsers] = useState(false);
     const messagesEndRef = useRef(null);
     const scrollContainerRef = useRef(null);
 
@@ -375,11 +376,14 @@ function Chat() {
 
     // --- Handlers ---
     async function fetchUsers() {
+        setIsRefreshingUsers(true);
         try {
             const response = await api.get('/users/all');
             setUsers(response.data.filter(u => u.id !== currentUser.id));
         } catch (error) {
             console.error('Error fetching users:', error);
+        } finally {
+            setIsRefreshingUsers(false);
         }
     }
 
@@ -822,11 +826,42 @@ function Chat() {
                                     </div>
                                 </div>
                             ) : activeConversation?.status === 'pending' ? (
-                                <div className="text-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
-                                    <p className="text-sm text-slate-500">
-                                        Waiting for {getConversationDisplay(activeConversation).title} to accept your request.
-                                    </p>
-                                </div>
+                                /* Premium Verification Prompt */
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="relative overflow-hidden p-6 rounded-2xl bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-amber-900/20 dark:via-orange-900/20 dark:to-yellow-900/20 border border-amber-200/50 dark:border-amber-700/30 shadow-lg shadow-amber-500/10"
+                                >
+                                    {/* Animated Background */}
+                                    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                                        <div className="absolute -top-4 -right-4 w-24 h-24 bg-amber-400/20 rounded-full blur-2xl animate-pulse"></div>
+                                        <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-orange-400/20 rounded-full blur-2xl animate-pulse delay-500"></div>
+                                    </div>
+
+                                    <div className="relative flex flex-col items-center text-center space-y-3">
+                                        <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/30 transform rotate-3">
+                                            <Clock size={28} className="text-white animate-pulse" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-lg font-bold text-amber-800 dark:text-amber-200 mb-1 flex items-center justify-center gap-2">
+                                                <Sparkles size={16} className="text-amber-500" />
+                                                Awaiting Response
+                                                <Sparkles size={16} className="text-amber-500" />
+                                            </h4>
+                                            <p className="text-sm text-amber-700/80 dark:text-amber-300/80">
+                                                Waiting for <span className="font-semibold">{getConversationDisplay(activeConversation).title}</span> to accept your chat request
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-xs text-amber-600/60 dark:text-amber-400/60">
+                                            <div className="flex space-x-1">
+                                                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce"></span>
+                                                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce delay-100"></span>
+                                                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce delay-200"></span>
+                                            </div>
+                                            <span>They'll be notified</span>
+                                        </div>
+                                    </div>
+                                </motion.div>
                             ) : (
                                 <div className="flex items-end gap-2 bg-slate-50 dark:bg-[#111b21] p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner">
                                     <button
@@ -890,19 +925,55 @@ function Chat() {
             {/* User Selector Modal */}
             <Modal isOpen={showUserSelector} onClose={() => setShowUserSelector(false)} title="Start a Conversation">
                 <div className="space-y-4">
-                    <Input
-                        placeholder="Search users..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        icon={Search}
-                    />
-                    <div className="max-h-96 overflow-y-auto space-y-2">
-                        {users.length === 0 ? (
-                            <div className="text-center py-8 text-slate-500">
-                                <p>No users found on the server.</p>
+                    <div className="flex gap-2">
+                        <div className="flex-1">
+                            <Input
+                                placeholder="Search users..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                icon={Search}
+                            />
+                        </div>
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={fetchUsers}
+                            disabled={isRefreshingUsers}
+                            className={`px-4 py-2 rounded-xl font-medium text-sm transition-all flex items-center gap-2 shadow-md
+                                ${isRefreshingUsers
+                                    ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
+                                    : 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:shadow-lg hover:shadow-blue-500/30'}`}
+                        >
+                            {isRefreshingUsers ? (
+                                <Loader2 size={16} className="animate-spin" />
+                            ) : (
+                                <RefreshCw size={16} />
+                            )}
+                            {isRefreshingUsers ? 'Loading...' : 'Refresh'}
+                        </motion.button>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto space-y-2 custom-scrollbar">
+                        {isRefreshingUsers ? (
+                            <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                                <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+                                <p className="text-sm text-slate-500 dark:text-slate-400">Fetching users...</p>
+                            </div>
+                        ) : users.length === 0 ? (
+                            <div className="text-center py-12">
+                                <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Users size={32} className="text-slate-400" />
+                                </div>
+                                <p className="text-slate-500 dark:text-slate-400 mb-4">No users found on the server.</p>
+                                <button
+                                    onClick={fetchUsers}
+                                    className="text-blue-500 hover:text-blue-600 text-sm font-medium flex items-center gap-2 mx-auto"
+                                >
+                                    <RefreshCw size={14} /> Try refreshing
+                                </button>
                             </div>
                         ) : filteredUsers.length === 0 ? (
                             <div className="text-center py-8 text-slate-500">
+                                <Search size={32} className="mx-auto mb-2 opacity-50" />
                                 <p>No users match your search.</p>
                             </div>
                         ) : (
@@ -911,21 +982,42 @@ function Chat() {
                                 return (
                                     <motion.div
                                         key={user.id}
-                                        whileHover={{ scale: 1.02 }}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        whileHover={{ scale: 1.02, x: 4 }}
                                         onClick={() => handleSelectUser(user.id)}
-                                        className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-between"
+                                        className="p-4 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-800/80 rounded-xl cursor-pointer hover:from-blue-50 hover:to-indigo-50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 transition-all flex items-center justify-between border border-transparent hover:border-blue-200 dark:hover:border-blue-800 group shadow-sm hover:shadow-md"
                                     >
-                                        <div>
-                                            <div className="font-medium text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                                                {user.email}
-                                                {isOnline && <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>}
+                                        <div className="flex items-center gap-3">
+                                            <div className="relative">
+                                                <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md">
+                                                    {user.email?.substring(0, 2).toUpperCase()}
+                                                </div>
+                                                {isOnline && (
+                                                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white dark:border-slate-800 rounded-full"></span>
+                                                )}
                                             </div>
-                                            <div className="text-xs text-slate-500">Level {user.level} • {user.xp} XP</div>
+                                            <div>
+                                                <div className="font-semibold text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                                    {user.email?.split('@')[0]}
+                                                </div>
+                                                <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                                                    <span className="px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded font-medium">Lv.{user.level || 1}</span>
+                                                    <span>{user.xp || 0} XP</span>
+                                                    {isOnline && <span className="text-emerald-500 font-medium">• Online</span>}
+                                                </div>
+                                            </div>
                                         </div>
+                                        <MessageCircle size={18} className="text-slate-300 group-hover:text-blue-500 transition-colors" />
                                     </motion.div>
                                 );
                             })
                         )}
+                    </div>
+                    <div className="pt-2 border-t border-slate-200 dark:border-slate-700">
+                        <p className="text-xs text-slate-400 text-center">
+                            {users.length} user{users.length !== 1 ? 's' : ''} available • Click to start chatting
+                        </p>
                     </div>
                 </div>
             </Modal>

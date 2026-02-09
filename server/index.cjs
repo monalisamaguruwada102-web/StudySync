@@ -157,20 +157,70 @@ app.post('/api/auth/register', async (req, res) => {
         return res.status(400).json({ error: 'Email and password are required' });
     }
 
+    // Check if user already exists locally
     const existingUser = db.find('users', u => u.email === email);
     if (existingUser) {
         return res.status(400).json({ error: 'User already exists with this email' });
     }
 
+    let userId = null;
+    let authUser = null;
+
+    // Try to register with Supabase Auth first
+    try {
+        authUser = await supabasePersistence.signUpUser(email, password);
+
+        if (authUser && authUser.error) {
+            // Supabase Auth error (e.g., user already exists)
+            console.log('⚠️ Supabase Auth registration failed:', authUser.error);
+            // Fall through to local registration
+        } else if (authUser && authUser.id) {
+            userId = authUser.id;
+            console.log(`✅ User registered in Supabase Auth: ${email}`);
+
+            // Create profile in profiles table
+            await supabasePersistence.upsertProfile({
+                id: userId,
+                email,
+                name: name || email.split('@')[0],
+                xp: 0,
+                level: 1,
+                badges: [],
+                newly_registered: true,
+                tutorial_completed: false
+            });
+            console.log(`✅ Profile created for user: ${email}`);
+        }
+    } catch (authErr) {
+        console.error('❌ Supabase Auth registration error:', authErr.message);
+        // Continue with local registration as fallback
+    }
+
+    // Create local user (acts as cache and fallback)
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = db.insert('users', {
+        id: userId, // Use Supabase Auth ID if available
         email,
         password: hashedPassword,
+        name: name || email.split('@')[0],
         xp: 0,
         level: 1,
         badges: [],
-        newly_registered: true
+        newly_registered: true,
+        supabaseAuthId: userId // Track Supabase Auth ID
     });
+
+    // If no Supabase Auth ID, also sync to users table for backwards compatibility
+    if (!userId) {
+        try {
+            const cloudUser = await supabasePersistence.upsertToCollection('users', user);
+            if (cloudUser) {
+                db.update('users', user.id, { supabaseId: cloudUser.id });
+            }
+        } catch (syncErr) {
+            console.error('❌ Failed to sync new user to Supabase users table:', syncErr.message);
+        }
+    }
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
 
@@ -181,16 +231,6 @@ app.post('/api/auth/register', async (req, res) => {
         sameSite: 'lax',
         maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
     });
-
-    // Sync to Supabase immediately to avoid data loss
-    try {
-        const cloudUser = await supabasePersistence.upsertToCollection('users', user);
-        if (cloudUser) {
-            db.update('users', user.id, { supabaseId: cloudUser.id });
-        }
-    } catch (syncErr) {
-        console.error('❌ Failed to sync new user to Supabase:', syncErr.message);
-    }
 
     const { password: _, ...userWithoutPassword } = user;
     res.status(201).json({ user: userWithoutPassword });
@@ -199,29 +239,68 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body;
 
-    let user = db.find('users', u => u.email === email);
+    let user = null;
+    let authMethod = 'local';
 
-    // Initial check: if not found locally, try finding in Supabase (Cloud Fallback)
-    if (!user) {
-        console.log(`User ${email} not found locally, checking Supabase...`);
-        const cloudUser = await supabasePersistence.getItemByField('users', 'email', email);
+    // Try Supabase Auth sign-in first
+    try {
+        const authResult = await supabasePersistence.signInUser(email, password);
 
-        if (cloudUser) {
-            // Found in cloud! Sync it down.
-            console.log(`User ${email} found in Supabase. Syncing to local DB.`);
-            user = db.insert('users', {
-                ...cloudUser,
-                supabaseId: cloudUser.id // Ensure we track the cloud ID
-            });
+        if (authResult && !authResult.error && authResult.id) {
+            console.log(`✅ User authenticated via Supabase Auth: ${email}`);
+            authMethod = 'supabase';
+
+            // Check local cache first
+            user = db.find('users', u => u.email === email);
+
+            if (!user) {
+                // Create local cache entry from Supabase Auth user
+                user = db.insert('users', {
+                    id: authResult.id,
+                    email: authResult.email,
+                    supabaseAuthId: authResult.id,
+                    xp: 0,
+                    level: 1,
+                    badges: []
+                });
+            }
+        } else {
+            console.log(`⚠️ Supabase Auth login failed for ${email}, trying local...`);
+        }
+    } catch (authErr) {
+        console.log(`⚠️ Supabase Auth unavailable, falling back to local: ${authErr.message}`);
+    }
+
+    // Fallback: Local authentication
+    if (!user || authMethod === 'local') {
+        user = db.find('users', u => u.email === email);
+
+        // If not found locally, try finding in Supabase users table (Cloud Fallback)
+        if (!user) {
+            console.log(`User ${email} not found locally, checking Supabase...`);
+            const cloudUser = await supabasePersistence.getItemByField('users', 'email', email);
+
+            if (cloudUser) {
+                console.log(`User ${email} found in Supabase. Syncing to local DB.`);
+                user = db.insert('users', {
+                    ...cloudUser,
+                    supabaseId: cloudUser.id
+                });
+            }
+        }
+
+        if (!user) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+
+        // Verify password locally (only if not already authenticated via Supabase Auth)
+        if (authMethod === 'local') {
+            const validPassword = await bcrypt.compare(password, user.password);
+            if (!validPassword) {
+                return res.status(401).json({ error: 'Invalid credentials' });
+            }
         }
     }
-
-    if (!user) {
-        return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) return res.status(401).json({ error: 'Invalid credentials' });
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
 
@@ -233,14 +312,19 @@ app.post('/api/auth/login', async (req, res) => {
         maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
     });
 
-    // Sync to Supabase immediately to avoid data loss
-    try {
-        const cloudUser = await supabasePersistence.upsertToCollection('users', user);
-        if (cloudUser) {
-            db.update('users', user.id, { supabaseId: cloudUser.id });
+    // Sync profile data on successful login
+    if (authMethod === 'supabase') {
+        try {
+            await supabasePersistence.upsertProfile({
+                id: user.id,
+                email: user.email,
+                xp: user.xp || 0,
+                level: user.level || 1,
+                badges: user.badges || []
+            });
+        } catch (syncErr) {
+            console.error('❌ Failed to sync profile on login:', syncErr.message);
         }
-    } catch (syncErr) {
-        console.error('❌ Failed to sync new user to Supabase:', syncErr.message);
     }
 
     const { password: _, ...userWithoutPassword } = user;
@@ -264,8 +348,13 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
 
 app.get('/api/users/all', authenticateToken, async (req, res) => {
     try {
-        // Fetch all users from Supabase (source of truth)
-        let users = await supabasePersistence.fetchAll('users');
+        // First try to fetch from profiles table (linked to auth.users)
+        let users = await supabasePersistence.getAllProfiles();
+
+        // Fallback to users table if profiles table doesn't exist or is empty
+        if (!users || users.length === 0) {
+            users = await supabasePersistence.fetchAll('users');
+        }
 
         if (!users) {
             // Fallback to local

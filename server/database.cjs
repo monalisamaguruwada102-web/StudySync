@@ -150,8 +150,8 @@ const db = {
 
     insert: (collection, item) => {
         const data = readDB();
-        // Use UUID for compatibility with Supabase
-        const id = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
+        // Use provided ID if available (for sync), otherwise generate UUID
+        const id = item.id || (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString());
         const newItem = {
             ...item,
             id,

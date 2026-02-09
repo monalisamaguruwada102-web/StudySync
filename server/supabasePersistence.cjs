@@ -604,8 +604,99 @@ const uploadFile = async (bucket, path, fileBuffer, contentType) => {
     return publicUrl;
 };
 
+// Auth Helper
+const signUpUser = async (email, password) => {
+    const client = initSupabase();
+    if (!client) return null;
+
+    const { data, error } = await client.auth.signUp({
+        email,
+        password
+    });
+
+    if (error) {
+        console.error('Error signing up user in Supabase Auth:', error.message);
+        return { error: error.message };
+    }
+    return data.user;
+};
+
+// Sign in with Supabase Auth
+const signInUser = async (email, password) => {
+    const client = initSupabase();
+    if (!client) return null;
+
+    const { data, error } = await client.auth.signInWithPassword({
+        email,
+        password
+    });
+
+    if (error) {
+        console.error('Supabase Auth sign-in error:', error.message);
+        return { error: error.message };
+    }
+    return data.user;
+};
+
+// Fetch all profiles (for chat user list)
+const getAllProfiles = async () => {
+    const client = initSupabase();
+    if (!client) return null;
+
+    const { data, error } = await client
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching profiles:', error.message);
+        return null;
+    }
+    return data.map(profile => ({
+        id: profile.id,
+        email: profile.email,
+        name: profile.name,
+        xp: profile.xp || 0,
+        level: profile.level || 1,
+        badges: profile.badges || [],
+        createdAt: profile.created_at
+    }));
+};
+
+// Upsert profile (for storing user metadata)
+const upsertProfile = async (profile) => {
+    const client = initSupabase();
+    if (!client) return null;
+
+    const { data, error } = await client
+        .from('profiles')
+        .upsert([{
+            id: profile.id,
+            email: profile.email,
+            name: profile.name,
+            xp: profile.xp || 0,
+            level: profile.level || 1,
+            badges: profile.badges || [],
+            newly_registered: profile.newly_registered,
+            tutorial_completed: profile.tutorial_completed
+        }])
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error upserting profile:', error.message);
+        return null;
+    }
+    return data;
+};
+
 module.exports = {
     initSupabase,
+    // Auth
+    signUpUser,
+    signInUser,
+    getAllProfiles,
+    upsertProfile,
     // Tutorials
     getTutorials,
     getTutorialById,
