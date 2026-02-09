@@ -210,16 +210,14 @@ app.post('/api/auth/register', async (req, res) => {
         supabaseAuthId: userId // Track Supabase Auth ID
     });
 
-    // If no Supabase Auth ID, also sync to users table for backwards compatibility
-    if (!userId) {
-        try {
-            const cloudUser = await supabasePersistence.upsertToCollection('users', user);
-            if (cloudUser) {
-                db.update('users', user.id, { supabaseId: cloudUser.id });
-            }
-        } catch (syncErr) {
-            console.error('❌ Failed to sync new user to Supabase users table:', syncErr.message);
+    // Mirror to Supabase 'users' table for backward compatibility and visibility
+    try {
+        const cloudUser = await supabasePersistence.upsertToCollection('users', user);
+        if (cloudUser && !user.supabaseId) {
+            db.update('users', user.id, { supabaseId: cloudUser.id });
         }
+    } catch (syncErr) {
+        console.error('❌ Failed to sync user to Supabase users table:', syncErr.message);
     }
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
@@ -348,16 +346,36 @@ app.get('/api/auth/me', authenticateToken, (req, res) => {
 
 app.get('/api/users/all', authenticateToken, async (req, res) => {
     try {
-        // First try to fetch from profiles table (linked to auth.users)
-        let users = await supabasePersistence.getAllProfiles();
+        // Fetch from both sources to ensure full visibility
+        const [profileUsers, legacyUsers] = await Promise.all([
+            supabasePersistence.getAllProfiles() || [],
+            supabasePersistence.fetchAll('users') || []
+        ]);
 
-        // Fallback to users table if profiles table doesn't exist or is empty
-        if (!users || users.length === 0) {
-            users = await supabasePersistence.fetchAll('users');
-        }
+        // Merge and deduplicate by email
+        const userMap = new Map();
 
-        if (!users) {
-            // Fallback to local
+        // Process legacy users first
+        (legacyUsers || []).forEach(u => {
+            if (u.email) userMap.set(u.email.toLowerCase(), { ...u, source: 'legacy' });
+        });
+
+        // Process profiles (new users/Auth users) - these take precedence for metadata
+        (profileUsers || []).forEach(p => {
+            if (p.email) {
+                const existing = userMap.get(p.email.toLowerCase());
+                userMap.set(p.email.toLowerCase(), {
+                    ...(existing || {}),
+                    ...p,
+                    source: 'profile'
+                });
+            }
+        });
+
+        let users = Array.from(userMap.values());
+
+        // Final fallback to local if still empty
+        if (users.length === 0) {
             users = db.get('users') || [];
         }
 

@@ -6,7 +6,17 @@
       "id": "1769561085648",
       "createdAt": "2026-01-28T00:44:45.648Z",
       "supabaseId": "1769561085648",
-      "updatedAt": "2026-02-07T19:04:31.907Z"
+      "updatedAt": "2026-02-09T05:59:33.897Z",
+      "timer_state": {
+        "timeLeft": 3600,
+        "isRunning": false,
+        "isBreak": false,
+        "sessionsCompleted": 0,
+        "selectedTask": null,
+        "lastUpdate": 1770616764058
+      },
+      "theme": "default",
+      "dark_mode": false
     },
     {
       "id": "6e145a1e-645c-4e80-93bc-9500469b8a1b",
@@ -17,6 +27,50 @@
       "badges": [],
       "createdAt": "2026-02-08T15:55:53.470Z",
       "supabaseId": "1769561085649",
+      "tutorial_completed": false
+    },
+    {
+      "id": "1738640325000",
+      "email": "andrewmaposa27@gmail.com",
+      "password": "$2b$10$B81YDknsPmNqcvVbNi/SYeV0Udw3oRAVoPNQ5TGYo7oJZYBXUMkmK",
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-02-09T05:52:35.342Z",
+      "supabaseId": "1738640325000",
+      "tutorial_completed": false
+    },
+    {
+      "id": "94b96706-33d1-4bed-bcc8-cd0c5281ea85",
+      "email": "joshwebsinfo@gmail.com",
+      "password": "$2b$10$yxN1yQl5PO.mxx3LvIgOt.GV/NngU8s6Q8RgxbmoTS3RZaurCe9MS",
+      "name": "joshwebsinfo",
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "newly_registered": true,
+      "supabaseAuthId": null,
+      "createdAt": "2026-02-09T06:01:06.433Z",
+      "tutorial_completed": true,
+      "timer_state": {
+        "timeLeft": 3600,
+        "isRunning": false,
+        "isBreak": false,
+        "sessionsCompleted": 0,
+        "selectedTask": null,
+        "lastUpdate": 1770616869555
+      },
+      "updatedAt": "2026-02-09T06:01:23.645Z"
+    },
+    {
+      "id": "2e421591-dbcb-458a-bf2c-fa5460065b64",
+      "email": "andrew27@gmail.com",
+      "password": "$2b$10$B7OgAaVrh0aIxgszsbdoxOqOKwXcBh15P9mWBwBbA8SHO3InkZb.y",
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-02-09T06:10:22.649Z",
+      "supabaseId": "2e421591-dbcb-458a-bf2c-fa5460065b64",
       "tutorial_completed": false
     }
   ],
@@ -426,7 +480,21 @@
   "calendarEvents": [],
   "pomodoroSessions": [],
   "tutorials": [],
-  "conversations": [],
+  "conversations": [
+    {
+      "type": "direct",
+      "participants": [
+        "94b96706-33d1-4bed-bcc8-cd0c5281ea85",
+        "1769561085648"
+      ],
+      "lastMessage": "",
+      "lastMessageTime": "2026-02-09T06:04:45.475Z",
+      "status": "pending",
+      "initiatorId": "94b96706-33d1-4bed-bcc8-cd0c5281ea85",
+      "id": "1e7015b4-4ae6-4f3e-a266-b6a2ae6f2bab",
+      "createdAt": "2026-02-09T06:04:45.911Z"
+    }
+  ],
   "messages": [],
   "groups": [],
   "settings": {
