@@ -161,7 +161,9 @@ const mapToTable = (item, table = null) => {
         if (key === 'timerState') continue; // Local-only field
         if (key === 'dark_mode') continue; // Local-only field
         if (key === 'darkMode') continue; // Local-only field
+        if (key === 'theme') continue; // Local-only field
         if (key === 'updatedAt' && table === 'users') continue;
+        if ((key === 'name' || key === 'badges') && table === 'users') continue;
         if (key === 'password' && table === 'users') {
             // Include password for users table as it exists there locally and we sync it
             mapped.password = item[key];
@@ -301,6 +303,12 @@ const getItemByField = async (table, field, value) => {
 const upsertToCollection = async (table, item) => {
     const client = initSupabase();
     if (!client) return null;
+
+    // Safety: Don't sync items with null emails to the users table
+    if (table === 'users' && !item.email) {
+        console.warn(`⚠️ Skipping upsert to ${table} for item ${item.id} - missing email`);
+        return null;
+    }
 
     const row = mapToTable(item, table);
     const { data, error } = await client
