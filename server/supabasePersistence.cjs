@@ -159,6 +159,8 @@ const mapToTable = (item, table = null) => {
         if (key === 'initiatorId') continue;
         if (key === 'timer_state') continue; // Local-only field
         if (key === 'timerState') continue; // Local-only field
+        if (key === 'dark_mode') continue; // Local-only field
+        if (key === 'darkMode') continue; // Local-only field
         if (key === 'updatedAt' && table === 'users') continue;
         if (key === 'password' && table === 'users') {
             // Include password for users table as it exists there locally and we sync it
