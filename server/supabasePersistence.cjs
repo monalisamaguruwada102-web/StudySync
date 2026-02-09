@@ -150,12 +150,15 @@ const mapToTable = (item, table = null) => {
     for (const key in item) {
         // Skip internal tracking fields that don't exist in Supabase tables
         if (key === 'supabaseId') continue;
+        if (key === 'supabaseAuthId') continue;
         if (key === 'newly_registered') continue;
         if (key === 'videoId') continue;
         if (key === 'thumbnail') continue;
         if (key === 'tutorialCompleted') continue;
         if (key === 'tutorial_completed') continue;
         if (key === 'initiatorId') continue;
+        if (key === 'timer_state') continue; // Local-only field
+        if (key === 'timerState') continue; // Local-only field
         if (key === 'updatedAt' && table === 'users') continue;
         if (key === 'password' && table === 'users') {
             // Include password for users table as it exists there locally and we sync it
