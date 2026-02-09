@@ -60,7 +60,8 @@
         "selectedTask": null,
         "lastUpdate": 1770618621939
       },
-      "updatedAt": "2026-02-09T06:30:28.519Z"
+      "updatedAt": "2026-02-09T07:00:02.104Z",
+      "supabaseId": "94b96706-33d1-4bed-bcc8-cd0c5281ea85"
     },
     {
       "id": "2e421591-dbcb-458a-bf2c-fa5460065b64",
@@ -71,6 +72,17 @@
       "badges": [],
       "createdAt": "2026-02-09T06:10:22.649Z",
       "supabaseId": "2e421591-dbcb-458a-bf2c-fa5460065b64",
+      "tutorial_completed": false
+    },
+    {
+      "id": "37f98a6a-1fab-4ef1-9c8e-916e6a371251",
+      "email": "tayzielol774@gmail.com",
+      "password": "$2b$10$HMp6Ukq2YJuN8vY3tyZ/8OSvzTxn1FmD5.C4YW.tXrxJ3eOV3PZ06",
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-02-09T07:00:00.726Z",
+      "supabaseId": "37f98a6a-1fab-4ef1-9c8e-916e6a371251",
       "tutorial_completed": false
     }
   ],
