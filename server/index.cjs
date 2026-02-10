@@ -231,7 +231,7 @@ app.post('/api/auth/register', async (req, res) => {
     });
 
     const { password: _, ...userWithoutPassword } = user;
-    res.status(201).json({ user: userWithoutPassword });
+    res.status(201).json({ user: userWithoutPassword, token });
 });
 
 app.post('/api/auth/login', async (req, res) => {
@@ -326,7 +326,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     const { password: _, ...userWithoutPassword } = user;
-    res.json({ user: userWithoutPassword });
+    res.json({ user: userWithoutPassword, token });
 });
 
 app.post('/api/auth/logout', (req, res) => {
@@ -574,23 +574,41 @@ app.post('/api/user/xp', authenticateToken, async (req, res) => {
 app.get('/api/flashcardDecks/shared/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
-        // Check "flashcard_decks" table in Supabase
         let deck = await supabasePersistence.getById('flashcard_decks', id);
-
-        if (!deck) {
-            // Check "flashcardDecks" collection in local DB
-            deck = db.find('flashcardDecks', d => d.id === id);
-        }
-
-        if (!deck) {
-            return res.status(404).json({ error: 'Flashcard deck not found or link has expired.' });
-        }
-
-        // Return deck without ownership restriction for this specific path
+        if (!deck) deck = db.find('flashcardDecks', d => d.id === id);
+        if (!deck) return res.status(404).json({ error: 'Flashcard deck not found.' });
         res.json(deck);
     } catch (error) {
         console.error('Error fetching shared flashcard deck:', error);
-        res.status(500).json({ error: 'System error fetching shared flashcard deck.' });
+        res.status(500).json({ error: 'System error.' });
+    }
+});
+
+// Shared note fetch
+app.get('/api/notes/shared/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        let note = await supabasePersistence.getById('notes', id);
+        if (!note) note = db.find('notes', n => n.id === id);
+        if (!note) return res.status(404).json({ error: 'Note not found.' });
+        res.json(note);
+    } catch (error) {
+        console.error('Error fetching shared note:', error);
+        res.status(500).json({ error: 'System error.' });
+    }
+});
+
+// Shared tutorial fetch
+app.get('/api/tutorials/shared/:id', authenticateToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        let tutorial = await supabasePersistence.getById('tutorials', id);
+        if (!tutorial) tutorial = db.find('tutorials', t => t.id === id);
+        if (!tutorial) return res.status(404).json({ error: 'Tutorial not found.' });
+        res.json(tutorial);
+    } catch (error) {
+        console.error('Error fetching shared tutorial:', error);
+        res.status(500).json({ error: 'System error.' });
     }
 });
 
@@ -778,77 +796,6 @@ const genericCollections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 
 // Redundant specific tutorial routes removed to use consolidated generic routes
 
 
-app.post('/api/studyLogs', authenticateToken, async (req, res) => {
-    let item = db.insert('studyLogs', { ...req.body, userId: req.user.id });
-    const xpAmount = Math.round(parseFloat(req.body.hours || 0) * 100);
-    const result = db.addXP(req.user.id, xpAmount);
-
-    // Sync to Supabase
-    try {
-        // 1. Sync User XP
-        await supabasePersistence.upsertToCollection('users', result.user);
-
-        // 2. Sync Study Log Item
-        const cloudItem = await supabasePersistence.upsertToCollection('study_logs', item);
-        if (cloudItem) {
-            item = db.update('studyLogs', item.id, { supabaseId: cloudItem.id });
-        }
-    } catch (err) {
-        console.warn('Sync failed for study logs:', err.message);
-    }
-
-    res.json({ item, xpGain: xpAmount, ...result });
-});
-
-app.put('/api/tasks/:id', authenticateToken, async (req, res) => {
-    try {
-        let item = db.update('tasks', req.params.id, req.body);
-
-        // If not found locally, it might be in Supabase
-        if (!item) {
-            console.log(`⚠️ Task ${req.params.id} not found locally, checking Supabase...`);
-            const cloudTask = await supabasePersistence.getById('tasks', req.params.id);
-            if (cloudTask) {
-                // Merge cloud task with updates and save locally
-                item = { ...cloudTask, ...req.body, id: req.params.id, userId: req.user.id };
-                db.insert('tasks', item);
-            } else {
-                // Truly new task or orphaned update - handle gracefully
-                console.log(`⚠️ Task ${req.params.id} not found in cloud either. Creating new.`);
-                item = { ...req.body, id: req.params.id, userId: req.user.id };
-                // Ensure a title exists if creating new
-                if (!item.title) item.title = 'Untitled Task';
-                db.insert('tasks', item);
-            }
-        }
-
-        // Sync to Supabase
-        await supabasePersistence.upsertToCollection('tasks', item);
-
-        let xpGain = 0;
-        let gamification = null;
-
-        // Note: we can't easily check 'oldTask' if it wasn't local, 
-        // but for XP we usually care about the transition to 'Completed'
-        if (req.body.status === 'Completed') {
-            xpGain = 100;
-            gamification = db.addXP(req.user.id, xpGain);
-
-            // Sync user state with new XP to Supabase
-            try {
-                await supabasePersistence.upsertToCollection('users', gamification.user);
-            } catch (syncErr) {
-                console.warn('Could not sync user XP to Supabase during task update:', syncErr.message);
-            }
-        }
-
-        res.json({ item, xpGain, ...gamification });
-    } catch (error) {
-        console.error('Error updating task:', error);
-        res.status(500).json({ error: 'Failed to update task and sync to cloud' });
-    }
-});
-
 const tableMap = {
     'users': 'users',
     'modules': 'modules',
@@ -879,194 +826,107 @@ genericCollections.forEach(collection => {
         }
 
         const localItems = (db.get(collection) || []).filter(i => i.userId === req.user.id);
+        if (!cloudItems) return res.json(localItems);
 
-        if (!cloudItems) {
-            return res.json(localItems);
-        }
-
-        // Merge cloud and local items. Supabase is primary.
-        // Match by id or supabaseId to avoid duplicates.
         const cloudIds = new Set(cloudItems.map(i => i.id));
         const localOnly = localItems.filter(i => !cloudIds.has(i.supabaseId) && !cloudIds.has(i.id));
-
-        const mergedItems = [...cloudItems, ...localOnly];
-        res.json(mergedItems);
+        res.json([...cloudItems, ...localOnly]);
     });
 
     app.get(`/api/${collection}/:id`, authenticateToken, async (req, res) => {
-        const supabaseTable = tableMap[collection];
-        if (supabaseTable) {
-            try {
-                // For now, fetchCollection fetches all, we filter for ID. 
-                // In a more mature system, we'd add fetchOne to supabasePersistence.
-                const cloudItems = await supabasePersistence.fetchCollection(supabaseTable, req.user.id);
-                const item = cloudItems ? cloudItems.find(i => i.id === req.params.id) : null;
-                if (item) {
-                    return res.json(item);
-                }
-            } catch (error) {
-                console.error(`⚠️ Supabase fetch by ID failed for ${collection}, falling back to local:`, error);
-            }
-        }
-
         const item = db.getById(collection, req.params.id);
-        if (item && item.userId === req.user.id) {
-            res.json(item);
-        } else {
-            res.sendStatus(404);
-        }
+        if (!item) return res.sendStatus(404);
+        if (item.userId === req.user.id) return res.json(item);
+
+        // Access check for shared resources
+        const messages = db.get('messages') || [];
+        const isShared = messages.some(m =>
+            m.sharedResource && String(m.sharedResource.id) === String(item.id)
+        );
+        if (isShared) return res.json(item);
+        res.status(403).json({ error: 'Access denied' });
     });
 
     app.post(`/api/${collection}`, authenticateToken, async (req, res) => {
         const now = new Date().toISOString();
-        // Attach userId and timestamps to new items
-        const rawItem = {
-            ...req.body,
-            userId: req.user.id,
-            createdAt: now,
-            updatedAt: now
-        };
+        const rawItem = { ...req.body, userId: req.user.id, createdAt: now, updatedAt: now };
+        let item = db.insert(collection, rawItem);
+        let syncStatus = 'local-only';
 
-        let finalItem = db.insert(collection, rawItem);
-
-        // Award XP for specific actions
+        // Smarter XP Logic
+        let xpGained = 0;
         if (collection === 'studyLogs') {
-            // Reward +50 XP per study log
-            db.addXP(req.user.id, 50);
-        } else if (collection === 'tasks' && finalItem.status === 'Completed') {
-            // Reward +30 XP per completed task
-            db.addXP(req.user.id, 30);
+            xpGained = Math.round(parseFloat(req.body.hours || 0) * 100) || 50;
+        } else if (collection === 'tasks' && item.status === 'Completed') {
+            xpGained = 30;
         } else if (collection === 'pomodoroSessions') {
-            // Reward +40 XP per pomodoro session
-            db.addXP(req.user.id, 40);
+            xpGained = 40;
         }
 
-        // Sync to Supabase
+        if (xpGained > 0) {
+            const xpResult = db.addXP(req.user.id, xpGained);
+            try { await supabasePersistence.upsertToCollection('users', xpResult.user); } catch (e) { }
+        }
+
         const supabaseTable = tableMap[collection];
         if (supabaseTable) {
             try {
-                const cloudItem = await supabasePersistence.upsertToCollection(supabaseTable, finalItem);
+                const cloudItem = await supabasePersistence.upsertToCollection(supabaseTable, item);
                 if (cloudItem) {
-                    finalItem = db.update(collection, finalItem.id, { supabaseId: cloudItem.id });
+                    item = db.update(collection, item.id, { supabaseId: cloudItem.id });
+                    syncStatus = 'synced';
                 }
-            } catch (error) {
-                console.error(`❌ Supabase sync failed during POST for ${collection}:`, error);
+            } catch (err) {
+                console.error(`❌ Sync failed for ${collection}:`, err.message);
+                syncStatus = 'failed';
             }
         }
-
-        res.json(finalItem);
+        res.status(syncStatus === 'failed' ? 207 : 201).json({ item, syncStatus });
     });
 
     app.put(`/api/${collection}/:id`, authenticateToken, async (req, res) => {
         const updates = { ...req.body, updatedAt: new Date().toISOString() };
-
-        // Check if task is being marked as completed
-        if (collection === 'tasks' && updates.status === 'Completed') {
-            const existingTask = db.getById(collection, req.params.id);
-            if (existingTask && existingTask.status !== 'Completed') {
-                // Award +30 XP for task completion
-                db.addXP(req.user.id, 30);
-            }
-        }
-
         let item = db.update(collection, req.params.id, updates);
-        if (item) {
-            // Sync update to Supabase
-            const supabaseTable = tableMap[collection];
-            if (supabaseTable) {
-                try {
-                    await supabasePersistence.upsertToCollection(supabaseTable, item);
-                } catch (error) {
-                    console.error(`❌ Supabase sync failed during PUT for ${collection}:`, error);
-                }
-            }
-            res.json(item);
-        } else {
-            res.sendStatus(404);
-        }
-    });
+        let syncStatus = 'local-only';
 
-    app.delete(`/api/${collection}/:id`, authenticateToken, async (req, res) => {
-        db.delete(collection, req.params.id);
-
-        // Sync delete to Supabase
         const supabaseTable = tableMap[collection];
         if (supabaseTable) {
             try {
-                await supabasePersistence.deleteFromCollection(supabaseTable, req.params.id);
-            } catch (error) {
-                console.error(`❌ Supabase sync failed during DELETE for ${collection}:`, error);
+                if (!item) {
+                    const cloudMatch = await supabasePersistence.getById(supabaseTable, req.params.id);
+                    if (cloudMatch && (cloudMatch.userId === req.user.id || cloudMatch.user_id === req.user.id)) {
+                        item = db.insert(collection, { ...cloudMatch, ...updates, id: req.params.id });
+                    }
+                }
+                if (item) {
+                    const cloudItem = await supabasePersistence.upsertToCollection(supabaseTable, item);
+                    if (cloudItem) {
+                        item = db.update(collection, item.id, { supabaseId: cloudItem.id });
+                        syncStatus = 'synced';
+                    }
+                }
+            } catch (err) {
+                console.error(`❌ Sync failed for ${collection} update:`, err.message);
+                syncStatus = 'failed';
             }
         }
 
+        if (!item) return res.sendStatus(404);
+        res.json({ item, syncStatus });
+    });
+
+    app.delete(`/api/${collection}/:id`, authenticateToken, async (req, res) => {
+        const item = db.getById(collection, req.params.id);
+        db.delete(collection, req.params.id);
+        const supabaseTable = tableMap[collection];
+        if (supabaseTable && item) {
+            try { await supabasePersistence.deleteFromCollection(supabaseTable, (item.supabaseId || item.id)); } catch (e) { }
+        }
         res.sendStatus(204);
     });
-
-    // Single item GET with sharing-aware permissions
-    app.get(`/api/${collection}/:id`, authenticateToken, (req, res) => {
-        const item = db.find(collection, i => i.id === req.params.id);
-        if (!item) return res.sendStatus(404);
-
-        if (item.userId === req.user.id) {
-            return res.json(item);
-        }
-
-        // Check if shared in a conversation the user is part of
-        const messages = db.get('messages') || [];
-        const conversations = db.get('conversations') || [];
-
-        const isShared = messages.some(m =>
-            m.sharedResource &&
-            String(m.sharedResource.id) === String(item.id) &&
-            conversations.some(c => c.id === m.conversationId && c.participants.includes(req.user.id))
-        );
-
-        if (isShared) {
-            return res.json(item);
-        }
-
-        res.status(403).json({ error: 'Access denied to this shared resource' });
-    });
 });
 
 
-
-app.put('/api/flashcards/:id', authenticateToken, async (req, res) => {
-    const oldCard = db.find('flashcards', c => c.id === req.params.id);
-    const item = db.update('flashcards', req.params.id, req.body);
-
-    let xpGain = 0;
-    let gamification = null;
-
-    if (oldCard && req.body.level > oldCard.level) {
-        xpGain = 50;
-        gamification = db.addXP(req.user.id, xpGain);
-
-        // Sync to Supabase
-        try {
-            await supabasePersistence.upsertToCollection('users', gamification.user);
-        } catch (err) {
-            console.warn('XP sync failed for flashcard level up:', err.message);
-        }
-    }
-
-    res.json({ item, xpGain, ...gamification });
-});
-
-app.post('/api/pomodoroSessions', authenticateToken, async (req, res) => {
-    const item = db.insert('pomodoroSessions', { ...req.body, userId: req.user.id });
-    const xpGain = 50;
-    const result = db.addXP(req.user.id, xpGain);
-
-    // Sync to Supabase
-    try {
-        await supabasePersistence.upsertToCollection('users', result.user);
-    } catch (err) {
-        console.warn('XP sync failed for pomodoro session:', err.message);
-    }
-
-    res.json({ item, xpGain, ...result });
-});
 
 // --- Data Preservation Endpoints (USER SCOPED) ---
 
@@ -1449,189 +1309,89 @@ app.get(/.*/, (req, res, next) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
-// --- RESTORE CLOUD DATA ---
+// --- STARTUP DATA RESTORATION ---
 const restoreCloudData = async () => {
-    const client = supabasePersistence.initSupabase();
-    if (!client) return;
-    console.log('🔄 Restoring data from Supabase sync...');
+    if (!supabasePersistence.initSupabase()) return;
+    console.log('🔄 Starting full system sync from Supabase...');
 
     try {
-        // 0. Restore Users (Safe Merge for Chat Visibility)
+        // 1. Restore Users
         const cloudUsers = await supabasePersistence.fetchAll('users') || [];
         const localUsers = db.get('users') || [];
-        for (const cloudUser of cloudUsers) {
-            const localUser = localUsers.find(u => u.email === cloudUser.email || u.id === cloudUser.id);
-            if (localUser) {
-                if (!localUser.supabaseId) {
-                    db.update('users', localUser.id, { supabaseId: cloudUser.supabaseId || cloudUser.id });
-                }
+        cloudUsers.forEach(u => {
+            const local = localUsers.find(lu => lu.email === u.email || lu.id === u.id);
+            if (local) {
+                if (!local.supabaseId) db.update('users', local.id, { supabaseId: u.id });
             } else {
-                // Insert new user from cloud (Note: Password will be missing/invalid for local auth, but visible in Chat)
-                db.insert('users', { ...cloudUser, supabaseId: cloudUser.id });
+                db.insert('users', { ...u, supabaseId: u.id });
             }
-        }
+        });
 
-        // 1. Restore Generic Collections (Modules, Tasks, Notes, etc.)
-        for (const [localCol, remoteTable] of Object.entries(tableMap)) {
-            // Skip users, conversations, groups, and messages as they have custom/extra logic
-            if (['users', 'conversations', 'groups', 'messages'].includes(localCol)) continue;
+        // 2. Restore All Generic Collections in Parallel
+        const genericToSync = Object.entries(tableMap).filter(([k]) => !['users', 'conversations', 'groups', 'messages'].includes(k));
 
-            console.log(`📥 Restoring collection: ${localCol} (${remoteTable})`);
-            const cloudItems = await supabasePersistence.fetchAll(remoteTable) || [];
+        await Promise.all(genericToSync.map(async ([localCol, remoteTable]) => {
+            const items = await supabasePersistence.fetchAll(remoteTable) || [];
             const localItems = db.get(localCol) || [];
+            items.forEach(item => {
+                const match = localItems.find(i => i.id === item.id || i.supabaseId === item.id);
+                if (!match) db.insert(localCol, { ...item, supabaseId: item.id });
+                else if (!match.supabaseId) db.update(localCol, match.id, { supabaseId: item.id });
+            });
+        }));
 
-            for (const cloudItem of cloudItems) {
-                // Match by id or supabaseId
-                const localMatch = localItems.find(i => i.id === cloudItem.id || i.supabaseId === cloudItem.id);
-                if (!localMatch) {
-                    db.insert(localCol, { ...cloudItem, supabaseId: cloudItem.id });
-                } else if (!localMatch.supabaseId) {
-                    db.update(localCol, localMatch.id, { supabaseId: cloudItem.id });
-                }
-            }
+        // 3. Restore Chat Components
+        const [groups, convs] = await Promise.all([
+            supabasePersistence.fetchAll('groups'),
+            supabasePersistence.fetchAll('conversations')
+        ]);
+
+        if (groups) {
+            const localGroups = db.get('groups') || [];
+            groups.forEach(g => {
+                const match = localGroups.find(lg => lg.id === g.id || lg.supabaseId === g.id);
+                if (!match) db.insert('groups', { ...g, supabaseId: g.id });
+                else if (!match.supabaseId) db.update('groups', match.id, { supabaseId: g.id });
+            });
         }
 
-        // 2. Restore Groups
-        const cloudGroups = await supabasePersistence.getGroups() || [];
-        const localGroups = db.get('groups') || [];
-
-        for (const cloudGroup of cloudGroups) {
-            const localMatch = localGroups.find(g => g.id === cloudGroup.id || g.supabaseId === cloudGroup.id);
-            if (!localMatch) {
-                console.log(`📥 Restoring group: ${cloudGroup.name}`);
-                db.insert('groups', { ...cloudGroup, supabaseId: cloudGroup.id });
-            } else if (!localMatch.supabaseId) {
-                db.update('groups', localMatch.id, { supabaseId: cloudGroup.id });
-            }
+        if (convs) {
+            const localConvs = db.get('conversations') || [];
+            convs.forEach(c => {
+                const match = localConvs.find(lc => lc.id === c.id || lc.supabaseId === c.id);
+                if (!match) db.insert('conversations', { ...c, supabaseId: c.id });
+                else if (!match.supabaseId) db.update('conversations', match.id, { supabaseId: c.id });
+            });
         }
 
-        // 3. Restore Conversations
-        const cloudConvs = await supabasePersistence.fetchAll('conversations') || [];
-        const localConvs = db.get('conversations') || [];
-
-        for (const cloudConv of cloudConvs) {
-            const localMatch = localConvs.find(c => c.id === cloudConv.id || c.supabaseId === cloudConv.id);
-            if (!localMatch) {
-                console.log(`📥 Restoring conversation: ${cloudConv.id}`);
-                db.insert('conversations', {
-                    ...cloudConv,
-                    supabaseId: cloudConv.id,
-                    // Handle field mapping if name differences exist beyond what mapRow handles
-                    groupId: cloudConv.group_id || cloudConv.groupId,
-                    lastMessage: cloudConv.last_message || cloudConv.lastMessage,
-                    lastMessageTime: cloudConv.last_message_time || cloudConv.lastMessageTime,
-                    initiatorId: cloudConv.initiator_id || cloudConv.initiatorId
-                });
-            } else if (!localMatch.supabaseId) {
-                db.update('conversations', localMatch.id, { supabaseId: cloudConv.id });
-            }
-        }
-
-        console.log('✅ Cloud data restoration completed');
+        console.log('✅ System sync from cloud complete');
     } catch (error) {
-        console.error('❌ Error restoring cloud data:', error);
+        console.error('❌ Sync failed:', error);
     }
 };
 
-// --- BACKGROUND SYNC (Local to Cloud) ---
+// --- BACKGROUND SYNC (Local -> Cloud) ---
 const syncLocalDataToCloud = async () => {
-    // Reload env vars to pick up changes without restart
     require('dotenv').config({ override: true });
-
     if (!supabasePersistence.initSupabase()) return;
 
-    console.log('🔄 Starting background synchronization to Supabase...');
-
+    console.log('🔄 Running background cloud sync...');
     try {
-        // 0. Sync Users
-        const users = db.get('users') || [];
-        for (const localUser of users) {
-            if (!localUser.supabaseId) {
-                if (!localUser.email) {
-                    console.warn(`⚠️ Skipping sync for user ${localUser.id} (missing email)`);
-                    continue;
-                }
-                console.log(`📡 Syncing user: ${localUser.email}`);
-                // Use upsert to handle existing emails or new mappings
-                const cloudUser = await supabasePersistence.upsertToCollection('users', localUser);
-                if (cloudUser) {
-                    db.update('users', localUser.id, { supabaseId: cloudUser.id });
-                }
-            }
-        }
-
-        // 1. Sync Groups
-        const groups = db.get('groups') || [];
-        for (const localGroup of groups) {
-            if (!localGroup.supabaseId) {
-                console.log(`📡 Syncing group: ${localGroup.name}`);
-                const cloudGroup = await supabasePersistence.createGroup(localGroup);
-                if (cloudGroup) {
-                    db.update('groups', localGroup.id, { supabaseId: cloudGroup.id });
-                    // Update any local conversations that reference this group
-                    const convs = db.get('conversations') || [];
-                    convs.forEach(c => {
-                        if (c.groupId === localGroup.id) {
-                            db.update('conversations', c.id, { groupId: cloudGroup.id });
-                        }
-                    });
-                }
-            }
-        }
-
-        // 2. Sync Conversations
-        const conversations = db.get('conversations') || [];
-        for (const localConv of conversations) {
-            if (!localConv.supabaseId) {
-                console.log(`📡 Syncing conversation: ${localConv.id}`);
-                const cloudConv = await supabasePersistence.createConversation(localConv);
-                if (cloudConv) {
-                    db.update('conversations', localConv.id, { supabaseId: cloudConv.id });
-                    // Update any local messages that reference this conversation
-                    const messages = db.get('messages') || [];
-                    messages.forEach(m => {
-                        if (m.conversationId === localConv.id) {
-                            db.update('messages', m.id, { conversationId: cloudConv.id });
-                        }
-                    });
-                }
-            }
-        }
-
-        // 3. Sync Messages
-        const messages = db.get('messages') || [];
-        for (const localMsg of messages) {
-            if (!localMsg.supabaseId) {
-                const messageData = {
-                    conversationId: localMsg.conversationId,
-                    senderId: localMsg.senderId,
-                    senderEmail: localMsg.senderEmail,
-                    content: localMsg.content,
-                    type: localMsg.type,
-                    sharedResource: localMsg.sharedResource
-                };
-                const cloudMsg = await supabasePersistence.insertMessage(messageData);
-                if (cloudMsg) {
-                    db.update('messages', localMsg.id, { supabaseId: cloudMsg.id });
-                }
-            }
-        }
-
-        // 4. Sync Generic Collections (Notes, Tasks, etc.)
+        // Sync items that only exist locally (missing supabaseId)
         for (const [localCol, remoteTable] of Object.entries(tableMap)) {
             const items = db.get(localCol) || [];
-            for (const localItem of items) {
-                if (!localItem.supabaseId) {
-                    console.log(`📡 Syncing ${localCol} item: ${localItem.id}`);
-                    const cloudItem = await supabasePersistence.upsertToCollection(remoteTable, localItem);
+            for (const item of items) {
+                if (!item.supabaseId) {
+                    if (localCol === 'users' && !item.email) continue;
+
+                    const cloudItem = await supabasePersistence.upsertToCollection(remoteTable, item);
                     if (cloudItem) {
-                        db.update(localCol, localItem.id, { supabaseId: cloudItem.id });
+                        db.update(localCol, item.id, { supabaseId: cloudItem.id });
                     }
                 }
             }
         }
-
-        console.log('✅ Background synchronization completed');
+        console.log('✅ Background sync complete');
     } catch (error) {
         console.error('❌ Background sync error:', error);
     }

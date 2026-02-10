@@ -84,6 +84,41 @@
       "createdAt": "2026-02-09T07:00:00.726Z",
       "supabaseId": "37f98a6a-1fab-4ef1-9c8e-916e6a371251",
       "tutorial_completed": false
+    },
+    {
+      "id": "97d031e6-00f7-4b26-8722-682254410b29",
+      "email": "joshuamujakari@gmail.com",
+      "password": "$2b$10$iyYM/CruVZcYNREeAem.M.lSDDZEC9jjM.t.ywWtc85XYdB44qp2u",
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-02-10T02:56:50.406Z",
+      "supabaseId": "97d031e6-00f7-4b26-8722-682254410b29",
+      "tutorial_completed": false
+    },
+    {
+      "id": "337274c6-dcc2-427d-92a7-2108e2508c88",
+      "email": "test@example.com",
+      "password": "$2b$10$puB5pd2ieT2qBvRnkYcu.eF9e1icjMrL7LamB82oZCXRdi5Cd2RiK",
+      "name": "Tester",
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "newly_registered": true,
+      "supabaseAuthId": null,
+      "createdAt": "2026-02-10T02:57:06.567Z",
+      "tutorial_completed": false
+    },
+    {
+      "id": "c8dfa2b4-96b3-42fc-ad3c-47a915d32eb9",
+      "email": "Remmiemadiviko@gmail.com",
+      "password": "$2b$10$h8DVhV3l0i80ge8by3vdquHLXTPLncBVNjZY0iIWKWIZQ024h6y2.",
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-02-10T02:58:40.578Z",
+      "supabaseId": "c8dfa2b4-96b3-42fc-ad3c-47a915d32eb9",
+      "tutorial_completed": false
     }
   ],
   "modules": [
@@ -318,6 +353,28 @@
       "createdAt": "2026-02-04T22:42:41.800292+00:00",
       "supabaseId": "fe167234-7c7f-4acc-8d02-8c99e1462ffb",
       "updatedAt": "2026-02-06T20:08:40.471Z"
+    },
+    {
+      "id": "1d1a5ca7-6773-4fce-9a44-dc83e7cd84ad",
+      "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
+      "hours": 1,
+      "date": "2026-02-08",
+      "activity": "C#",
+      "createdAt": "2026-02-10T02:56:50.716Z",
+      "userId": "1769561085648",
+      "updatedAt": "2026-02-09T15:51:53.688516+00:00",
+      "supabaseId": "1d1a5ca7-6773-4fce-9a44-dc83e7cd84ad"
+    },
+    {
+      "id": "da761fd0-6f8d-4a45-89f0-75233d7657fc",
+      "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
+      "hours": 2,
+      "date": "2026-02-08",
+      "activity": "DATABASE NOTES",
+      "createdAt": "2026-02-10T02:58:40.875Z",
+      "userId": "1769561085648",
+      "updatedAt": "2026-02-09T15:51:53.688516+00:00",
+      "supabaseId": "da761fd0-6f8d-4a45-89f0-75233d7657fc"
     }
   ],
   "tasks": [
@@ -332,6 +389,20 @@
       "createdAt": "2026-02-01T18:07:58.722371+00:00",
       "supabaseId": "033958c0-4cfe-4033-a774-840846354ae4",
       "updatedAt": "2026-02-06T20:08:40.857Z"
+    },
+    {
+      "id": "4fb8c345-8cfe-498f-bb5c-16b4c52b4ca4",
+      "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
+      "title": "DATABASE NOTES ",
+      "priority": "Medium",
+      "status": "Completed",
+      "dueDate": "2026-02-07T00:00:00+00:00",
+      "createdAt": "2026-02-10T02:56:51.267Z",
+      "userId": "1769561085648",
+      "description": "",
+      "subtasks": [],
+      "updatedAt": "2026-02-08T00:13:26.229+00:00",
+      "supabaseId": "4fb8c345-8cfe-498f-bb5c-16b4c52b4ca4"
     }
   ],
   "notes": [
@@ -388,21 +459,86 @@
       "userId": "system-test-user-id",
       "title": "Sync Test Note",
       "content": "This note should be synced to the cloud.",
-      "createdAt": "2026-02-10T01:07:00.522Z"
+      "createdAt": "2026-02-10T01:07:00.522Z",
+      "supabaseId": "test-note-1770685620520",
+      "updatedAt": "2026-02-10T02:56:51.911Z"
     },
     {
       "id": "test-note-1770685645041",
       "userId": "1769561085648",
       "title": "Sync Test Note",
       "content": "This note should be synced to the cloud.",
-      "createdAt": "2026-02-10T01:07:25.096Z"
+      "createdAt": "2026-02-10T01:07:25.096Z",
+      "supabaseId": "test-note-1770685645041",
+      "updatedAt": "2026-02-10T02:56:52.224Z"
     },
     {
       "id": "test-note-1770687504041",
       "userId": "1769561085648",
       "title": "Sync Test Note",
       "content": "This note should be synced to the cloud.",
-      "createdAt": "2026-02-10T01:38:24.043Z"
+      "createdAt": "2026-02-10T01:38:24.043Z",
+      "supabaseId": "test-note-1770687504041",
+      "updatedAt": "2026-02-10T02:56:51.237Z"
+    },
+    {
+      "title": "App Logic Sync Test",
+      "content": "Testing if this appears in Supabase via server logic.",
+      "userId": "1769561085648",
+      "createdAt": "2026-02-10T01:50:14.259Z",
+      "updatedAt": "2026-02-10T02:56:52.492Z",
+      "id": "593b77c0-9c6a-4927-b3c7-58f12994f8fc",
+      "supabaseId": "593b77c0-9c6a-4927-b3c7-58f12994f8fc"
+    },
+    {
+      "title": "App Logic Sync Test",
+      "content": "Testing if this appears in Supabase via server logic.",
+      "userId": "1769561085648",
+      "createdAt": "2026-02-10T01:52:45.686Z",
+      "updatedAt": "2026-02-10T01:52:46.466Z",
+      "id": "f93eb9aa-03ff-41a5-9c47-a3332df7cc73",
+      "supabaseId": "f93eb9aa-03ff-41a5-9c47-a3332df7cc73"
+    },
+    {
+      "id": "e825216c-c957-4a51-aae8-0bf7fc9cefa3",
+      "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
+      "title": "C# NOTES ",
+      "content": "C# NOTES AND .NET",
+      "resourceLink": "https://www.tutorialspoint.com/csharp/csharp_tutorial.pdf",
+      "pdfPath": "https://pocuggehxeuheqzgixsx.supabase.co/storage/v1/object/public/notes-files/pdf_1770434419386_csharp_tutorial.pdf",
+      "createdAt": "2026-02-10T02:58:41.074Z",
+      "userId": "1769561085648",
+      "audioPath": null,
+      "audioEpisodes": null,
+      "updatedAt": "2026-02-09T15:51:53.688516+00:00",
+      "supabaseId": "e825216c-c957-4a51-aae8-0bf7fc9cefa3"
+    },
+    {
+      "title": "Refactor Test Note 1770692411452",
+      "content": "Updated content",
+      "moduleId": "test-module",
+      "userId": "337274c6-dcc2-427d-92a7-2108e2508c88",
+      "createdAt": "2026-02-10T03:00:11.462Z",
+      "updatedAt": "2026-02-10T03:00:11.759Z",
+      "id": "899df5c3-ede9-42bd-886c-09048c14dc40"
+    },
+    {
+      "title": "Refactor Test Note 1770692485080",
+      "content": "Updated content",
+      "userId": "337274c6-dcc2-427d-92a7-2108e2508c88",
+      "createdAt": "2026-02-10T03:01:25.085Z",
+      "updatedAt": "2026-02-10T03:01:25.705Z",
+      "id": "4d9acc7e-c233-4eed-a91b-5ff2f535d584",
+      "supabaseId": "4d9acc7e-c233-4eed-a91b-5ff2f535d584"
+    },
+    {
+      "title": "Refactor Test Note 1770693130361",
+      "content": "Updated content",
+      "userId": "337274c6-dcc2-427d-92a7-2108e2508c88",
+      "createdAt": "2026-02-10T03:12:10.366Z",
+      "updatedAt": "2026-02-10T03:12:10.962Z",
+      "id": "4fa915d6-48a3-4de9-b714-6c4c8adb510c",
+      "supabaseId": "4fa915d6-48a3-4de9-b714-6c4c8adb510c"
     }
   ],
   "grades": [],
@@ -512,7 +648,34 @@
   ],
   "calendarEvents": [],
   "pomodoroSessions": [],
-  "tutorials": [],
+  "tutorials": [
+    {
+      "id": "21dd4bc7-fc03-4f93-af64-de8d0939fd33",
+      "userId": "1769561085648",
+      "title": "C#",
+      "youtubeUrl": "https://youtu.be/6yApLUzbXWk?si=ecgWiQ4Aif-R01Lm",
+      "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
+      "topic": "C# STRUCTURE",
+      "description": "C#",
+      "createdAt": "2026-02-10T02:56:51.278Z",
+      "updatedAt": "2026-02-07T11:53:33.647+00:00",
+      "videoId": "6yApLUzbXWk",
+      "supabaseId": "21dd4bc7-fc03-4f93-af64-de8d0939fd33"
+    },
+    {
+      "id": "bb06750e-598c-4c13-a497-b8a0bd8f7ac0",
+      "userId": "1769561085648",
+      "title": "C#",
+      "youtubeUrl": "https://youtu.be/6yApLUzbXWk?si=G4ZeqS8JVGyAl85_",
+      "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
+      "topic": "C#",
+      "description": "STRUCTURE OF A C#",
+      "createdAt": "2026-02-10T02:58:40.977Z",
+      "updatedAt": "2026-02-07T11:45:00.65+00:00",
+      "videoId": "6yApLUzbXWk",
+      "supabaseId": "bb06750e-598c-4c13-a497-b8a0bd8f7ac0"
+    }
+  ],
   "conversations": [
     {
       "type": "direct",
@@ -528,6 +691,36 @@
       "createdAt": "2026-02-09T06:04:45.911Z",
       "supabaseId": "cbe67069-3379-4261-aa0c-37bfb3fe34cc",
       "updatedAt": "2026-02-09T06:45:26.546Z"
+    },
+    {
+      "id": "2bd49d12-cdb8-4dd7-83d2-d2bb4117adcd",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "1769561085648",
+        "c8dfa2b4-96b3-42fc-ad3c-47a915d32eb9"
+      ],
+      "lastMessage": "hie",
+      "lastMessageTime": "2026-02-09T08:12:56.74+00:00",
+      "createdAt": "2026-02-10T02:56:51.587Z",
+      "status": "pending",
+      "initiatorId": "1769561085648",
+      "supabaseId": "2bd49d12-cdb8-4dd7-83d2-d2bb4117adcd"
+    },
+    {
+      "id": "69773f22-220d-4d4c-8ef4-b6470e2b2e14",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "94b96706-33d1-4bed-bcc8-cd0c5281ea85",
+        "1769561085648"
+      ],
+      "lastMessage": "",
+      "lastMessageTime": "2026-02-09T06:04:45.475+00:00",
+      "createdAt": "2026-02-10T02:58:41.611Z",
+      "status": "pending",
+      "initiatorId": "94b96706-33d1-4bed-bcc8-cd0c5281ea85",
+      "supabaseId": "69773f22-220d-4d4c-8ef4-b6470e2b2e14"
     }
   ],
   "messages": [],
