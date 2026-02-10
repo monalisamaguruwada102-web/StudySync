@@ -1,6 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 
 let supabase = null;
+let activeKey = null;
 
 const initSupabase = () => {
     // Read from env on demand to ensure they are loaded
@@ -15,10 +16,16 @@ const initSupabase = () => {
         return null;
     }
 
-    if (!supabase) {
+    // Re-initialize if the key has changed (e.g. from Anon to Service Role)
+    if (!supabase || activeKey !== key) {
+        const isReinit = !!supabase;
         supabase = createClient(url, key);
+        activeKey = key;
         const isServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY && key === process.env.SUPABASE_SERVICE_ROLE_KEY;
-        console.log(`✅ Supabase client initialized ${isServiceKey ? '(Admin Mode)' : '(Anon Mode)'}`);
+        console.log(`✅ Supabase client ${isReinit ? 'RE-' : ''}initialized ${isServiceKey ? '(Admin Mode)' : '(Anon Mode)'}`);
+        if (isServiceKey) {
+            console.log('🔑 Service Role Key detected - Bypassing RLS');
+        }
     }
     return supabase;
 };

@@ -1535,6 +1535,9 @@ const restoreCloudData = async () => {
 
 // --- BACKGROUND SYNC (Local to Cloud) ---
 const syncLocalDataToCloud = async () => {
+    // Reload env vars to pick up changes without restart
+    require('dotenv').config({ override: true });
+
     if (!supabasePersistence.initSupabase()) return;
 
     console.log('🔄 Starting background synchronization to Supabase...');
