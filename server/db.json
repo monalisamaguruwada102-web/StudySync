@@ -396,6 +396,13 @@
       "title": "Sync Test Note",
       "content": "This note should be synced to the cloud.",
       "createdAt": "2026-02-10T01:07:25.096Z"
+    },
+    {
+      "id": "test-note-1770687504041",
+      "userId": "1769561085648",
+      "title": "Sync Test Note",
+      "content": "This note should be synced to the cloud.",
+      "createdAt": "2026-02-10T01:38:24.043Z"
     }
   ],
   "grades": [],

@@ -5,7 +5,8 @@ let supabase = null;
 const initSupabase = () => {
     // Read from env on demand to ensure they are loaded
     const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-    const key = process.env.SUPABASE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+    // Prefer Service Role Key for server-side operations to bypass RLS
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
     if (!url || !key) {
         if (!process.env.SILENT_PERSISTENCE) {
@@ -16,7 +17,8 @@ const initSupabase = () => {
 
     if (!supabase) {
         supabase = createClient(url, key);
-        console.log('✅ Supabase client initialized');
+        const isServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY && key === process.env.SUPABASE_SERVICE_ROLE_KEY;
+        console.log(`✅ Supabase client initialized ${isServiceKey ? '(Admin Mode)' : '(Anon Mode)'}`);
     }
     return supabase;
 };
@@ -319,7 +321,11 @@ const upsertToCollection = async (table, item) => {
         .single();
 
     if (error) {
-        console.error(`Error upserting to ${table}:`, error);
+        if (error.code === '42501') {
+            console.error(`❌ RLS Policy Violation on ${table}: The server is blocked from saving data. Please ensure SUPABASE_SERVICE_ROLE_KEY is set in your .env file.`);
+        } else {
+            console.error(`Error upserting to ${table}:`, error);
+        }
         return null;
     }
     return mapRow(data, table);
