@@ -116,19 +116,20 @@ const Notes = () => {
     const uploadEpisode = async (blob, episodeNum) => {
         try {
             const fileName = `voice_note_ep${episodeNum}_${Date.now()}.webm`;
-            const { data, error } = await supabase.storage
-                .from('notes-files')
-                .upload(fileName, blob);
+            const formData = new FormData();
+            formData.append('file', blob, fileName);
 
-            if (error) throw error;
-            const { data: { publicUrl } } = supabase.storage
-                .from('notes-files')
-                .getPublicUrl(fileName);
+            const { default: api } = await import('../services/api');
+            const response = await api.post('/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
 
-            setAudioEpisodes(prev => [...prev, { episode: episodeNum, url: publicUrl }]);
+            if (!response.data.filePath) throw new Error('Failed to get file path from server');
+
+            setAudioEpisodes(prev => [...prev, { episode: episodeNum, url: response.data.filePath }]);
         } catch (error) {
             console.error(`Error uploading episode ${episodeNum}:`, error);
-            alert(`Failed to upload episode ${episodeNum}`);
+            alert(`Failed to upload episode ${episodeNum}: ${error.message}`);
         }
     };
 

@@ -156,7 +156,6 @@ const mapToTable = (item, table = null) => {
         if (key === 'thumbnail') continue;
         if (key === 'tutorialCompleted') continue;
         if (key === 'tutorial_completed') continue;
-        if (key === 'initiatorId') continue;
         if (key === 'timer_state') continue; // Local-only field
         if (key === 'timerState') continue; // Local-only field
         if (key === 'dark_mode') continue; // Local-only field
@@ -192,6 +191,8 @@ const mapToTable = (item, table = null) => {
         else if (key === 'audioPath') mapped.audio_path = item[key];
         else if (key === 'id') mapped.id = item[key];
         else if (key === 'topic' && table === 'study_logs') mapped.activity = item[key];
+        else if (key === 'status') mapped.status = item[key];
+        else if (key === 'initiatorId') mapped.initiator_id = item[key];
         else mapped[key] = item[key];
     }
     return mapped;
@@ -401,18 +402,25 @@ const updateConversation = async (id, updates) => {
     const client = initSupabase();
     if (!client) return null;
 
+    // Map fields carefully to Supabase column names
+    const mappedUpdates = {};
+    if (updates.lastMessage !== undefined) mappedUpdates.last_message = updates.lastMessage;
+    if (updates.lastMessageTime !== undefined) mappedUpdates.last_message_time = updates.lastMessageTime;
+    if (updates.status !== undefined) mappedUpdates.status = updates.status;
+    if (updates.participants !== undefined) mappedUpdates.participants = updates.participants;
+    if (updates.initiatorId !== undefined) mappedUpdates.initiator_id = updates.initiatorId;
+
     const { data, error } = await client
         .from('conversations')
-        .update({
-            last_message: updates.lastMessage,
-            last_message_time: updates.lastMessageTime,
-            participants: updates.participants
-        })
+        .update(mappedUpdates)
         .eq('id', id)
         .select()
         .single();
 
-    if (error) return null;
+    if (error) {
+        console.error('Error updating conversation in Supabase:', error);
+        return null;
+    }
     return mapConversation(data);
 };
 

@@ -1451,8 +1451,9 @@ app.get(/.*/, (req, res, next) => {
 
 // --- RESTORE CLOUD DATA ---
 const restoreCloudData = async () => {
-    if (!supabasePersistence.initSupabase()) return;
-    console.log('🔄 Restoring groups and conversations from Supabase...');
+    const client = supabasePersistence.initSupabase();
+    if (!client) return;
+    console.log('🔄 Restoring data from Supabase sync...');
 
     try {
         // 0. Restore Users (Safe Merge for Chat Visibility)
@@ -1470,19 +1471,27 @@ const restoreCloudData = async () => {
             }
         }
 
-        // 0.1 Restore Tasks (Kanban Persistence)
-        const cloudTasks = await supabasePersistence.fetchAll('tasks') || [];
-        const localTasks = db.get('tasks') || [];
-        for (const cloudTask of cloudTasks) {
-            const localTask = localTasks.find(t => t.id === cloudTask.id || (t.supabaseId && t.supabaseId === cloudTask.id));
-            if (!localTask) {
-                db.insert('tasks', { ...cloudTask, supabaseId: cloudTask.id });
-            } else if (!localTask.supabaseId) {
-                db.update('tasks', localTask.id, { supabaseId: cloudTask.id });
+        // 1. Restore Generic Collections (Modules, Tasks, Notes, etc.)
+        for (const [localCol, remoteTable] of Object.entries(tableMap)) {
+            // Skip users, conversations, groups, and messages as they have custom/extra logic
+            if (['users', 'conversations', 'groups', 'messages'].includes(localCol)) continue;
+
+            console.log(`📥 Restoring collection: ${localCol} (${remoteTable})`);
+            const cloudItems = await supabasePersistence.fetchAll(remoteTable) || [];
+            const localItems = db.get(localCol) || [];
+
+            for (const cloudItem of cloudItems) {
+                // Match by id or supabaseId
+                const localMatch = localItems.find(i => i.id === cloudItem.id || i.supabaseId === cloudItem.id);
+                if (!localMatch) {
+                    db.insert(localCol, { ...cloudItem, supabaseId: cloudItem.id });
+                } else if (!localMatch.supabaseId) {
+                    db.update(localCol, localMatch.id, { supabaseId: cloudItem.id });
+                }
             }
         }
 
-        // 1. Restore Groups
+        // 2. Restore Groups
         const cloudGroups = await supabasePersistence.getGroups() || [];
         const localGroups = db.get('groups') || [];
 
@@ -1496,30 +1505,25 @@ const restoreCloudData = async () => {
             }
         }
 
-        // 2. Restore Group Conversations
+        // 3. Restore Conversations
         const cloudConvs = await supabasePersistence.fetchAll('conversations') || [];
         const localConvs = db.get('conversations') || [];
 
         for (const cloudConv of cloudConvs) {
-            if (cloudConv.type === 'group') {
-                const localMatch = localConvs.find(c => c.id === cloudConv.id || c.supabaseId === cloudConv.id);
-                if (!localMatch) {
-                    console.log(`📥 Restoring conversation: ${cloudConv.id}`);
-                    db.insert('conversations', {
-                        id: cloudConv.id,
-                        supabaseId: cloudConv.id,
-                        type: cloudConv.type,
-                        groupId: cloudConv.group_id,
-                        participants: cloudConv.participants,
-                        lastMessage: cloudConv.last_message,
-                        lastMessageTime: cloudConv.last_message_time,
-                        status: cloudConv.status,
-                        initiatorId: cloudConv.initiator_id,
-                        createdAt: cloudConv.created_at
-                    });
-                } else if (!localMatch.supabaseId) {
-                    db.update('conversations', localMatch.id, { supabaseId: cloudConv.id });
-                }
+            const localMatch = localConvs.find(c => c.id === cloudConv.id || c.supabaseId === cloudConv.id);
+            if (!localMatch) {
+                console.log(`📥 Restoring conversation: ${cloudConv.id}`);
+                db.insert('conversations', {
+                    ...cloudConv,
+                    supabaseId: cloudConv.id,
+                    // Handle field mapping if name differences exist beyond what mapRow handles
+                    groupId: cloudConv.group_id || cloudConv.groupId,
+                    lastMessage: cloudConv.last_message || cloudConv.lastMessage,
+                    lastMessageTime: cloudConv.last_message_time || cloudConv.lastMessageTime,
+                    initiatorId: cloudConv.initiator_id || cloudConv.initiatorId
+                });
+            } else if (!localMatch.supabaseId) {
+                db.update('conversations', localMatch.id, { supabaseId: cloudConv.id });
             }
         }
 

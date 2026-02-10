@@ -382,6 +382,20 @@
       "createdAt": "2026-01-31T12:06:02.747293+00:00",
       "supabaseId": "2f0bd282-c62c-4dcb-9c48-4ca84db6276a",
       "updatedAt": "2026-02-06T20:08:43.123Z"
+    },
+    {
+      "id": "test-note-1770685620520",
+      "userId": "system-test-user-id",
+      "title": "Sync Test Note",
+      "content": "This note should be synced to the cloud.",
+      "createdAt": "2026-02-10T01:07:00.522Z"
+    },
+    {
+      "id": "test-note-1770685645041",
+      "userId": "1769561085648",
+      "title": "Sync Test Note",
+      "content": "This note should be synced to the cloud.",
+      "createdAt": "2026-02-10T01:07:25.096Z"
     }
   ],
   "grades": [],
