@@ -1616,6 +1616,12 @@ const syncLocalDataToCloud = async () => {
                             }
                         }
 
+                        // Special mapping for Tutorials (youtubeUrl -> url & youtube_url)
+                        if (localCol === 'tutorials' && syncItem.youtubeUrl) {
+                            syncItem.url = syncItem.youtubeUrl;
+                            syncItem.youtube_url = syncItem.youtubeUrl;
+                        }
+
                         const cloudItem = await supabasePersistence.upsertToCollection(remoteTable, syncItem);
                         if (cloudItem) {
                             db.update(localCol, item.id, { supabaseId: cloudItem.id });
