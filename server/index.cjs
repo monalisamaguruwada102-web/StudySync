@@ -616,22 +616,28 @@ app.get('/api/tutorials/shared/:id', authenticateToken, async (req, res) => {
 
 app.get('/api/conversations', authenticateToken, async (req, res) => {
     try {
-        // 1. Fetch from Supabase
-        let conversations = await supabasePersistence.getConversations(req.user.id);
+        let conversations = null;
 
-        // 2. Fallback to local if Supabase returns null (error or not configured)
+        // 1. Fetch from Supabase (with error handling)
+        try {
+            conversations = await supabasePersistence.getConversations(req.user.id);
+        } catch (supaErr) {
+            console.warn('⚠️ Supabase getConversations failed, checking local:', supaErr.message);
+        }
+
+        // 2. Fallback to local if Supabase returns null or failed
         if (!conversations) {
-            // console.log('Fetching conversations from local DB (Supabase unavailable)');
             const localConvs = db.get('conversations') || [];
             conversations = localConvs.filter(c =>
                 c.participants && c.participants.includes(req.user.id)
-            ).sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
+            ).sort((a, b) => new Date(b.lastMessageTime || 0) - new Date(a.lastMessageTime || 0));
         }
 
         res.json(conversations || []);
     } catch (error) {
         console.error('Error fetching conversations:', error);
-        res.status(500).json({ error: 'Failed to fetch conversations' });
+        // Fallback to empty array instead of 500 if everything fails, to keep UI alive
+        res.json([]);
     }
 });
 

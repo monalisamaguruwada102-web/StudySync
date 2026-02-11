@@ -80,7 +80,12 @@ const writeDB = (data) => {
             try {
                 // Write to temporary file first
                 const tempPath = DB_PATH + '.tmp';
-                fs.writeFileSync(tempPath, JSON.stringify(data, null, 2));
+
+                // Use open/write/fsync/close pattern for durability
+                const fd = fs.openSync(tempPath, 'w');
+                fs.writeSync(fd, JSON.stringify(data, null, 2));
+                fs.fsyncSync(fd); // Flush to disk
+                fs.closeSync(fd);
 
                 // Atomic rename
                 fs.renameSync(tempPath, DB_PATH);

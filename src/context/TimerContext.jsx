@@ -9,13 +9,39 @@ const FOCUS_TIME = 60 * 60; // 60 minutes
 const BREAK_TIME = 5 * 60;  // 5 minutes
 
 export const TimerProvider = ({ children }) => {
-    const [timeLeft, setTimeLeft] = useState(FOCUS_TIME);
-    const [isRunning, setIsRunning] = useState(false);
-    const [isBreak, setIsBreak] = useState(false);
-    const [sessionsCompleted, setSessionsCompleted] = useState(0);
-    const [selectedTask, setSelectedTask] = useState(null);
+    const [timeLeft, setTimeLeft] = useState(() => {
+        const saved = localStorage.getItem('timer_timeLeft');
+        return saved ? parseInt(saved, 10) : FOCUS_TIME;
+    });
+    const [isRunning, setIsRunning] = useState(() => {
+        return localStorage.getItem('timer_isRunning') === 'true';
+    });
+    const [isBreak, setIsBreak] = useState(() => {
+        return localStorage.getItem('timer_isBreak') === 'true';
+    });
+    const [sessionsCompleted, setSessionsCompleted] = useState(() => {
+        const saved = localStorage.getItem('timer_sessionsCompleted');
+        return saved ? parseInt(saved, 10) : 0;
+    });
+    const [selectedTask, setSelectedTask] = useState(() => {
+        const saved = localStorage.getItem('timer_selectedTask');
+        return saved ? JSON.parse(saved) : null;
+    });
     const intervalRef = useRef(null);
     const lastSaveRef = useRef(Date.now());
+
+    // Persist state to localStorage
+    useEffect(() => {
+        localStorage.setItem('timer_timeLeft', timeLeft);
+        localStorage.setItem('timer_isRunning', isRunning);
+        localStorage.setItem('timer_isBreak', isBreak);
+        localStorage.setItem('timer_sessionsCompleted', sessionsCompleted);
+        if (selectedTask) {
+            localStorage.setItem('timer_selectedTask', JSON.stringify(selectedTask));
+        } else {
+            localStorage.removeItem('timer_selectedTask');
+        }
+    }, [timeLeft, isRunning, isBreak, sessionsCompleted, selectedTask]);
 
     // Load state from cloud on mount
     useEffect(() => {
