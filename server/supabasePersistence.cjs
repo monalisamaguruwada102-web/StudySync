@@ -128,6 +128,23 @@ const updateConversation = async (id, updates) => {
     return error ? null : mapRow(data, 'conversations');
 };
 
+const getConversations = async (userId) => {
+    const client = initSupabase();
+    if (!client) return null;
+    // Filter conversations where participants (JSONB array) contains userId
+    const { data, error } = await client
+        .from('conversations')
+        .select('*')
+        .contains('participants', [userId])
+        .order('updated_at', { ascending: false });
+
+    if (error) {
+        console.error('Error fetching conversations:', error);
+        return null;
+    }
+    return data.map(row => mapRow(row, 'conversations'));
+};
+
 const getMessages = async (convId) => {
     const client = initSupabase();
     if (!client) return null;
@@ -204,6 +221,7 @@ module.exports = {
     upsertToCollection,
     deleteFromCollection,
     createConversation,
+    getConversations,
     updateConversation,
     getMessages,
     insertMessage,
