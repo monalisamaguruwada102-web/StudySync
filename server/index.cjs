@@ -1596,6 +1596,26 @@ const syncLocalDataToCloud = async () => {
                             }
                         }
 
+                        // 3. Resolve conversationId -> Supabase UUID
+                        if (syncItem.conversationId && !isUUID(syncItem.conversationId)) {
+                            const conv = db.getById('conversations', syncItem.conversationId);
+                            if (conv?.supabaseId) {
+                                syncItem.conversationId = conv.supabaseId;
+                            } else {
+                                syncItem.conversationId = null;
+                            }
+                        }
+
+                        // 4. Resolve groupId -> Supabase UUID
+                        if (syncItem.groupId && !isUUID(syncItem.groupId)) {
+                            const group = db.getById('groups', syncItem.groupId);
+                            if (group?.supabaseId) {
+                                syncItem.groupId = group.supabaseId;
+                            } else {
+                                syncItem.groupId = null;
+                            }
+                        }
+
                         const cloudItem = await supabasePersistence.upsertToCollection(remoteTable, syncItem);
                         if (cloudItem) {
                             db.update(localCol, item.id, { supabaseId: cloudItem.id });
