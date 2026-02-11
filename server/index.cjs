@@ -1617,14 +1617,20 @@ const syncLocalDataToCloud = async () => {
                             }
                         }
 
-                        // 5. Resolve creatorId -> Supabase UUID
-                        if (syncItem.creatorId && !isUUID(syncItem.creatorId)) {
-                            const creator = db.getById('users', syncItem.creatorId);
-                            if (creator?.supabaseId) {
-                                syncItem.creatorId = creator.supabaseId;
+                        // 5. Resolve creatorId -> Supabase UUID/TEXT
+                        if (syncItem.creatorId) {
+                            let creatorSupabaseId = null;
+                            if (isUUID(syncItem.creatorId)) {
+                                creatorSupabaseId = syncItem.creatorId;
                             } else {
-                                syncItem.creatorId = null;
+                                const creator = db.getById('users', syncItem.creatorId);
+                                creatorSupabaseId = creator?.supabaseId || null;
                             }
+
+                            // Map to createdBy so toSnake makes it created_by
+                            syncItem.createdBy = creatorSupabaseId || syncItem.creatorId;
+                            // Also keep creator_id for backward compatibility if needed
+                            syncItem.creatorId = creatorSupabaseId || syncItem.creatorId;
                         }
 
                         // 6. Resolve participants (Array of IDs)
