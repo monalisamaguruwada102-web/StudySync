@@ -336,6 +336,10 @@ function Chat() {
 
     // --- Effects ---
     useEffect(() => {
+        fetchUsers();
+    }, []);
+
+    useEffect(() => {
         if (activeTab === 'groups') {
             fetchAvailableGroups();
         }
@@ -1013,9 +1017,10 @@ function Chat() {
                                             </div>
                                             <div>
                                                 <div className="font-semibold text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                                    {user.email?.split('@')[0]}
+                                                    {user.name || user.email?.split('@')[0]}
                                                 </div>
                                                 <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                                                    <span className="text-xs text-slate-400 font-normal">{user.email}</span>
                                                     <span className="px-1.5 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded font-medium">Lv.{user.level || 1}</span>
                                                     <span>{user.xp || 0} XP</span>
                                                     {isOnline && <span className="text-emerald-500 font-medium">• Online</span>}
