@@ -507,6 +507,7 @@ app.post('/api/groups/create', authenticateToken, async (req, res) => {
             name: name.trim(),
             description: description || '',
             creatorId: req.user.id,
+            createdBy: req.user.id, // Explicitly add for created_by mapping
             members: [req.user.id],
             inviteCode,
             createdAt: new Date().toISOString()
@@ -537,7 +538,8 @@ app.post('/api/groups/create', authenticateToken, async (req, res) => {
             inviteCode,
             lastMessage: '',
             lastMessageTime: new Date().toISOString(),
-            status: 'active'
+            status: 'active',
+            initiatorId: req.user.id
         };
 
         let conversation = null;
@@ -818,7 +820,8 @@ app.post('/api/conversations/direct', authenticateToken, async (req, res) => {
             lastMessage: '',
             lastMessageTime: new Date().toISOString(),
             status: 'pending',
-            initiatorId: req.user.id
+            initiatorId: req.user.id,
+            initiator_id: req.user.id // Extra safety for mapping
         };
 
         let conversation = null;
