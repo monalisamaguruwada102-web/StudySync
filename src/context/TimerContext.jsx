@@ -93,30 +93,40 @@ export const TimerProvider = ({ children }) => {
         syncPresence();
     }, [isRunning, isBreak, selectedTask, updateActivity]);
 
-    // Timer countdown effect
+    // Timer countdown effect (Web Worker)
     useEffect(() => {
+        let worker = null;
+
         if (isRunning && timeLeft > 0) {
-            intervalRef.current = setInterval(() => {
-                setTimeLeft(prev => {
-                    if (prev <= 1) {
-                        return 0;
-                    }
-                    return prev - 1;
-                });
-            }, 1000);
-        } else {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-                intervalRef.current = null;
-            }
+            // Instantiate worker
+            worker = new Worker('/timer.worker.js');
+
+            worker.onmessage = (e) => {
+                if (e.data === 'TICK') {
+                    setTimeLeft(prev => {
+                        if (prev <= 1) return 0;
+                        return prev - 1;
+                    });
+                }
+            };
+
+            worker.postMessage({ action: 'START' });
         }
 
         return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
+            if (worker) {
+                worker.postMessage({ action: 'PAUSE' });
+                worker.terminate();
             }
         };
-    }, [isRunning, timeLeft]);
+    }, [isRunning]); // Re-create worker only when running state changes (simplified)
+
+    // Watch for 0 to stop
+    useEffect(() => {
+        if (timeLeft === 0 && isRunning) {
+            setIsRunning(false); // Stop immediately so worker is killed by dependency change
+        }
+    }, [timeLeft, isRunning]);
 
     // Handle session completion
     useEffect(() => {

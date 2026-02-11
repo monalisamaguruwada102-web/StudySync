@@ -641,8 +641,16 @@ app.post('/api/conversations/direct', authenticateToken, async (req, res) => {
     if (!otherUserId) return res.status(400).json({ error: 'Other user ID required' });
 
     try {
-        // Search Supabase first
-        let existing = await supabasePersistence.findDirectConversation(req.user.id, otherUserId);
+        let existing = null;
+
+        // 1. Try finding in Supabase first
+        try {
+            existing = await supabasePersistence.findDirectConversation(req.user.id, otherUserId);
+        } catch (supaErr) {
+            console.warn('⚠️ Supabase findDirectConversation failed, checking local:', supaErr.message);
+        }
+
+        // 2. Fallback to local check
         if (!existing) {
             const conversations = db.get('conversations') || [];
             existing = conversations.find(c =>
@@ -657,7 +665,7 @@ app.post('/api/conversations/direct', authenticateToken, async (req, res) => {
             return res.json(existing);
         }
 
-        // Create new conversation
+        // 3. Create new conversation
         const convData = {
             type: 'direct',
             participants: [req.user.id, otherUserId],
@@ -667,19 +675,27 @@ app.post('/api/conversations/direct', authenticateToken, async (req, res) => {
             initiatorId: req.user.id
         };
 
-        let conversation = await supabasePersistence.createConversation(convData);
+        let conversation = null;
 
-        // Always save locally for persistence
+        // Try creating in Supabase
+        try {
+            conversation = await supabasePersistence.createConversation(convData);
+        } catch (createErr) {
+            console.error('❌ Supabase createConversation failed, falling back to local:', createErr.message);
+        }
+
+        // 4. Always ensure local persistence
         const localConv = db.insert('conversations', {
             ...convData,
-            supabaseId: conversation?.id
+            supabaseId: conversation?.id // Link if Supabase worked
         });
 
-        if (!conversation) conversation = localConv;
+        // Use Supabase version if available, otherwise local
+        res.json(conversation || localConv);
 
-        res.json(conversation);
     } catch (error) {
         console.error('Error in /api/conversations/direct:', error);
+        // Even if everything explodes, try to return something useful or a specific error
         res.status(500).json({ error: 'Failed to create conversation' });
     }
 });
@@ -850,6 +866,8 @@ genericCollections.forEach(collection => {
     app.post(`/api/${collection}`, authenticateToken, async (req, res) => {
         const now = new Date().toISOString();
         const rawItem = { ...req.body, userId: req.user.id, createdAt: now, updatedAt: now };
+
+        // 1. Always save locally first (Reliability)
         let item = db.insert(collection, rawItem);
         let syncStatus = 'local-only';
 
@@ -868,20 +886,25 @@ genericCollections.forEach(collection => {
             try { await supabasePersistence.upsertToCollection('users', xpResult.user); } catch (e) { }
         }
 
+        // 2. Try to sync to Supabase (Background-ish)
         const supabaseTable = tableMap[collection];
         if (supabaseTable) {
             try {
                 const cloudItem = await supabasePersistence.upsertToCollection(supabaseTable, item);
                 if (cloudItem) {
+                    // Update local item with Supabase ID link
                     item = db.update(collection, item.id, { supabaseId: cloudItem.id });
                     syncStatus = 'synced';
                 }
             } catch (err) {
-                console.error(`❌ Sync failed for ${collection}:`, err.message);
+                console.error(`❌ Sync failed for ${collection} (saved locally):`, err.message);
                 syncStatus = 'failed';
+                // Do NOT return error to client, local save is sufficient for now
             }
         }
-        res.status(syncStatus === 'failed' ? 207 : 201).json({ item, syncStatus });
+
+        // Always return success if local save worked
+        res.status(201).json({ item, syncStatus });
     });
 
     app.put(`/api/${collection}/:id`, authenticateToken, async (req, res) => {
