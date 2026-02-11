@@ -45,8 +45,19 @@ const mapRow = (row, table = null) => {
 const mapToTable = (item, table = null) => {
     if (!item) return null;
     const mapped = {};
-    // Allow newly_registered and tutorial_completed to sync to users table
-    const skipKeys = ['supabaseId', 'supabaseAuthId', 'videoId', 'thumbnail', 'timerState', 'darkMode', 'theme', 'active', 'lastActive'];
+
+    // Keys to skip by default or based on table
+    const skipKeys = [
+        'supabaseId', 'supabaseAuthId', 'videoId', 'thumbnail', 'active', 'lastActive',
+        'timerState', 'timer_state', 'darkMode', 'dark_mode', 'theme', 'password'
+    ];
+
+    // profiles table is strict about metadata; some fields live only in users (legacy)
+    if (table === 'profiles') {
+        // These are already in the global skipKeys now, but keeping this for historical context or if specific table logic changes
+        // skipKeys.push('timerState', 'timer_state', 'darkMode', 'dark_mode', 'theme', 'password');
+    }
+
     for (const key in item) {
         if (skipKeys.includes(key) || typeof item[key] === 'function') continue;
         mapped[toSnake(key)] = item[key];
@@ -234,26 +245,80 @@ const signInUser = async (email, password) => {
 const getAllProfiles = async () => {
     const client = initSupabase();
     if (!client) return null;
-    // Redirect profiles to users
-    const { data, error } = await client.from('users').select('*').order('created_at', { ascending: false });
-    return error ? null : data.map(p => ({
-        id: p.id,
-        email: p.email,
-        name: p.name,
-        xp: p.xp || 0,
-        level: p.level || 1,
-        badges: p.badges || [],
-        createdAt: p.created_at
-    }));
+
+    // Attempt to fetch from profiles table first (Primary)
+    const { data: profileData, error: profileError } = await client.from('profiles').select('*').order('created_at', { ascending: false });
+
+    // Also fetch from users table for legacy/backup (Secondary)
+    const { data: userData, error: userError } = await client.from('users').select('*').order('created_at', { ascending: false });
+
+    if (profileError && userError) {
+        console.error('Error fetching all profiles/users:', profileError, userError);
+        return null;
+    }
+
+    // Merge and deduplicate by email/id
+    const userMap = new Map();
+
+    (userData || []).forEach(u => {
+        if (u.email) userMap.set(u.email.toLowerCase(), {
+            id: u.id,
+            email: u.email,
+            name: u.name,
+            xp: u.xp || 0,
+            level: u.level || 1,
+            badges: u.badges || [],
+            createdAt: u.created_at,
+            source: 'users_table'
+        });
+    });
+
+    (profileData || []).forEach(p => {
+        if (p.email) {
+            userMap.set(p.email.toLowerCase(), {
+                ...(userMap.get(p.email.toLowerCase()) || {}),
+                id: p.id,
+                email: p.email,
+                name: p.name,
+                xp: p.xp || 0,
+                level: p.level || 1,
+                badges: p.badges || [],
+                createdAt: p.created_at,
+                source: 'profiles_table'
+            });
+        }
+    });
+
+    return Array.from(userMap.values());
 };
 
 const upsertProfile = async (profile) => {
     const client = initSupabase();
     if (!client) return null;
-    // Redirect profiles to users
-    const row = mapToTable(profile, 'users');
-    const { data, error } = await client.from('users').upsert([row]).select().single();
-    return error ? null : mapRow(data, 'users');
+
+    const row = mapToTable(profile, 'profiles');
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(profile.id);
+
+    let profileResult = null;
+    // Only upsert to profiles if it's a valid UUID (referenced to auth.users)
+    if (isUUID) {
+        const { data, error } = await client.from('profiles').upsert([row]).select().single();
+        if (error) {
+            console.error('Error upserting to profiles:', error);
+        } else {
+            profileResult = mapRow(data, 'profiles');
+        }
+    }
+
+    // Always sync to users table as legacy fallback
+    const userRow = mapToTable(profile, 'users');
+    const { data: userData, error: userError } = await client.from('users').upsert([userRow]).select().single();
+
+    if (userError) {
+        console.error('Error upserting to users table:', userError);
+    }
+
+    return profileResult || (userData ? mapRow(userData, 'users') : null);
 };
 
 module.exports = {
