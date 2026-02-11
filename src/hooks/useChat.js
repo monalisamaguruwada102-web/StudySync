@@ -118,7 +118,7 @@ const useChat = () => {
             setError(err.message);
             throw err;
         }
-    }, [fetchConversations]);
+    }, [user, fetchConversations]);
 
     // Send typing indicator
     const sendTyping = useCallback(async (conversationId, isTyping) => {
@@ -137,7 +137,7 @@ const useChat = () => {
             event: 'typing',
             payload: { userId: user.id, isTyping }
         });
-    }, []);
+    }, [user]);
 
     // Create or get direct conversation
     const createDirectConversation = useCallback(async (otherUserId) => {

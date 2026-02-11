@@ -163,6 +163,52 @@ const markMessagesAsRead = async (convId, userId) => {
 const createGroup = async (group) => upsertToCollection('groups', group);
 const getGroups = async () => fetchAll('groups');
 
+const findDirectConversation = async (userId1, userId2) => {
+    const client = initSupabase();
+    if (!client) return null;
+    // Find a 'direct' conversation where participants contains BOTH user IDs
+    const { data, error } = await client
+        .from('conversations')
+        .select('*')
+        .eq('type', 'direct')
+        .contains('participants', [userId1])
+        .contains('participants', [userId2])
+        .limit(1);
+
+    if (error) {
+        console.error('Error finding direct conversation:', error);
+        return null;
+    }
+    return data && data.length > 0 ? mapRow(data[0], 'conversations') : null;
+};
+
+const uploadFile = async (bucket, fileName, buffer, mimeType) => {
+    const client = initSupabase();
+    if (!client) return null;
+    try {
+        const { data, error } = await client.storage
+            .from(bucket)
+            .upload(fileName, buffer, {
+                contentType: mimeType,
+                upsert: false
+            });
+
+        if (error) {
+            console.error(`Error uploading file to ${bucket}:`, error);
+            return null;
+        }
+
+        const { data: urlData } = client.storage
+            .from(bucket)
+            .getPublicUrl(data.path);
+
+        return urlData?.publicUrl || null;
+    } catch (err) {
+        console.error('Upload error:', err);
+        return null;
+    }
+};
+
 // --- AUTH ---
 const signUpUser = async (email, password) => {
     const client = initSupabase();
@@ -228,6 +274,8 @@ module.exports = {
     markMessagesAsRead,
     createGroup,
     getGroups,
+    findDirectConversation,
+    uploadFile,
     signUpUser,
     signInUser,
     getAllProfiles,

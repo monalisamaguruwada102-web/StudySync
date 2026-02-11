@@ -438,60 +438,200 @@ app.post('/api/user/settings', authenticateToken, async (req, res) => {
     }
 });
 
-// --- SHARED RESOURCE ROUTES (With Cloud Fallback) ---
-// These specific routes are kept for specialized sharing logic (fetching by ID regardless of owner)
-app.get('/api/tutorials/shared/:id', authenticateToken, async (req, res) => {
+// --- MESSAGES FETCH ROUTE ---
+app.get('/api/messages/:conversationId', authenticateToken, async (req, res) => {
     try {
-        const { id } = req.params;
-        let item = db.find('tutorials', t => t.id === id);
+        const { conversationId } = req.params;
+        let messages = null;
 
-        if (!item) {
-            console.log(`Shared tutorial ${id} not found locally, checking Supabase...`);
-            item = await supabasePersistence.getById('tutorials', id);
+        // 1. Try Supabase first
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(conversationId);
+        if (isUUID) {
+            try {
+                messages = await supabasePersistence.getMessages(conversationId);
+            } catch (supaErr) {
+                console.warn('⚠️ Supabase getMessages failed, checking local:', supaErr.message);
+            }
         }
 
-        if (!item) return res.status(404).json({ error: 'Tutorial not found' });
-        res.json(item);
-    } catch (err) {
-        console.error('Error fetching shared tutorial:', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // 2. Fallback to local
+        if (!messages) {
+            const localMessages = db.get('messages') || [];
+            messages = localMessages
+                .filter(m => m.conversationId === conversationId)
+                .sort((a, b) => new Date(a.timestamp || a.createdAt) - new Date(b.timestamp || b.createdAt));
+        }
+
+        res.json(messages || []);
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+        res.json([]);
     }
 });
 
-app.get('/api/notes/shared/:id', authenticateToken, async (req, res) => {
+// --- GROUP ROUTES ---
+app.get('/api/groups', authenticateToken, async (req, res) => {
     try {
-        const { id } = req.params;
-        let item = db.find('notes', n => n.id === id);
+        let groups = null;
 
-        if (!item) {
-            console.log(`Shared note ${id} not found locally, checking Supabase...`);
-            item = await supabasePersistence.getById('notes', id);
+        // 1. Try Supabase
+        try {
+            groups = await supabasePersistence.getGroups();
+        } catch (supaErr) {
+            console.warn('⚠️ Supabase getGroups failed, checking local:', supaErr.message);
         }
 
-        if (!item) return res.status(404).json({ error: 'Note not found' });
-        res.json(item);
-    } catch (err) {
-        console.error('Error fetching shared note:', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // 2. Fallback to local
+        if (!groups) {
+            groups = db.get('groups') || [];
+        }
+
+        res.json(groups || []);
+    } catch (error) {
+        console.error('Error fetching groups:', error);
+        res.json([]);
     }
 });
 
-app.get('/api/flashcardDecks/shared/:id', authenticateToken, async (req, res) => {
+app.post('/api/groups/create', authenticateToken, async (req, res) => {
     try {
-        const { id } = req.params;
-        let item = db.find('flashcard_decks', d => d.id === id);
-
-        if (!item) {
-            console.log(`Shared deck ${id} not found locally, checking Supabase...`);
-            // Note: Supabase table is 'flashcard_decks'
-            item = await supabasePersistence.getById('flashcard_decks', id);
+        const { name, description } = req.body;
+        if (!name || !name.trim()) {
+            return res.status(400).json({ error: 'Group name is required' });
         }
 
-        if (!item) return res.status(404).json({ error: 'Deck not found' });
-        res.json(item);
-    } catch (err) {
-        console.error('Error fetching shared deck:', err);
-        res.status(500).json({ error: 'Internal server error' });
+        // Generate a unique invite code
+        const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+        const groupData = {
+            name: name.trim(),
+            description: description || '',
+            creatorId: req.user.id,
+            members: [req.user.id],
+            inviteCode,
+            createdAt: new Date().toISOString()
+        };
+
+        // 1. Save group to Supabase
+        let group = null;
+        try {
+            group = await supabasePersistence.createGroup(groupData);
+        } catch (supaErr) {
+            console.error('❌ Supabase createGroup failed:', supaErr.message);
+        }
+
+        // 2. Always save locally
+        const localGroup = db.insert('groups', {
+            ...groupData,
+            supabaseId: group?.id
+        });
+
+        const finalGroup = group || localGroup;
+
+        // 3. Create associated group conversation
+        const convData = {
+            type: 'group',
+            participants: [req.user.id],
+            groupId: finalGroup.id,
+            groupName: name.trim(),
+            inviteCode,
+            lastMessage: '',
+            lastMessageTime: new Date().toISOString(),
+            status: 'active'
+        };
+
+        let conversation = null;
+        try {
+            conversation = await supabasePersistence.createConversation(convData);
+        } catch (supaErr) {
+            console.error('❌ Supabase createConversation for group failed:', supaErr.message);
+        }
+
+        const localConv = db.insert('conversations', {
+            ...convData,
+            supabaseId: conversation?.id
+        });
+
+        res.json({
+            group: finalGroup,
+            conversation: conversation || localConv
+        });
+    } catch (error) {
+        console.error('Error creating group:', error);
+        res.status(500).json({ error: 'Failed to create group' });
+    }
+});
+
+app.post('/api/groups/join/:code', authenticateToken, async (req, res) => {
+    try {
+        const { code } = req.params;
+        const userId = req.user.id;
+
+        // 1. Find the group by invite code
+        let group = null;
+
+        // Check Supabase
+        try {
+            const allGroups = await supabasePersistence.getGroups();
+            if (allGroups) {
+                group = allGroups.find(g => g.inviteCode === code);
+            }
+        } catch (supaErr) {
+            console.warn('⚠️ Supabase getGroups failed for join:', supaErr.message);
+        }
+
+        // Fallback to local
+        if (!group) {
+            const localGroups = db.get('groups') || [];
+            group = localGroups.find(g => g.inviteCode === code);
+        }
+
+        if (!group) {
+            return res.status(404).json({ error: 'Group not found. Check the invite code and try again.' });
+        }
+
+        // 2. Check if user is already a member
+        if (group.members && group.members.includes(userId)) {
+            // Already a member, just find the conversation
+            const conversations = db.get('conversations') || [];
+            const existingConv = conversations.find(c => c.groupId === group.id || c.inviteCode === code);
+            return res.json({ message: 'Already a member', group, conversationId: existingConv?.id });
+        }
+
+        // 3. Add user to group members
+        const updatedMembers = [...(group.members || []), userId];
+
+        try {
+            await supabasePersistence.upsertToCollection('groups', { ...group, members: updatedMembers });
+        } catch (supaErr) {
+            console.warn('⚠️ Supabase group update failed:', supaErr.message);
+        }
+        db.update('groups', group.id, { members: updatedMembers });
+
+        // 4. Add user to the group conversation participants
+        let conversation = null;
+        const localConversations = db.get('conversations') || [];
+        conversation = localConversations.find(c => c.groupId === group.id || c.inviteCode === code);
+
+        if (conversation) {
+            const updatedParticipants = [...new Set([...(conversation.participants || []), userId])];
+
+            try {
+                await supabasePersistence.updateConversation(conversation.id, { participants: updatedParticipants });
+            } catch (supaErr) {
+                console.warn('⚠️ Supabase conversation update failed:', supaErr.message);
+            }
+            db.update('conversations', conversation.id, { participants: updatedParticipants });
+        }
+
+        res.json({
+            message: 'Successfully joined group',
+            group: { ...group, members: updatedMembers },
+            conversationId: conversation?.id
+        });
+    } catch (error) {
+        console.error('Error joining group:', error);
+        res.status(500).json({ error: 'Failed to join group' });
     }
 });
 

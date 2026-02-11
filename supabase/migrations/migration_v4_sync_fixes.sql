@@ -33,11 +33,12 @@ FOR UPDATE USING (auth.uid()::text = user_id);
 CREATE POLICY "Users can delete own notes" ON public.notes 
 FOR DELETE USING (auth.uid()::text = user_id);
 
--- 4. Ensure Conversations table exists (just in case)
+-- 4. Ensure Conversations table exists
+-- Note: 'participants' seems to be text[] in your DB, not JSONB.
 CREATE TABLE IF NOT EXISTS public.conversations (
     id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     type TEXT DEFAULT 'direct',
-    participants JSONB DEFAULT '[]'::jsonb,
+    participants TEXT[] DEFAULT '{}',
     last_message TEXT,
     last_message_time TIMESTAMPTZ DEFAULT now(),
     status TEXT DEFAULT 'active',
@@ -49,11 +50,17 @@ CREATE TABLE IF NOT EXISTS public.conversations (
 -- Enable RLS for conversations
 ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
 
+-- Drop old policies if they exist to avoid conflicts
+DROP POLICY IF EXISTS "Users can view their conversations" ON public.conversations;
+DROP POLICY IF EXISTS "Users can insert conversations" ON public.conversations;
+DROP POLICY IF EXISTS "Users can update their conversations" ON public.conversations;
+
+-- Re-create with correct array syntax
 CREATE POLICY "Users can view their conversations" ON public.conversations
-FOR SELECT USING (auth.uid()::text = ANY (SELECT jsonb_array_elements_text(participants)));
+FOR SELECT USING (auth.uid()::text = ANY(participants));
 
 CREATE POLICY "Users can insert conversations" ON public.conversations
-FOR INSERT WITH CHECK (auth.uid()::text = ANY (SELECT jsonb_array_elements_text(participants)));
+FOR INSERT WITH CHECK (auth.uid()::text = ANY(participants));
 
 CREATE POLICY "Users can update their conversations" ON public.conversations
-FOR UPDATE USING (auth.uid()::text = ANY (SELECT jsonb_array_elements_text(participants)));
+FOR UPDATE USING (auth.uid()::text = ANY(participants));
