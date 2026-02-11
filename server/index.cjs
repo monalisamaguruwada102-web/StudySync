@@ -1573,17 +1573,27 @@ const syncLocalDataToCloud = async () => {
                     try {
                         // Smart Dependency Resolution
                         const syncItem = { ...item };
+                        const isUUID = (id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
 
                         // 1. Resolve moduleId -> Supabase UUID
-                        if (syncItem.moduleId) {
+                        if (syncItem.moduleId && !isUUID(syncItem.moduleId)) {
                             const mod = db.getById('modules', syncItem.moduleId);
-                            if (mod?.supabaseId) syncItem.moduleId = mod.supabaseId;
+                            if (mod?.supabaseId) {
+                                syncItem.moduleId = mod.supabaseId;
+                            } else {
+                                // Orphan or placeholder (like "test-module") - nullify to prevent FK error
+                                syncItem.moduleId = null;
+                            }
                         }
 
                         // 2. Resolve deckId -> Supabase UUID
-                        if (syncItem.deckId) {
+                        if (syncItem.deckId && !isUUID(syncItem.deckId)) {
                             const deck = db.getById('flashcardDecks', syncItem.deckId);
-                            if (deck?.supabaseId) syncItem.deckId = deck.supabaseId;
+                            if (deck?.supabaseId) {
+                                syncItem.deckId = deck.supabaseId;
+                            } else {
+                                syncItem.deckId = null;
+                            }
                         }
 
                         const cloudItem = await supabasePersistence.upsertToCollection(remoteTable, syncItem);
