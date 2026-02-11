@@ -988,9 +988,9 @@ const tableMap = {
     'calendarEvents': 'calendar_events',
     'pomodoroSessions': 'pomodoro_sessions',
     'tutorials': 'tutorials',
+    'groups': 'groups', // Groups MUST sync before conversations
     'conversations': 'conversations',
-    'messages': 'messages',
-    'groups': 'groups'
+    'messages': 'messages'
 };
 
 genericCollections.forEach(collection => {
