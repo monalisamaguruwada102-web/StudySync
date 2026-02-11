@@ -979,7 +979,7 @@ app.post('/api/conversations/:id/read', authenticateToken, async (req, res) => {
 
 const collections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 'flashcardDecks', 'flashcards', 'calendarEvents', 'pomodoroSessions', 'tutorials', 'conversations', 'messages', 'groups'];
 
-const genericCollections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 'flashcardDecks', 'flashcards', 'calendarEvents', 'pomodoroSessions', 'tutorials'];
+const genericCollections = ['modules', 'studyLogs', 'tasks', 'notes', 'grades', 'flashcardDecks', 'flashcards', 'calendarEvents', 'pomodoroSessions', 'tutorials', 'conversations', 'messages', 'groups'];
 
 // Redundant specific tutorial routes removed to use consolidated generic routes
 
@@ -1182,6 +1182,28 @@ app.post('/api/admin/import', authenticateToken, jsonUpload.single('file'), asyn
     } catch (error) {
         console.error('Import error:', error);
         res.status(500).json({ error: 'Failed to restore your data: ' + error.message });
+    }
+});
+
+// Full Account Deletion
+app.delete('/api/user/account', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        console.log(`🗑️ Deleting account for user: ${req.user.email} (${userId})`);
+
+        // 1. Delete from Supabase (if configured)
+        if (supabasePersistence.initSupabase()) {
+            await supabasePersistence.deleteAllUserData(userId);
+        }
+
+        // 2. Delete from local database
+        db.deleteUser(userId);
+
+        res.clearCookie('auth_token');
+        res.json({ success: true, message: 'Account and all associated data deleted successfully.' });
+    } catch (error) {
+        console.error('Account deletion error:', error);
+        res.status(500).json({ error: 'Failed to delete account: ' + error.message });
     }
 });
 

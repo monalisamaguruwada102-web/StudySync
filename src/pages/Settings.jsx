@@ -18,7 +18,8 @@ import {
     ExternalLink,
     CheckCircle2,
     Target,
-    Music
+    Music,
+    Trash2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
@@ -33,6 +34,7 @@ const Settings = () => {
     console.debug('Settings: user state:', user);
     const [isExporting, setIsExporting] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
+    const [isDeletingAccount, setIsDeletingAccount] = useState(false);
     const [importStatus, setImportStatus] = useState(null); // 'success', 'error', 'pending'
 
     const [activeTab, setActiveTab] = useState('general'); // 'general', 'appearance', 'integrations', 'system'
@@ -126,6 +128,28 @@ const Settings = () => {
         } finally {
             setIsImporting(false);
             event.target.value = null;
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        const confirm1 = window.confirm('CRITICAL WARNING: This will permanently DELETE your account and ALL associated data (tasks, notes, messages, flashcards, etc.) from BOTH local and cloud storage. This action is IRREVERSIBLE. Are you absolutely sure?');
+        if (!confirm1) return;
+
+        const confirm2 = window.prompt('To confirm, please type your email to proceed:');
+        if (confirm2 !== user?.email) {
+            alert('Email does not match. Deletion cancelled.');
+            return;
+        }
+
+        setIsDeletingAccount(true);
+        try {
+            await api.delete('/user/account');
+            alert('Account deleted successfully. We\'re sorry to see you go.');
+            window.location.href = '/login';
+        } catch (error) {
+            console.error('Account deletion failed:', error);
+            alert('Failed to delete account: ' + (error.response?.data?.error || error.message));
+            setIsDeletingAccount(false);
         }
     };
 
@@ -436,6 +460,35 @@ const Settings = () => {
                                     <p className="text-xs text-slate-500 dark:text-slate-400 px-1 font-medium">
                                         {isCloudConfigured ? 'Your data is now permanently synchronized with the cloud.' : 'Configure Supabase credentials in your .env file to enable persistence.'}
                                     </p>
+                                </Card>
+
+                                {/* Danger Zone */}
+                                <Card className="border-2 border-red-500/20 bg-red-500/5 backdrop-blur-sm overflow-hidden">
+                                    <div className="p-2">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="p-3 bg-red-500 text-white rounded-2xl shadow-lg shadow-red-500/30">
+                                                <AlertTriangle size={24} />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-wider">Danger Zone</h3>
+                                                <p className="text-xs text-red-600 font-bold uppercase tracking-widest">Permanent Actions</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+                                                Deleting your account will remove all your data from our servers and your local device. This action is permanent and cannot be reversed.
+                                            </p>
+                                            <button
+                                                onClick={handleDeleteAccount}
+                                                disabled={isDeletingAccount}
+                                                className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-red-500 hover:bg-red-600 text-white font-black rounded-2xl transition-all shadow-lg shadow-red-500/20 active:scale-95 disabled:opacity-50"
+                                            >
+                                                {isDeletingAccount ? <RefreshCcw className="animate-spin" /> : <Trash2 size={20} />}
+                                                {isDeletingAccount ? 'DELETING ACCOUNT...' : 'DELETE MY ACCOUNT PERMANENTLY'}
+                                            </button>
+                                        </div>
+                                    </div>
                                 </Card>
                             </div>
                         )}

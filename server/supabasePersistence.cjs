@@ -321,6 +321,65 @@ const upsertProfile = async (profile) => {
     return profileResult || (userData ? mapRow(userData, 'users') : null);
 };
 
+const deleteAllUserData = async (userId) => {
+    const client = initSupabase();
+    if (!client) return false;
+
+    const tables = [
+        'study_logs', 'tasks', 'notes', 'grades', 'flashcard_decks',
+        'flashcards', 'calendar_events', 'pomodoro_sessions', 'tutorials', 'modules'
+    ];
+
+    try {
+        // Delete from standard tables
+        for (const table of tables) {
+            await client.from(table).delete().eq('user_id', userId);
+        }
+
+        // Delete messages
+        await client.from('messages').delete().eq('sender_id', userId);
+
+        // Remove from conversations
+        // Note: For direct chats, we might delete the conversation entirely. 
+        // For groups, we just remove the participant.
+        const conversations = await getConversations(userId);
+        if (conversations) {
+            for (const conv of conversations) {
+                if (conv.type === 'direct') {
+                    await client.from('conversations').delete().eq('id', conv.id);
+                } else {
+                    const newParticipants = (conv.participants || []).filter(p => p !== userId);
+                    await client.from('conversations').update({ participants: newParticipants }).eq('id', conv.id);
+                }
+            }
+        }
+
+        // Remove from groups
+        // If they created the group, maybe delete it or transfer? 
+        // For now, let's remove from member arrays and delete if they were the only member.
+        const { data: groups } = await client.from('groups').select('*').contains('members', [userId]);
+        if (groups) {
+            for (const group of groups) {
+                const newMembers = (group.members || []).filter(m => m !== userId);
+                if (newMembers.length === 0) {
+                    await client.from('groups').delete().eq('id', group.id);
+                } else {
+                    await client.from('groups').update({ members: newMembers }).eq('id', group.id);
+                }
+            }
+        }
+
+        // Finally delete profile and user records
+        await client.from('profiles').delete().eq('id', userId);
+        await client.from('users').delete().eq('id', userId);
+
+        return true;
+    } catch (error) {
+        console.error('Error deleting all user data from Supabase:', error);
+        return false;
+    }
+};
+
 module.exports = {
     initSupabase,
     mapRow,
@@ -330,6 +389,7 @@ module.exports = {
     getById,
     upsertToCollection,
     deleteFromCollection,
+    deleteAllUserData,
     createConversation,
     getConversations,
     updateConversation,
@@ -346,3 +406,4 @@ module.exports = {
     upsertProfile,
     getItemByField
 };
+

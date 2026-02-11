@@ -267,6 +267,33 @@ const db = {
         return true;
     },
 
+    deleteUser: (userId) => {
+        const data = readDB();
+        const collections = [
+            'modules', 'studyLogs', 'tasks', 'notes', 'grades',
+            'flashcardDecks', 'flashcards', 'calendarEvents',
+            'pomodoroSessions', 'tutorials', 'conversations', 'messages'
+        ];
+
+        collections.forEach(col => {
+            if (data[col]) {
+                data[col] = data[col].filter(item =>
+                    item.userId !== userId &&
+                    item.senderId !== userId &&
+                    !(item.participants && item.participants.includes(userId)) &&
+                    !(item.members && item.members.includes(userId))
+                );
+            }
+        });
+
+        // Also remove user record
+        if (data.users) {
+            data.users = data.users.filter(u => u.id !== userId);
+        }
+
+        writeDB(data);
+    },
+
     // Export backup function for graceful shutdown
     createBackup,
     DB_PATH

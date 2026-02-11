@@ -107,7 +107,9 @@
       "newly_registered": true,
       "supabaseAuthId": null,
       "createdAt": "2026-02-10T02:57:06.567Z",
-      "tutorial_completed": false
+      "tutorial_completed": false,
+      "supabaseId": "337274c6-dcc2-427d-92a7-2108e2508c88",
+      "updatedAt": "2026-02-11T07:32:17.881Z"
     },
     {
       "id": "c8dfa2b4-96b3-42fc-ad3c-47a915d32eb9",
@@ -129,7 +131,9 @@
       "badges": [],
       "id": "08367c08-3ce8-465a-82d0-13c06a89f2c6",
       "createdAt": "2026-02-11T01:35:50.208Z",
-      "tutorial_completed": false
+      "tutorial_completed": false,
+      "supabaseId": "08367c08-3ce8-465a-82d0-13c06a89f2c6",
+      "updatedAt": "2026-02-11T07:32:18.597Z"
     }
   ],
   "modules": [
