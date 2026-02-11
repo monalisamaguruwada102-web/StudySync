@@ -1553,9 +1553,15 @@ const syncLocalDataToCloud = async () => {
                 if (!item.supabaseId) {
                     if (localCol === 'users' && !item.email) continue;
 
-                    const cloudItem = await supabasePersistence.upsertToCollection(remoteTable, item);
-                    if (cloudItem) {
-                        db.update(localCol, item.id, { supabaseId: cloudItem.id });
+                    try {
+                        const cloudItem = await supabasePersistence.upsertToCollection(remoteTable, item);
+                        if (cloudItem) {
+                            db.update(localCol, item.id, { supabaseId: cloudItem.id });
+                        } else {
+                            console.warn(`⚠️ Sync failed for ${localCol} item ${item.id}: upsertToCollection returned null`);
+                        }
+                    } catch (upsertErr) {
+                        console.error(`❌ Sync error for ${localCol} item ${item.id}:`, upsertErr.message);
                     }
                 }
             }
