@@ -226,7 +226,6 @@ const signInUser = async (email, password) => {
     if (!client) return null;
     const { data, error } = await client.auth.signInWithPassword({ email, password });
     if (error) {
-        console.error('Supabase Auth sign-in error:', error.message);
         return { error: error.message };
     }
     return data.user;

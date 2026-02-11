@@ -263,7 +263,7 @@ app.post('/api/auth/login', async (req, res) => {
                 });
             }
         } else {
-            console.log(`⚠️ Supabase Auth login failed for ${email}, trying local...`);
+            // Silently fall back to local if not found in Supabase Auth
         }
     } catch (authErr) {
         console.log(`⚠️ Supabase Auth unavailable, falling back to local: ${authErr.message}`);
