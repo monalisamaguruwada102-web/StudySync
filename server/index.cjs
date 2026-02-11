@@ -860,6 +860,7 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
             conversationId,
             senderId: req.user.id,
             senderEmail: req.user.email,
+            senderName: req.user.name || req.user.email?.split('@')[0],
             content,
             type: type || 'text',
             sharedResource: sharedResource || null,

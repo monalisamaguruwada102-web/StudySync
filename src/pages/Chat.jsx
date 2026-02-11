@@ -71,7 +71,7 @@ function MessageBubble({ message, isOwn, handleOpenResource, formatTime }) {
 
                 {!isOwn && (
                     <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 block mb-1">
-                        {message.senderEmail?.split('@')[0]}
+                        {message.senderName || message.senderEmail?.split('@')[0]}
                     </span>
                 )}
 
@@ -313,7 +313,7 @@ function Chat() {
         const otherUserId = conv.participants?.find(id => id !== currentUser.id);
         const userInfo = users.find(u => u.id === otherUserId);
 
-        const title = userInfo?.email || conv.otherUser?.email || 'Unknown User';
+        const title = userInfo?.name || userInfo?.email || conv.otherUser?.name || conv.otherUser?.email || 'Unknown User';
         const isOnline = otherUserId && onlineUsers.has(otherUserId);
 
         return {
@@ -525,7 +525,14 @@ function Chat() {
     // --- Derived ---
     // --- Avatar Helper ---
     const renderAvatar = (name, isOnline = false, isGroup = false) => {
-        const initials = name?.split('@')[0].substring(0, 2).toUpperCase() || '?';
+        let initials = '?';
+        if (name) {
+            if (name.includes('@')) {
+                initials = name.split('@')[0].substring(0, 2).toUpperCase();
+            } else {
+                initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            }
+        }
         return (
             <div className="relative flex-shrink-0">
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm
