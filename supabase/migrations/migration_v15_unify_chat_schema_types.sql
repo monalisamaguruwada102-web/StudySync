@@ -4,17 +4,29 @@
 
 -- 1. Drop ALL policies on related tables to allow type modification
 -- We'll recreate permissive "Allow all" policies at the end
+
+-- Groups Policies
+DROP POLICY IF EXISTS "Users can view all groups" ON public.groups;
 DROP POLICY IF EXISTS "Authenticated users can create groups" ON public.groups;
+DROP POLICY IF EXISTS "Group members can update groups" ON public.groups;
 DROP POLICY IF EXISTS "groups_select" ON public.groups;
 DROP POLICY IF EXISTS "groups_insert" ON public.groups;
 DROP POLICY IF EXISTS "groups_update" ON public.groups;
 DROP POLICY IF EXISTS "Allow all for anon" ON public.groups;
 
+-- Conversations Policies
+DROP POLICY IF EXISTS "Users can view their conversations" ON public.conversations;
+DROP POLICY IF EXISTS "Users can create conversations" ON public.conversations;
+DROP POLICY IF EXISTS "Participants can update conversations" ON public.conversations;
 DROP POLICY IF EXISTS "conversations_select" ON public.conversations;
 DROP POLICY IF EXISTS "conversations_insert" ON public.conversations;
 DROP POLICY IF EXISTS "conversations_update" ON public.conversations;
 DROP POLICY IF EXISTS "Allow all for anon" ON public.conversations;
 
+-- Messages Policies
+DROP POLICY IF EXISTS "Users can view messages from their conversations" ON public.messages;
+DROP POLICY IF EXISTS "Users can insert messages to their conversations" ON public.messages;
+DROP POLICY IF EXISTS "Users can update messages" ON public.messages;
 DROP POLICY IF EXISTS "messages_select" ON public.messages;
 DROP POLICY IF EXISTS "messages_insert" ON public.messages;
 DROP POLICY IF EXISTS "Allow all for anon" ON public.messages;
