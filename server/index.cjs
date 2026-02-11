@@ -1571,7 +1571,22 @@ const syncLocalDataToCloud = async () => {
                     if (localCol === 'users' && !item.email) continue;
 
                     try {
-                        const cloudItem = await supabasePersistence.upsertToCollection(remoteTable, item);
+                        // Smart Dependency Resolution
+                        const syncItem = { ...item };
+
+                        // 1. Resolve moduleId -> Supabase UUID
+                        if (syncItem.moduleId) {
+                            const mod = db.getById('modules', syncItem.moduleId);
+                            if (mod?.supabaseId) syncItem.moduleId = mod.supabaseId;
+                        }
+
+                        // 2. Resolve deckId -> Supabase UUID
+                        if (syncItem.deckId) {
+                            const deck = db.getById('flashcardDecks', syncItem.deckId);
+                            if (deck?.supabaseId) syncItem.deckId = deck.supabaseId;
+                        }
+
+                        const cloudItem = await supabasePersistence.upsertToCollection(remoteTable, syncItem);
                         if (cloudItem) {
                             db.update(localCol, item.id, { supabaseId: cloudItem.id });
                         } else {
