@@ -119,6 +119,17 @@
       "createdAt": "2026-02-10T02:58:40.578Z",
       "supabaseId": "c8dfa2b4-96b3-42fc-ad3c-47a915d32eb9",
       "tutorial_completed": false
+    },
+    {
+      "email": "system-test-1770773745876@example.com",
+      "password": "$2b$10$Wtxj6wSoUGIRMBbrmAR9sO6rFNEyx6Zbqd6zMIyKHzsWDP0tXNMHO",
+      "name": "System Test User",
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "id": "08367c08-3ce8-465a-82d0-13c06a89f2c6",
+      "createdAt": "2026-02-11T01:35:50.208Z",
+      "tutorial_completed": false
     }
   ],
   "modules": [

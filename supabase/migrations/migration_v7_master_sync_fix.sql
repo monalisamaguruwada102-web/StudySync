@@ -13,7 +13,7 @@ ALTER TABLE public.study_logs ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow all for anon" ON public.study_logs;
 CREATE POLICY "Allow all for anon" ON public.study_logs FOR ALL USING (true) WITH CHECK (true);
 
--- 3. Tasks (Already hit in v6 but ensuring consistency)
+-- 3. Tasks
 ALTER TABLE public.tasks ADD COLUMN IF NOT EXISTS user_id TEXT;
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow all for anon" ON public.tasks;
@@ -37,7 +37,7 @@ ALTER TABLE public.flashcard_decks ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow all for anon" ON public.flashcard_decks;
 CREATE POLICY "Allow all for anon" ON public.flashcard_decks FOR ALL USING (true) WITH CHECK (true);
 
--- 7. Flashcards (Deck based, but sync often sends user_id)
+-- 7. Flashcards
 ALTER TABLE public.flashcards ADD COLUMN IF NOT EXISTS user_id TEXT;
 ALTER TABLE public.flashcards ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow all for anon" ON public.flashcards;
@@ -67,7 +67,7 @@ ALTER TABLE public.groups ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow all for anon" ON public.groups;
 CREATE POLICY "Allow all for anon" ON public.groups FOR ALL USING (true) WITH CHECK (true);
 
--- 12. Conversations & Messages (Permissive as per v6)
+-- 12. Conversations & Messages
 ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow all for anon" ON public.conversations;
 CREATE POLICY "Allow all for anon" ON public.conversations FOR ALL USING (true) WITH CHECK (true);
@@ -76,7 +76,7 @@ ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow all for anon" ON public.messages;
 CREATE POLICY "Allow all for anon" ON public.messages FOR ALL USING (true) WITH CHECK (true);
 
--- 13. Users Table (Ensure tutorial_completed exists)
+-- 13. Users Table 
 ALTER TABLE public.users ADD COLUMN IF NOT EXISTS tutorial_completed BOOLEAN DEFAULT false;
 
 -- Notify PostgREST to reload schema
