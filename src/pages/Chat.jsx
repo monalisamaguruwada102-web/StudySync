@@ -309,11 +309,12 @@ function Chat() {
             };
         }
 
-        // Try to find the other participant's email
+        // Try to find the other participant
         const otherUserId = conv.participants?.find(id => id !== currentUser.id);
         const userInfo = users.find(u => u.id === otherUserId);
 
-        const title = userInfo?.name || userInfo?.email || conv.otherUser?.name || conv.otherUser?.email || 'Unknown User';
+        // Prioritize name over email
+        const title = userInfo?.name || conv.otherUser?.name || userInfo?.email || conv.otherUser?.email || 'Unknown User';
         const isOnline = otherUserId && onlineUsers.has(otherUserId);
 
         return {

@@ -1617,6 +1617,25 @@ const syncLocalDataToCloud = async () => {
                             }
                         }
 
+                        // 5. Resolve creatorId -> Supabase UUID
+                        if (syncItem.creatorId && !isUUID(syncItem.creatorId)) {
+                            const creator = db.getById('users', syncItem.creatorId);
+                            if (creator?.supabaseId) {
+                                syncItem.creatorId = creator.supabaseId;
+                            } else {
+                                syncItem.creatorId = null;
+                            }
+                        }
+
+                        // 6. Resolve participants (Array of IDs)
+                        if (syncItem.participants && Array.isArray(syncItem.participants)) {
+                            syncItem.participants = syncItem.participants.map(pid => {
+                                if (isUUID(pid)) return pid;
+                                const u = db.getById('users', pid);
+                                return u?.supabaseId || null;
+                            }).filter(pid => pid !== null);
+                        }
+
                         // Special mapping for Tutorials (youtubeUrl -> url & youtube_url)
                         if (localCol === 'tutorials' && syncItem.youtubeUrl) {
                             syncItem.url = syncItem.youtubeUrl;
