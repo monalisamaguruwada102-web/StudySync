@@ -459,22 +459,33 @@ function Chat() {
             setInviteCode('');
             setShowJoinGroup(false);
 
-            // If the server returned a conversationId, select it
-            if (result.conversationId) {
-                const joinedConv = conversations.find(c => c.id === result.conversationId);
-                if (joinedConv) {
-                    setActiveConversation(joinedConv);
-                } else {
-                    // If not in current list (rare sync issue), the refreshConversations inside joinGroup will help.
-                    // We might need a small delay or a retry if it's not immediate.
-                    setTimeout(() => {
-                        const refreshedConv = conversations.find(c => c.id === result.conversationId);
-                        if (refreshedConv) setActiveConversation(refreshedConv);
-                    }, 500);
-                }
+            // 1. Success feedback
+            if (result.alreadyMember) {
+                alert('You are already a member of this group!');
+            } else {
+                alert('Successfully joined group!');
             }
 
-            alert('Successfully joined group!');
+            // 2. Switch to groups tab
+            setActiveTab('groups');
+
+            // 3. Select the conversation
+            if (result.conversationId) {
+                // We use a small timeout to allow useChat to refresh conversations
+                setTimeout(() => {
+                    const joinedConv = result.group ? {
+                        id: result.conversationId,
+                        type: 'group',
+                        groupId: result.group.id,
+                        groupName: result.group.name,
+                        participants: result.group.members
+                    } : null;
+
+                    if (joinedConv) {
+                        setActiveConversation(joinedConv);
+                    }
+                }, 100);
+            }
         } catch (error) {
             console.error('Error joining group:', error);
             const errorMsg = error.response?.data?.error || error.message || 'Failed to join group';

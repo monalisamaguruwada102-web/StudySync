@@ -597,7 +597,12 @@ app.post('/api/groups/join/:code', authenticateToken, async (req, res) => {
             // Already a member, just find the conversation
             const conversations = db.get('conversations') || [];
             const existingConv = conversations.find(c => c.groupId === group.id || c.inviteCode === code);
-            return res.json({ message: 'Already a member', group, conversationId: existingConv?.id });
+            return res.json({
+                message: 'Already a member',
+                alreadyMember: true,
+                group,
+                conversationId: existingConv?.id
+            });
         }
 
         // 3. Add user to group members
