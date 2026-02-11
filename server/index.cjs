@@ -1628,6 +1628,10 @@ const syncLocalDataToCloud = async () => {
                             if (syncItem.back) syncItem.answer = syncItem.back;
                             if (syncItem.question && !syncItem.front) syncItem.front = syncItem.question;
                             if (syncItem.answer && !syncItem.back) syncItem.back = syncItem.answer;
+
+                            // Ensure Supabase required fields are NOT null if possible
+                            if (!syncItem.question) syncItem.question = ' ';
+                            if (!syncItem.answer) syncItem.answer = ' ';
                         }
 
                         const cloudItem = await supabasePersistence.upsertToCollection(remoteTable, syncItem);
