@@ -149,6 +149,12 @@ const db = {
         return readDB()[collection].find(predicate);
     },
 
+    // Helper to find index by either local ID or Supabase ID
+    findIndex: (collection, id) => {
+        const data = readDB()[collection];
+        return data.findIndex(i => String(i.id) === String(id) || (i.supabaseId && String(i.supabaseId) === String(id)));
+    },
+
     filter: (collection, predicate) => {
         return readDB()[collection].filter(predicate);
     },
@@ -175,7 +181,7 @@ const db = {
 
     update: (collection, id, updates) => {
         const data = readDB();
-        const index = data[collection].findIndex(i => i.id === id);
+        const index = data[collection].findIndex(i => String(i.id) === String(id) || (i.supabaseId && String(i.supabaseId) === String(id)));
         if (index !== -1) {
             data[collection][index] = { ...data[collection][index], ...updates, updatedAt: new Date().toISOString() };
             writeDB(data);
@@ -186,13 +192,19 @@ const db = {
 
     delete: (collection, id) => {
         const data = readDB();
-        data[collection] = data[collection].filter(i => String(i.id) !== String(id));
+        data[collection] = data[collection].filter(i =>
+            String(i.id) !== String(id) &&
+            (!i.supabaseId || String(i.supabaseId) !== String(id))
+        );
         writeDB(data);
     },
 
     getById: (collection, id) => {
         const data = readDB();
-        return data[collection].find(i => String(i.id) === String(id));
+        return data[collection].find(i =>
+            String(i.id) === String(id) ||
+            (i.supabaseId && String(i.supabaseId) === String(id))
+        );
     },
 
     getSettings: () => readDB().settings,

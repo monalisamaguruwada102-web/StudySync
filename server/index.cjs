@@ -909,10 +909,20 @@ app.post('/api/conversations/:id/respond', authenticateToken, async (req, res) =
         const { status } = req.body; // 'active' or 'rejected'
         const conversationId = req.params.id;
 
-        // Update in Supabase
-        await supabasePersistence.updateConversation(conversationId, { status });
+        // Smart ID Resolution
+        let supabaseId = conversationId;
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(conversationId);
+        if (!isUUID) {
+            const local = db.getById('conversations', conversationId);
+            if (local?.supabaseId) supabaseId = local.supabaseId;
+        }
 
-        // Update locally
+        // 1. Update in Supabase
+        if (supabaseId && supabaseId.length > 20) { // Simple UUID check
+            await supabasePersistence.updateConversation(supabaseId, { status });
+        }
+
+        // 2. Update locally (Smart update handles both UUID and local ID)
         db.update('conversations', conversationId, { status });
 
         res.json({ success: true, status });
@@ -927,17 +937,24 @@ app.post('/api/conversations/:id/read', authenticateToken, async (req, res) => {
     try {
         const conversationId = req.params.id;
 
-        // Only attempt Supabase update if ID looks like a UUID
+        // Smart ID Resolution
+        let supabaseId = conversationId;
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(conversationId);
 
-        if (isUUID) {
-            await supabasePersistence.markMessagesAsRead(conversationId, req.user.id);
+        if (!isUUID) {
+            const local = db.getById('conversations', conversationId);
+            if (local?.supabaseId) supabaseId = local.supabaseId;
         }
 
-        // Update locally (optional, since UI usually refreshes or updates optimistically)
+        if (supabaseId && supabaseId.length > 20) {
+            await supabasePersistence.markMessagesAsRead(supabaseId, req.user.id);
+        }
+
+        // Update locally 
         const messages = db.get('messages') || [];
         messages.forEach(m => {
-            if (m.conversationId === conversationId && m.senderId !== req.user.id) {
+            // Check against both local ID and supabaseId
+            if ((m.conversationId === conversationId || m.conversationId === supabaseId) && m.senderId !== req.user.id) {
                 db.update('messages', m.id, { read: true });
             }
         });
@@ -1585,8 +1602,10 @@ const server = app.listen(PORT, async () => {
     await restoreCloudData();
     // Run background sync immediately
     await syncLocalDataToCloud();
-    // Then every 5 minutes
+    // Then every 5 minutes (Local -> Cloud)
     setInterval(syncLocalDataToCloud, 5 * 60 * 1000);
+    // Every 10 minutes (Cloud -> Local) to keep multiple clients in sync
+    setInterval(restoreCloudData, 10 * 60 * 1000);
 });
 
 // Graceful shutdown handling
