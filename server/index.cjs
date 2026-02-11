@@ -1622,6 +1622,14 @@ const syncLocalDataToCloud = async () => {
                             syncItem.youtube_url = syncItem.youtubeUrl;
                         }
 
+                        // Special mapping for Flashcards (front/back <-> question/answer)
+                        if (localCol === 'flashcards') {
+                            if (syncItem.front) syncItem.question = syncItem.front;
+                            if (syncItem.back) syncItem.answer = syncItem.back;
+                            if (syncItem.question && !syncItem.front) syncItem.front = syncItem.question;
+                            if (syncItem.answer && !syncItem.back) syncItem.back = syncItem.answer;
+                        }
+
                         const cloudItem = await supabasePersistence.upsertToCollection(remoteTable, syncItem);
                         if (cloudItem) {
                             db.update(localCol, item.id, { supabaseId: cloudItem.id });
