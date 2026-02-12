@@ -71,10 +71,22 @@ const jsonUpload = multer({
 const memoryUpload = multer({
     storage: multer.memoryStorage(),
     fileFilter: (req, file, cb) => {
-        if (file.mimetype === 'application/pdf' || file.mimetype.startsWith('audio/')) {
+        const allowedTypes = [
+            'application/pdf',
+            'audio/mpeg',
+            'audio/wav',
+            'audio/ogg',
+            'audio/webm',
+            'audio/mp3',
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp'
+        ];
+        if (allowedTypes.includes(file.mimetype) || file.mimetype.startsWith('audio/') || file.mimetype.startsWith('image/')) {
             cb(null, true);
         } else {
-            cb(new Error('Only PDFs and Audio files are allowed'), false);
+            cb(new Error('Only PDFs, Audio files, and Images are allowed'), false);
         }
     }
 });
@@ -960,7 +972,7 @@ app.post('/api/conversations/direct', authenticateToken, async (req, res) => {
 // Explicit Message Sending Override (to use Supabase)
 app.post('/api/messages', authenticateToken, async (req, res) => {
     try {
-        const { conversationId, content, type, sharedResource } = req.body;
+        const { conversationId, content, type, sharedResource, replyTo, metadata } = req.body;
 
         if (!conversationId || !content) {
             return res.status(400).json({ error: 'Conversation ID and content required' });
@@ -975,6 +987,8 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
             content,
             type: type || 'text',
             sharedResource: sharedResource || null,
+            replyTo: replyTo || null,
+            metadata: metadata || null,
             status: 'sent',
             timestamp: now,
             createdAt: now
@@ -1012,6 +1026,87 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Error sending message:', error);
         res.status(500).json({ error: 'Failed to send message' });
+    }
+});
+
+app.post('/api/messages/:id/react', authenticateToken, async (req, res) => {
+    try {
+        const messageId = req.params.id;
+        const { emoji } = req.body;
+        const userId = req.user.id;
+
+        // Get current message to update reactions
+        const { data: message, error: fetchError } = await supabase
+            .from('messages')
+            .select('reactions')
+            .eq('id', messageId)
+            .single();
+
+        if (fetchError || !message) {
+            return res.status(404).json({ error: 'Message not found' });
+        }
+
+        const reactions = message.reactions || {};
+        const users = reactions[emoji] || [];
+
+        if (users.includes(userId)) {
+            // Remove reaction
+            reactions[emoji] = users.filter(id => id !== userId);
+            if (reactions[emoji].length === 0) delete reactions[emoji];
+        } else {
+            // Add reaction
+            reactions[emoji] = [...users, userId];
+        }
+
+        // Update database
+        const { error: updateError } = await supabase
+            .from('messages')
+            .update({ reactions })
+            .eq('id', messageId);
+
+        if (updateError) throw updateError;
+
+        res.json({ success: true, reactions });
+    } catch (error) {
+        console.error('Error toggling reaction:', error);
+        res.status(500).json({ error: 'Failed to update reaction' });
+    }
+});
+
+app.post('/api/groups/:id/leave', authenticateToken, async (req, res) => {
+    try {
+        const conversationId = req.params.id;
+        const userId = req.user.id;
+
+        // Fetch conversation
+        const { data: conversation, error: fetchError } = await supabase
+            .from('conversations')
+            .select('*')
+            .eq('id', conversationId)
+            .single();
+
+        if (fetchError || !conversation) {
+            return res.status(404).json({ error: 'Group not found' });
+        }
+
+        if (conversation.type !== 'group') {
+            return res.status(400).json({ error: 'Cannot leave a direct message' });
+        }
+
+        // Update participants
+        const participants = (conversation.participants || []).filter(id => id !== userId);
+
+        const { error: updateError } = await supabase
+            .from('conversations')
+            .update({ participants })
+            .eq('id', conversationId);
+
+        if (updateError) throw updateError;
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error leaving group:', error);
+        res.status(500).json({ error: 'Failed to leave group' });
     }
 });
 

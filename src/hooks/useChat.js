@@ -88,7 +88,7 @@ const useChat = () => {
     }, [markAsRead]);
 
     // Send a message
-    const sendMessage = useCallback(async (conversationId, content, type = 'text', sharedResource = null) => {
+    const sendMessage = useCallback(async (conversationId, content, type = 'text', sharedResource = null, replyTo = null, metadata = null) => {
         try {
             if (!user) throw new Error('Not authenticated');
 
@@ -97,6 +97,8 @@ const useChat = () => {
                 content,
                 type,
                 sharedResource,
+                replyTo,
+                metadata,
                 senderId: user.id,
                 senderEmail: user.email,
                 timestamp: new Date().toISOString(),
@@ -119,6 +121,39 @@ const useChat = () => {
             throw err;
         }
     }, [user, fetchConversations]);
+
+    // Toggle message reaction
+    const toggleReaction = useCallback(async (messageId, emoji) => {
+        try {
+            if (!user) throw new Error('Not authenticated');
+
+            // Find current reactions for this message to do optimistic update
+            setMessages(prev => prev.map(msg => {
+                if (msg.id === messageId) {
+                    const reactions = { ...(msg.reactions || {}) };
+                    const users = reactions[emoji] || [];
+
+                    if (users.includes(user.id)) {
+                        // Remove reaction
+                        reactions[emoji] = users.filter(id => id !== user.id);
+                        if (reactions[emoji].length === 0) delete reactions[emoji];
+                    } else {
+                        // Add reaction
+                        reactions[emoji] = [...users, user.id];
+                    }
+
+                    return { ...msg, reactions };
+                }
+                return msg;
+            }));
+
+            // Sync with server
+            await api.post(`/messages/${messageId}/react`, { emoji });
+        } catch (err) {
+            console.error('Error toggling reaction:', err);
+            // In a real app we might want to revert the optimistic update here
+        }
+    }, [user]);
 
     // Send typing indicator
     const sendTyping = useCallback(async (conversationId, isTyping) => {
@@ -412,6 +447,19 @@ const useChat = () => {
         };
     }, [user]);
 
+    // Leave group
+    const leaveGroup = useCallback(async (conversationId) => {
+        try {
+            await api.post(`/groups/${conversationId}/leave`);
+            setActiveConversation(null);
+            await fetchConversations();
+        } catch (err) {
+            console.error('Error leaving group:', err);
+            setError(err.message);
+            throw err;
+        }
+    }, [fetchConversations]);
+
     // Initial fetch
     useEffect(() => {
         fetchConversations();
@@ -429,6 +477,7 @@ const useChat = () => {
         shareResource,
         createGroup,
         joinGroup,
+        leaveGroup,
         refreshConversations: fetchConversations,
         onlineUsers,
         typingUsers,
