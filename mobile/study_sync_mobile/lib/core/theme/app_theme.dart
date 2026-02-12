@@ -17,7 +17,7 @@ class StudySyncTheme {
       surface: surfaceDark,
     ),
     scaffoldBackgroundColor: surfaceDark,
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: cardGrey,
       elevation: 4.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

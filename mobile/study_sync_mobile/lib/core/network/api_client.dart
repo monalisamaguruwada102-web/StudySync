@@ -20,7 +20,29 @@ class ApiClient {
       },
       onError: (DioException e, handler) async {
         if (e.response?.statusCode == 401) {
-          // TODO: Implement Refresh Token logic
+          final refreshToken = await secureStorage.read(key: 'refresh_token');
+          if (refreshToken != null) {
+            try {
+              // Call identity/refresh endpoint
+              final response = await dio
+                  .post('/auth/refresh', data: {'refreshToken': refreshToken});
+              final newAccessToken = response.data['accessToken'];
+              final newRefreshToken = response.data['refreshToken'];
+
+              await secureStorage.write(
+                  key: 'access_token', value: newAccessToken);
+              await secureStorage.write(
+                  key: 'refresh_token', value: newRefreshToken);
+
+              // Retry the original request
+              e.requestOptions.headers['Authorization'] =
+                  'Bearer $newAccessToken';
+              final retryResponse = await dio.fetch(e.requestOptions);
+              return handler.resolve(retryResponse);
+            } catch (_) {
+              // Refresh failed, logout user or handle appropriately
+            }
+          }
         }
         return handler.next(e);
       },

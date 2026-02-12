@@ -3,8 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study_sync_mobile/features/auth/domain/entities/user.dart';
 import 'package:study_sync_mobile/features/auth/domain/repositories/auth_repository.dart';
 
-part 'auth_bloc_impl.dart';
-
 // Events
 abstract class AuthEvent extends Equatable {
   @override
@@ -56,4 +54,48 @@ class AuthError extends AuthState {
   AuthError(this.message);
   @override
   List<Object?> get props => [message];
+}
+
+// Bloc
+class AuthBloc extends Bloc<AuthEvent, AuthState> {
+  final AuthRepository authRepository;
+
+  AuthBloc({required this.authRepository}) : super(AuthInitial()) {
+    on<LoginEvent>((event, emit) async {
+      emit(AuthLoading());
+      try {
+        final user = await authRepository.login(event.email, event.password);
+        emit(Authenticated(user));
+      } catch (e) {
+        emit(AuthError(e.toString()));
+      }
+    });
+
+    on<RegisterEvent>((event, emit) async {
+      emit(AuthLoading());
+      try {
+        await authRepository.register(event.email, event.password, event.name);
+        // Auto login or navigate to login
+        final user = await authRepository.login(event.email, event.password);
+        emit(Authenticated(user));
+      } catch (e) {
+        emit(AuthError(e.toString()));
+      }
+    });
+
+    on<LogoutEvent>((event, emit) async {
+      await authRepository.logout();
+      emit(Unauthenticated());
+    });
+
+    on<CheckAuthEvent>((event, emit) async {
+      emit(AuthLoading());
+      final user = await authRepository.getCurrentUser();
+      if (user != null) {
+        emit(Authenticated(user));
+      } else {
+        emit(Unauthenticated());
+      }
+    });
+  }
 }

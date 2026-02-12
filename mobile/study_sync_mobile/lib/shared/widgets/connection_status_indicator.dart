@@ -6,7 +6,8 @@ class ConnectionStatusIndicator extends StatefulWidget {
   const ConnectionStatusIndicator({super.key});
 
   @override
-  State<ConnectionStatusIndicator> createState() => _ConnectionStatusIndicatorState();
+  State<ConnectionStatusIndicator> createState() =>
+      _ConnectionStatusIndicatorState();
 }
 
 class _ConnectionStatusIndicatorState extends State<ConnectionStatusIndicator> {
@@ -30,7 +31,8 @@ class _ConnectionStatusIndicatorState extends State<ConnectionStatusIndicator> {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: (_isConnected ? Colors.green : Colors.red).withOpacity(0.5),
+            color: (_isConnected ? Colors.green : Colors.red)
+                .withValues(alpha: 0.5),
             blurRadius: 4,
             spreadRadius: 2,
           ),
