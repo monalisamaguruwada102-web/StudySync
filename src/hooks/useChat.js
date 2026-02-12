@@ -466,6 +466,21 @@ const useChat = () => {
         }
     }, [fetchConversations]);
 
+    // Delete conversation
+    const deleteConversation = useCallback(async (conversationId) => {
+        try {
+            await api.delete(`/conversations/${conversationId}`);
+            if (activeConversation?.id === conversationId) {
+                setActiveConversation(null);
+            }
+            await fetchConversations();
+        } catch (err) {
+            console.error('Error deleting conversation:', err);
+            setError(err.message);
+            throw err;
+        }
+    }, [activeConversation, fetchConversations]);
+
     // Initial fetch
     useEffect(() => {
         fetchConversations();
@@ -491,7 +506,8 @@ const useChat = () => {
         sendTyping,
         respondToRequest,
         availableGroups,
-        fetchAvailableGroups
+        fetchAvailableGroups,
+        deleteConversation
     };
 };
 

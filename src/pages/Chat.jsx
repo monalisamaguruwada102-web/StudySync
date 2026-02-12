@@ -374,8 +374,13 @@ function Chat() {
         availableGroups,
         fetchAvailableGroups,
         unreadCounts,
-        onlineUsers
+        onlineUsers,
+        deleteConversation
     } = useChat();
+
+    // --- State for Deletion ---
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     // --- Derived State ---
     const directChats = conversations.filter(c =>
@@ -383,7 +388,9 @@ function Chat() {
     );
     const joinedGroups = conversations.filter(c => c.type === 'group');
     const pendingRequests = conversations.filter(c =>
-        c.status === 'pending' && c.initiatorId !== currentUser.id && c.type === 'direct'
+        c.status === 'pending' &&
+        (c.initiatorId || c.initiator_id) !== currentUser.id &&
+        c.type === 'direct'
     );
 
     // Sorting helper: Move most recent to top
@@ -834,6 +841,20 @@ function Chat() {
         }
     }
 
+    async function handleDeleteConversation() {
+        if (!activeConversation) return;
+        setIsDeleting(true);
+        try {
+            await deleteConversation(activeConversation.id);
+            showToast('Conversation deleted', 'success');
+            setShowDeleteConfirm(false);
+        } catch (err) {
+            showToast('Failed to delete conversation', 'error');
+        } finally {
+            setIsDeleting(false);
+        }
+    }
+
     // --- Derived ---
     // --- Avatar Helper ---
     const renderAvatar = (name, isOnline = false, isGroup = false) => {
@@ -1074,7 +1095,18 @@ function Chat() {
                                 </button>
                                 <button className="p-2 text-chat-text-muted btn-call btn-hover-lift rounded-lg transition-colors"><Phone size={20} /></button>
                                 <button className="p-2 text-chat-text-muted btn-video btn-hover-lift rounded-lg transition-colors"><Video size={20} /></button>
-                                <button className="p-2 text-chat-text-muted hover:text-chat-text-primary btn-hover-lift rounded-lg transition-colors"><MoreVertical size={20} /></button>
+                                <div className="relative group/menu">
+                                    <button className="p-2 text-chat-text-muted hover:text-chat-text-primary btn-hover-lift rounded-lg transition-colors"><MoreVertical size={20} /></button>
+                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl py-2 hidden group-hover/menu:block z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                        <button
+                                            onClick={() => setShowDeleteConfirm(true)}
+                                            className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center gap-2 font-medium"
+                                        >
+                                            <X size={16} />
+                                            Delete Conversation
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </header>
 
@@ -1425,6 +1457,36 @@ function Chat() {
                     loading={viewerLoading}
                     onNavigate={(path) => navigate(path)}
                 />
+
+                <Modal
+                    isOpen={showDeleteConfirm}
+                    onClose={() => !isDeleting && setShowDeleteConfirm(false)}
+                    title="Delete Conversation"
+                >
+                    <div className="space-y-4">
+                        <p className="text-sm text-chat-text-muted leading-relaxed">
+                            Are you sure you want to delete this conversation? This action will permanently remove all messages for you and cannot be undone.
+                        </p>
+                        <div className="flex gap-3 pt-2">
+                            <Button
+                                variant="secondary"
+                                className="flex-1"
+                                onClick={() => setShowDeleteConfirm(false)}
+                                disabled={isDeleting}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="danger"
+                                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                                onClick={handleDeleteConversation}
+                                loading={isDeleting}
+                            >
+                                {isDeleting ? 'Deleting...' : 'Delete'}
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
             </div>
         </div>
     );
