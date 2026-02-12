@@ -421,6 +421,29 @@ function Chat() {
         user.email?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    // --- Reply & Scroll Helpers ---
+    const handleReply = useCallback((message) => {
+        setReplyTo({
+            messageId: message.id,
+            content: message.content?.substring(0, 120) || '',
+            senderName: message.senderName || message.senderEmail?.split('@')[0] || 'Unknown'
+        });
+        // Focus the input
+        document.querySelector('textarea[placeholder="Type a message..."]')?.focus();
+    }, []);
+
+    const scrollToMessage = useCallback((messageId) => {
+        const el = messageRefs.current[messageId];
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Flash highlight
+            el.classList.add('ring-2', 'ring-blue-400', 'ring-offset-2', 'rounded-2xl');
+            setTimeout(() => {
+                el.classList.remove('ring-2', 'ring-blue-400', 'ring-offset-2', 'rounded-2xl');
+            }, 1500);
+        }
+    }, []);
+
     // --- Hoisted Functions ---
     function formatMessageTime(timestamp) {
         if (!timestamp) return '';
@@ -540,29 +563,6 @@ function Chat() {
         setCurrentSearchIndex(nextIndex);
         scrollToMessage(searchResults[nextIndex].id);
     }, [searchResults, currentSearchIndex, scrollToMessage]);
-
-    // --- Reply & Scroll Helpers ---
-    const handleReply = useCallback((message) => {
-        setReplyTo({
-            messageId: message.id,
-            content: message.content?.substring(0, 120) || '',
-            senderName: message.senderName || message.senderEmail?.split('@')[0] || 'Unknown'
-        });
-        // Focus the input
-        document.querySelector('textarea[placeholder="Type a message..."]')?.focus();
-    }, []);
-
-    const scrollToMessage = useCallback((messageId) => {
-        const el = messageRefs.current[messageId];
-        if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            // Flash highlight
-            el.classList.add('ring-2', 'ring-blue-400', 'ring-offset-2', 'rounded-2xl');
-            setTimeout(() => {
-                el.classList.remove('ring-2', 'ring-blue-400', 'ring-offset-2', 'rounded-2xl');
-            }, 1500);
-        }
-    }, []);
 
     // --- Handlers ---
     async function fetchUsers() {
