@@ -622,13 +622,47 @@ app.post('/api/groups/join/:code', authenticateToken, async (req, res) => {
 
         if (conversation) {
             const updatedParticipants = [...new Set([...(conversation.participants || []), userId])];
+            const now = new Date().toISOString();
+            const systemMessageContent = `${req.user.name || req.user.email} joined the group`;
+
+            // 4a. Create System Message
+            const messageData = {
+                conversationId: conversation.id,
+                senderId: 'system',
+                senderEmail: 'system@studysync.app',
+                senderName: 'System',
+                content: systemMessageContent,
+                type: 'system',
+                timestamp: now,
+                createdAt: now,
+                read: true,
+                status: 'sent'
+            };
+
+            // Insert Message (Supabase + Local)
+            let sysMsg = null;
+            try {
+                if (conversation.id && conversation.id.length > 20) {
+                    sysMsg = await supabasePersistence.insertMessage(messageData);
+                }
+            } catch (e) {
+                console.error('Failed to send system join message to Supabase:', e);
+            }
+            db.insert('messages', { ...messageData, supabaseId: sysMsg?.id });
+
+            // 4b. Update Conversation Participants and Timestamp
+            const updates = {
+                participants: updatedParticipants,
+                lastMessage: systemMessageContent,
+                lastMessageTime: now
+            };
 
             try {
-                await supabasePersistence.updateConversation(conversation.id, { participants: updatedParticipants });
+                await supabasePersistence.updateConversation(conversation.id, updates);
             } catch (supaErr) {
                 console.warn('⚠️ Supabase conversation update failed:', supaErr.message);
             }
-            db.update('conversations', conversation.id, { participants: updatedParticipants });
+            db.update('conversations', conversation.id, updates);
         }
 
         res.json({
