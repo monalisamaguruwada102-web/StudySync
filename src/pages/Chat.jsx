@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MessageCircle, Send, Share2, Users, Plus, Search, X, Copy, Check, FileText, Brain, Youtube, ExternalLink, LayoutDashboard, CheckCheck, Play, ArrowDown, RefreshCw, Loader2, Clock, Sparkles, Reply, Bot, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -462,26 +462,30 @@ function Chat() {
     }
 
     function getConversationDisplay(conv) {
+        if (!conv) return { title: 'Unknown', status: '', isOnline: false, otherUser: null };
         if (conv.type === 'group') {
             return {
                 title: conv.groupName || 'Group Chat',
                 status: `${conv.participants?.length || 0} members`,
-                isOnline: false
+                isOnline: false,
+                otherUser: null
             };
         }
 
         // Try to find the other participant
         const otherUserId = conv.participants?.find(id => id !== currentUser.id);
         const userInfo = users.find(u => u.id === otherUserId);
+        const finalUser = userInfo || conv.otherUser;
 
-        // Prioritize name over email
-        const title = userInfo?.name || conv.otherUser?.name || userInfo?.email || conv.otherUser?.email || 'Unknown User';
+        // Prioritize email as requested by the user
+        const title = finalUser?.email || finalUser?.name || 'Unknown User';
         const isOnline = otherUserId && onlineUsers.has(otherUserId);
 
         return {
             title,
             status: isOnline ? 'Online' : 'Offline',
-            isOnline
+            isOnline,
+            otherUser: finalUser
         };
     }
 
@@ -940,50 +944,53 @@ function Chat() {
                             <p className="text-sm font-medium dark:text-slate-500">Clear for now</p>
                         </div>
                     ) : (
-                        displayList.map((conv) => (
-                            <div
-                                key={conv.id}
-                                onClick={() => setActiveConversation(conv)}
-                                className={`p-3 rounded-2xl cursor-pointer transition-all flex items-center gap-3 mb-1 group relative ${activeConversation?.id === conv.id
-                                    ? 'bg-chat-primary/5 border-chat-primary/20 border'
-                                    : 'hover:bg-chat-bg dark:hover:bg-slate-800 border-transparent border'}`}
-                            >
-                                <div className="relative">
-                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold shadow-sm ${conv.type === 'group' ? 'bg-emerald-500 text-white' : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
-                                        {conv.type === 'group' ? <Users size={20} /> : getInitials(conv.otherUser)}
+                        displayList.map((conv) => {
+                            const display = getConversationDisplay(conv);
+                            return (
+                                <div
+                                    key={conv.id}
+                                    onClick={() => setActiveConversation(conv)}
+                                    className={`p-3 rounded-2xl cursor-pointer transition-all flex items-center gap-3 mb-1 group relative ${activeConversation?.id === conv.id
+                                        ? 'bg-chat-primary/5 border-chat-primary/20 border'
+                                        : 'hover:bg-chat-bg dark:hover:bg-slate-800 border-transparent border'}`}
+                                >
+                                    <div className="relative">
+                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold shadow-sm ${conv.type === 'group' ? 'bg-emerald-500 text-white' : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
+                                            {conv.type === 'group' ? <Users size={20} /> : getInitials(display.title)}
+                                        </div>
+                                        {display.otherUser?.id && onlineUsers.has(display.otherUser.id) && (
+                                            <span className="absolute -bottom-1 -right-1 block h-3.5 w-3.5 rounded-full bg-chat-success border-2 border-chat-surface dark:border-slate-800 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                        )}
                                     </div>
-                                    {onlineUsers.has(conv.otherUser?.id) && (
-                                        <span className="absolute -bottom-1 -right-1 block h-3.5 w-3.5 rounded-full bg-chat-success border-2 border-chat-surface dark:border-slate-800 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center justify-between mb-0.5">
+                                            <span className={`text-sm font-bold truncate ${activeConversation?.id === conv.id ? 'text-red-600 font-black' : 'text-red-500'}`}>
+                                                {display.title}
+                                            </span>
+                                            {conv.lastMessageTime && (
+                                                <span className="text-[10px] text-chat-text-muted whitespace-nowrap">
+                                                    {formatLastMessageTime(conv.lastMessageTime)}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <p className={`text-[12px] truncate text-chat-text-muted ${unreadCounts[conv.id] > 0 ? 'font-bold text-chat-text-primary dark:text-white' : ''}`}>
+                                                {conv.lastMessage || 'No messages yet'}
+                                            </p>
+                                            {unreadCounts[conv.id] > 0 && (
+                                                <span className="bg-chat-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-lg min-w-[18px] text-center shadow-md shadow-blue-500/20">
+                                                    {unreadCounts[conv.id]}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                    {activeConversation?.id === conv.id && (
+                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-chat-primary rounded-r-full shadow-[2px_0_10px_rgba(37,99,235,0.4)]" />
                                     )}
                                 </div>
-
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between mb-0.5">
-                                        <span className={`text-sm font-bold truncate ${activeConversation?.id === conv.id ? 'text-red-600 font-black' : 'text-red-500'}`}>
-                                            {conv.type === 'group' ? conv.groupName : (conv.otherUser?.email || conv.otherUser?.name)}
-                                        </span>
-                                        {conv.lastMessageTime && (
-                                            <span className="text-[10px] text-chat-text-muted whitespace-nowrap">
-                                                {formatLastMessageTime(conv.lastMessageTime)}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <p className={`text-[12px] truncate text-chat-text-muted ${unreadCounts[conv.id] > 0 ? 'font-bold text-chat-text-primary dark:text-white' : ''}`}>
-                                            {conv.lastMessage || 'No messages yet'}
-                                        </p>
-                                        {unreadCounts[conv.id] > 0 && (
-                                            <span className="bg-chat-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-lg min-w-[18px] text-center shadow-md shadow-blue-500/20">
-                                                {unreadCounts[conv.id]}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                                {activeConversation?.id === conv.id && (
-                                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-chat-primary rounded-r-full shadow-[2px_0_10px_rgba(37,99,235,0.4)]" />
-                                )}
-                            </div>
-                        ))
+                            );
+                        })
                     )}
                 </div>
 
@@ -1020,27 +1027,27 @@ function Chat() {
                                 </button>
                                 <div className="relative cursor-pointer" onClick={() => activeConversation.type === 'group' && setShowGroupInfo(true)}>
                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${activeConversation.type === 'group' ? 'bg-blue-100 dark:bg-blue-900/30 text-chat-primary' : 'bg-red-100 dark:bg-red-900/30 text-red-600'}`}>
-                                        {activeConversation.type === 'group' ? <Users size={20} /> : getInitials(activeConversation.otherUser)}
+                                        {activeConversation.type === 'group' ? <Users size={20} /> : getInitials(getConversationDisplay(activeConversation).title)}
                                     </div>
-                                    {activeConversation.type !== 'group' && onlineUsers.has(activeConversation.otherUser?.id) && (
+                                    {activeConversation.type !== 'group' && onlineUsers.has(getConversationDisplay(activeConversation).otherUser?.id) && (
                                         <span className="absolute bottom-0 right-0 w-3 h-3 bg-chat-success border-2 border-white dark:border-slate-900 rounded-full" />
                                     )}
                                 </div>
                                 <div className="min-w-0">
                                     <h2 className="font-bold text-red-600 dark:text-red-400 text-base truncate leading-none mb-1">
-                                        {activeConversation.type === 'group' ? activeConversation.groupName : (activeConversation.otherUser?.email || activeConversation.otherUser?.name)}
+                                        {getConversationDisplay(activeConversation).title}
                                     </h2>
                                     <div className="flex items-center gap-1.5 h-4">
                                         {activeConversation.type === 'group' ? (
                                             <span className="text-[11px] text-chat-text-muted font-medium">{activeConversation.participants?.length} members</span>
-                                        ) : onlineUsers.has(activeConversation.otherUser?.id) ? (
+                                        ) : onlineUsers.has(getConversationDisplay(activeConversation).otherUser?.id) ? (
                                             <div className="flex items-center gap-1.5">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-chat-success animate-pulse" />
                                                 <span className="text-[11px] text-chat-success font-bold uppercase tracking-wider">Online</span>
                                             </div>
                                         ) : (
                                             <span className="text-[11px] text-chat-text-muted font-medium italic">
-                                                {formatLastSeen(activeConversation.otherUser?.last_seen_at)}
+                                                {formatLastSeen(getConversationDisplay(activeConversation).otherUser?.last_seen_at)}
                                             </span>
                                         )}
                                     </div>
