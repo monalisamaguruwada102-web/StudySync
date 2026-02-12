@@ -21,7 +21,7 @@ import {
     Music,
     Trash2
 } from 'lucide-react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import ThemeSelector from '../components/ThemeSelector';
