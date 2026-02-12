@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 services:
   api-gateway:
@@ -47,6 +47,29 @@ services:
       - ACCESS_TOKEN_SECRET=your_access_token_secret
       - KAFKA_BROKER=kafka:9092
       - REDIS_URL=redis://redis:6379
+
+  presence-service:
+    build: ./backend/presence-service
+    ports:
+      - "8005:8005"
+    environment:
+      - PORT=8005
+      - REDIS_URL=redis://redis:6379
+
+  notification-service:
+    build: ./backend/notification-service
+    ports:
+      - "8006:8006"
+    environment:
+      - PORT=8006
+      - KAFKA_BROKER=kafka:9092
+
+  media-service:
+    build: ./backend/media-service
+    ports:
+      - "8007:8007"
+    environment:
+      - PORT=8007
 
   mongodb:
     image: mongo:latest
