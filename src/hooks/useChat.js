@@ -244,12 +244,15 @@ const useChat = () => {
     useEffect(() => {
         if (!activeConversation) return;
 
-        // Fallback polling (less frequent now that we have realtime)
-        const interval = setInterval(() => {
-            fetchMessages(activeConversation.id);
-        }, 15000);
+        // Heartbeat for last_seen_at tracking
+        const heartbeatInterval = setInterval(() => {
+            api.post('/presence/heartbeat').catch(() => { });
+        }, 1000 * 60 * 4); // 4 minutes
 
-        return () => clearInterval(interval);
+        return () => {
+            clearInterval(interval);
+            clearInterval(heartbeatInterval);
+        };
     }, [activeConversation, fetchMessages]);
 
     // Supabase Realtime Setup for Active Conversation

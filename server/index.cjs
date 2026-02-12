@@ -52,9 +52,40 @@ function authenticateToken(req, res, next) {
 
     if (!token) return res.sendStatus(401);
 
-    jwt.verify(token, JWT_SECRET, (err, user) => {
+    jwt.verify(token, JWT_SECRET, async (err, decoded) => {
         if (err) return res.sendStatus(403);
-        req.user = user;
+        req.user = decoded;
+
+        // Asynchronously update last_seen_at in Supabase (throttled)
+        // We don't await this to keep the request fast
+        if (req.user && req.user.id) {
+            try {
+                const now = Date.now();
+                // Simple in-memory throttle per process
+                if (!app.lastSeenUpdates) app.lastSeenUpdates = {};
+                const lastUpdate = app.lastSeenUpdates[req.user.id] || 0;
+
+                if (now - lastUpdate > 1000 * 60 * 5) { // 5 minutes
+                    app.lastSeenUpdates[req.user.id] = now;
+                    const timestamp = new Date().toISOString();
+
+                    // Update legacy users table
+                    db.update('users', req.user.id, { last_seen_at: timestamp });
+
+                    // Update Supabase profiles
+                    if (supabase) {
+                        supabase.from('profiles')
+                            .update({ last_seen_at: timestamp })
+                            .eq('id', req.user.id)
+                            .then(({ error }) => {
+                                if (error) console.warn('presence update error:', error.message);
+                            });
+                    }
+                }
+            } catch (e) {
+                // Ignore presence update errors to prevent request failure
+            }
+        }
         next();
     });
 }
@@ -102,6 +133,22 @@ app.get('/api/health', (req, res) => {
         ai_configured: !!genAI,
         timestamp: new Date().toISOString()
     });
+});
+
+// --- PRESENCE HEARTBEAT ---
+app.post('/api/presence/heartbeat', authenticateToken, async (req, res) => {
+    const timestamp = new Date().toISOString();
+    try {
+        db.update('users', req.user.id, { last_seen_at: timestamp });
+        if (supabase) {
+            await supabase.from('profiles')
+                .update({ last_seen_at: timestamp })
+                .eq('id', req.user.id);
+        }
+        res.json({ success: true, lastSeen: timestamp });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // --- DOWNLOAD INSTALLER ---

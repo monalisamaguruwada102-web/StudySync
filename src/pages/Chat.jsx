@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Send, Share2, Users, Plus, Search, X, Copy, Check, FileText, Brain, Youtube, ExternalLink, LayoutDashboard, CheckCheck, Play, ArrowDown, RefreshCw, Loader2, Clock, Sparkles, Reply } from 'lucide-react';
+import { MessageCircle, Send, Share2, Users, Plus, Search, X, Copy, Check, FileText, Brain, Youtube, ExternalLink, LayoutDashboard, CheckCheck, Play, ArrowDown, RefreshCw, Loader2, Clock, Sparkles, Reply, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, isToday, isYesterday } from 'date-fns';
 import useChat from '../hooks/useChat';
@@ -200,16 +200,20 @@ function MessageBubble({ message, isOwn, handleOpenResource, formatTime, onReply
                     </p>
                 )}
 
-                <div className="absolute bottom-1 right-2 flex items-center gap-1 opacity-60">
-                    <span className="text-[10px] font-medium leading-none">
+                <div className="absolute bottom-1 right-2 flex items-center gap-1 opacity-80">
+                    <span className="text-[10px] font-medium leading-none opacity-50">
                         {formatTime(message.timestamp)}
                     </span>
                     {isOwn && (
-                        message.read ? (
-                            <CheckCheck size={14} className="text-blue-400" />
-                        ) : (
-                            <Check size={14} />
-                        )
+                        <div className="flex items-center">
+                            {message.read ? (
+                                <Bot size={14} className="text-emerald-500 drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]" title="Seen" />
+                            ) : message.status === 'delivered' ? (
+                                <Bot size={14} className="text-yellow-500 drop-shadow-[0_0_5px_rgba(234,179,8,0.5)]" title="Delivered" />
+                            ) : (
+                                <Bot size={14} className="text-rose-500 drop-shadow-[0_0_5px_rgba(244,63,94,0.5)]" title="Sent" />
+                            )}
+                        </div>
                     )}
                 </div>
 
@@ -411,11 +415,20 @@ function Chat() {
         c.status === 'pending' && c.initiatorId !== currentUser.id && c.type === 'direct'
     );
 
+    // Sorting helper: Move most recent to top
+    const sortConversations = (list) => {
+        return [...list].sort((a, b) => {
+            const timeA = new Date(a.lastMessageTime || 0).getTime();
+            const timeB = new Date(b.lastMessageTime || 0).getTime();
+            return timeB - timeA;
+        });
+    };
+
     // Determine which list to show based on tab
     let displayList = [];
-    if (activeTab === 'chats') displayList = directChats;
-    else if (activeTab === 'groups') displayList = joinedGroups;
-    else if (activeTab === 'requests') displayList = pendingRequests;
+    if (activeTab === 'chats') displayList = sortConversations(directChats);
+    else if (activeTab === 'groups') displayList = sortConversations(joinedGroups);
+    else if (activeTab === 'requests') displayList = sortConversations(pendingRequests);
 
     const filteredUsers = users.filter(user =>
         user.email?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -815,13 +828,13 @@ function Chat() {
             }
         }
         return (
-            <div className="relative flex-shrink-0">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-sm
-                    ${isGroup ? 'bg-emerald-500' : 'bg-gradient-to-br from-blue-400 to-indigo-500'}`}>
+            <div className="relative flex-shrink-0 group">
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg transition-transform group-hover:scale-105
+                    ${isGroup ? 'bg-gradient-to-br from-emerald-400 to-teal-600' : 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-blue-500/20'}`}>
                     {isGroup ? <Users size={24} /> : initials}
                 </div>
                 {!isGroup && isOnline && (
-                    <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white dark:border-slate-800 rounded-full" />
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-slate-800 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse" />
                 )}
             </div>
         );
@@ -880,7 +893,10 @@ function Chat() {
                                 }`}
                         >
                             {pendingRequests.length > 0 && (
-                                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white dark:border-slate-800 animate-pulse" />
+                                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500 border border-white dark:border-slate-800"></span>
+                                </span>
                             )}
                             Inbox
                         </button>
@@ -960,45 +976,54 @@ function Chat() {
                                 return (
                                     <motion.div
                                         layout
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
                                         key={conv.id}
                                         onClick={() => setActiveConversation(conv)}
-                                        className={`p-3 rounded-2xl cursor-pointer transition-all flex items-center gap-3 relative group
+                                        className={`p-3 rounded-2xl cursor-pointer transition-all flex items-center gap-3 relative group mb-1
                                             ${activeConversation?.id === conv.id
-                                                ? 'bg-blue-50 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-800'
-                                                : 'hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-transparent'
+                                                ? 'bg-blue-50/80 dark:bg-blue-900/40 border border-blue-200/50 dark:border-blue-800/50 shadow-md shadow-blue-500/5'
+                                                : 'hover:bg-slate-50 dark:hover:bg-white/5 border border-transparent'
                                             }`}
                                     >
-                                        {renderAvatar(title, isOnline, conv.type === 'group')}
+                                        <div className="relative flex-shrink-0">
+                                            {renderAvatar(title, isOnline, conv.type === 'group')}
+                                            {isOnline && !conv.type === 'group' && (
+                                                <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-800 shadow-[0_0_8px_rgba(16,185,129,0.6)] animate-pulse" />
+                                            )}
+                                        </div>
 
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between mb-0.5">
-                                                <h3 className="font-bold text-[14px] text-slate-800 dark:text-slate-100 truncate pr-2">
+                                                <h3 className={`font-bold text-[14px] truncate pr-2 ${activeConversation?.id === conv.id ? 'text-blue-600 dark:text-blue-400' : 'text-slate-800 dark:text-slate-100'}`}>
                                                     {title}
                                                 </h3>
                                                 {conv.lastMessageTime && (
-                                                    <span className={`text-[10px] whitespace-nowrap ${unreadCounts[conv.id] > 0 ? 'text-emerald-500 font-bold' : 'text-slate-400'}`}>
+                                                    <span className={`text-[10px] whitespace-nowrap font-medium ${unreadCounts[conv.id] > 0 ? 'text-emerald-500' : 'text-slate-400'}`}>
                                                         {formatLastMessageTime(conv.lastMessageTime)}
                                                     </span>
                                                 )}
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <p className="text-[12px] text-slate-500 dark:text-slate-400 truncate flex-1">
+                                                <p className={`text-[12px] truncate flex-1 leading-tight ${unreadCounts[conv.id] > 0 ? 'text-slate-800 dark:text-slate-200 font-bold' : 'text-slate-500 dark:text-slate-400 font-medium'}`}>
                                                     {conv.lastMessage || 'No messages yet'}
                                                 </p>
                                                 {unreadCounts[conv.id] > 0 && (
-                                                    <span className="bg-emerald-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center ml-2 shadow-sm shadow-emerald-500/30">
+                                                    <span className="bg-emerald-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-lg min-w-[18px] text-center ml-2 shadow-lg shadow-emerald-500/40 border border-white/20">
                                                         {unreadCounts[conv.id]}
                                                     </span>
                                                 )}
                                             </div>
                                             {conv.type === 'group' && conv.inviteCode && (
-                                                <div className="text-[9px] font-bold text-blue-500/70 mt-1 uppercase tracking-wider">
-                                                    CODE: {conv.inviteCode}
+                                                <div className="text-[9px] font-black text-blue-500/50 mt-1 uppercase tracking-widest flex items-center gap-1">
+                                                    <Users size={10} />
+                                                    {conv.inviteCode}
                                                 </div>
                                             )}
                                         </div>
+                                        {activeConversation?.id === conv.id && (
+                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full shadow-[2px_0_8px_rgba(59,130,246,0.5)]" />
+                                        )}
                                     </motion.div>
                                 );
                             })
@@ -1032,24 +1057,40 @@ function Chat() {
                                     )}
                                 </div>
                                 <div className="min-w-0">
-                                    <h2 className="font-bold dark:text-slate-100 truncate text-[15px]">
+                                    <h2 className="font-bold dark:text-white truncate text-[16px] tracking-tight">
                                         {activeConversation.type === 'group' ? activeConversation.groupName : (
                                             activeConversation.otherUser?.name ||
                                             activeConversation.otherUser?.email?.split('@')[0] ||
-                                            'Chat'
+                                            'Student'
                                         )}
                                     </h2>
-                                    <p className="text-[11px] text-slate-500 font-medium truncate">
+                                    <div className="flex items-center gap-1.5 transition-all">
                                         {activeConversation.type === 'group' ? (
-                                            `${activeConversation.participants?.length || 0} members`
+                                            <p className="text-[11px] text-slate-500 font-medium">
+                                                {activeConversation.participants?.length || 0} members
+                                            </p>
                                         ) : (
-                                            onlineUsers.has(activeConversation.otherUser?.id) ? (
-                                                <span className="text-green-500">online</span>
-                                            ) : (
-                                                'offline'
-                                            )
+                                            <>
+                                                {onlineUsers.has(activeConversation.otherUser?.id) ? (
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="relative flex h-2 w-2">
+                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                                        </span>
+                                                        <span className="text-[11px] font-bold text-emerald-500 uppercase tracking-wider">Online</span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-[11px] text-slate-400 font-medium italic">
+                                                        {activeConversation.otherUser?.last_seen_at ? (
+                                                            `Last seen ${formatLastMessageTime(activeConversation.otherUser.last_seen_at).toLowerCase()}`
+                                                        ) : (
+                                                            'Last seen recently'
+                                                        )}
+                                                    </span>
+                                                )}
+                                            </>
                                         )}
-                                    </p>
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex items-center gap-1">
@@ -1133,10 +1174,12 @@ function Chat() {
 
                         {/* Messages Container */}
                         <div
-                            className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar min-h-0 relative bg-slate-50/30 dark:bg-slate-900/10"
+                            className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar min-h-0 relative bg-slate-50/50 dark:bg-slate-900/40"
                             onScroll={handleScroll}
                             ref={scrollContainerRef}
                         >
+                            {/* Decorative background pattern */}
+                            <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none" style={{ backgroundImage: `radial-gradient(#3b82f6 1px, transparent 1px)`, backgroundSize: '24px 24px' }} />
                             {messages.length === 0 ? (
                                 <div className="flex items-center justify-center h-full">
                                     <p className="text-slate-500 text-sm">No messages yet. Start the conversation!</p>
@@ -1178,15 +1221,18 @@ function Chat() {
                                         initial={{ opacity: 0, y: 50, scale: 0.9 }}
                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                         exit={{ opacity: 0, y: 50, scale: 0.9 }}
-                                        whileHover={{ scale: 1.05 }}
+                                        whileHover={{ scale: 1.05, y: -2 }}
                                         onClick={() => {
                                             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
                                             setShowNewMessageToast(false);
                                         }}
-                                        className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-blue-600/90 hover:bg-blue-600 backdrop-blur-md text-white pl-4 pr-5 py-2.5 rounded-full shadow-xl shadow-blue-500/30 flex items-center gap-3 text-xs font-bold transition-all z-20 border border-white/10"
+                                        className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-blue-600 text-white pl-4 pr-5 py-3 rounded-2xl shadow-2xl shadow-blue-500/40 flex items-center gap-3 text-xs font-black transition-all z-20 border border-white/20 uppercase tracking-widest"
                                     >
-                                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                                        <span>New messages received</span>
+                                        <div className="relative flex h-3 w-3">
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+                                        </div>
+                                        <span>New message</span>
                                         <ArrowDown size={14} className="animate-bounce" />
                                     </motion.button>
                                 )}
@@ -1253,11 +1299,11 @@ function Chat() {
                                     onCancel={() => setIsRecordingVoice(false)}
                                 />
                             ) : (
-                                <div className="flex items-end gap-2 bg-slate-50 dark:bg-[#111b21] p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-inner">
+                                <div className="flex items-end gap-2 bg-slate-50/50 dark:bg-[#111b21]/50 backdrop-blur-md p-2 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg ring-1 ring-black/5">
                                     <div className="flex items-center">
                                         <button
                                             onClick={() => setShowResourceShare(true)}
-                                            className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+                                            className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-all"
                                             title="Share Resource"
                                         >
                                             <Plus size={20} />
