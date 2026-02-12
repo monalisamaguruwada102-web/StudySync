@@ -62,7 +62,10 @@ const useChat = () => {
                 conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
             ));
         } catch (err) {
-            console.error('Error marking as read:', err);
+            // Only log if it's not a standard network error to avoid console spam
+            if (err.message !== 'Network Error') {
+                console.error('Error marking as read:', err);
+            }
         }
     }, []);
 
@@ -78,7 +81,9 @@ const useChat = () => {
             markAsRead(conversationId);
         } catch (err) {
             const errorMessage = err.response?.data?.error || err.message;
-            console.error('Error fetching messages:', errorMessage);
+            if (errorMessage !== 'Network Error') {
+                console.error('Error fetching messages:', errorMessage);
+            }
             setError(errorMessage);
         } finally {
             setLoading(false);

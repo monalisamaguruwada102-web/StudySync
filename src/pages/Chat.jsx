@@ -873,7 +873,7 @@ function Chat() {
                     {isGroup ? <Users size={24} /> : initials}
                 </div>
                 {!isGroup && isOnline && (
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-slate-800 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse" />
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-chat-success border-2 border-white dark:border-slate-800 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse" />
                 )}
             </div>
         );
@@ -1000,7 +1000,7 @@ function Chat() {
                                                 {conv.lastMessage || 'No messages yet'}
                                             </p>
                                             {unreadCounts[conv.id] > 0 && (
-                                                <span className="bg-chat-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-lg min-w-[18px] text-center shadow-md shadow-blue-500/20">
+                                                <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-lg min-w-[18px] text-center shadow-md shadow-red-500/20">
                                                     {unreadCounts[conv.id]}
                                                 </span>
                                             )}

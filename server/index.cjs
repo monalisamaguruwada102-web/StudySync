@@ -188,6 +188,8 @@ app.post('/api/upload', authenticateToken, (req, res) => {
             const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
             const fileName = `${uniqueSuffix}${path.extname(file.originalname)}`;
 
+            console.log(`📤 Uploading file: ${file.originalname} as ${fileName} (${file.mimetype})`);
+
             // Upload to Supabase 'study-materials' bucket
             const publicUrl = await supabasePersistence.uploadFile(
                 'study-materials',
@@ -197,7 +199,8 @@ app.post('/api/upload', authenticateToken, (req, res) => {
             );
 
             if (!publicUrl) {
-                return res.status(500).json({ error: 'Failed to upload to cloud storage' });
+                console.error(`❌ Cloud upload failed for: ${file.originalname}`);
+                return res.status(500).json({ error: 'Failed to upload to cloud storage. Check server logs for details.' });
             }
 
             res.json({

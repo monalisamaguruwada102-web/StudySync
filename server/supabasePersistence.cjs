@@ -168,6 +168,9 @@ const markMessagesAsRead = async (convId, userId) => {
     const client = initSupabase();
     if (!client) return false;
     const { error } = await client.from('messages').update({ read: true }).eq('conversation_id', convId).neq('sender_id', userId);
+    if (error) {
+        console.error('❌ Supabase MarkRead Error:', error);
+    }
     return !error;
 };
 
@@ -205,7 +208,12 @@ const uploadFile = async (bucket, fileName, buffer, mimeType) => {
             });
 
         if (error) {
-            console.error(`Error uploading file to ${bucket}:`, error);
+            console.error(`❌ Supabase Storage Error [Bucket: ${bucket}]:`, {
+                message: error.message,
+                status: error.status,
+                name: error.name,
+                fileName: fileName
+            });
             return null;
         }
 
