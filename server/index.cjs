@@ -617,8 +617,31 @@ app.post('/api/groups/join/:code', authenticateToken, async (req, res) => {
 
         // 4. Add user to the group conversation participants
         let conversation = null;
-        const localConversations = db.get('conversations') || [];
-        conversation = localConversations.find(c => c.groupId === group.id || c.inviteCode === code);
+
+        // 4a. Try Supabase first (critical for cross-user group joins)
+        try {
+            const allConvs = await supabasePersistence.fetchAll('conversations');
+            if (allConvs) {
+                conversation = allConvs.find(c =>
+                    c.groupId === group.id || c.inviteCode === code
+                );
+            }
+        } catch (supaErr) {
+            console.warn('⚠️ Supabase conversation lookup failed:', supaErr.message);
+        }
+
+        // 4b. Fallback to local
+        if (!conversation) {
+            const localConversations = db.get('conversations') || [];
+            conversation = localConversations.find(c =>
+                c.groupId === group.id || c.inviteCode === code
+            );
+        }
+
+        // 4c. Cache conversation locally if fetched from Supabase but missing locally
+        if (conversation && !db.getById('conversations', conversation.id)) {
+            db.insert('conversations', conversation);
+        }
 
         if (conversation) {
             const updatedParticipants = [...new Set([...(conversation.participants || []), userId])];
