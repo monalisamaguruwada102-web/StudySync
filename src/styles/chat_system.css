@@ -17,6 +17,13 @@
     --chat-dark-text: #F8FAFC;
     --chat-dark-text-muted: #94A3B8;
 
+    /* Functional Colors */
+    --color-call: #10B981;
+    --color-video: #2563EB;
+    --color-attach: #8B5CF6;
+    --color-resource: #F59E0B;
+    --color-mic: #EF4444;
+
     /* Spacing */
     --chat-spacing-xs: 4px;
     --chat-spacing-sm: 8px;
@@ -34,6 +41,11 @@
     --chat-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --chat-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     --chat-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+
+    /* Glimmer/Glow Effects */
+    --glow-call: 0 0 15px rgba(16, 185, 129, 0.4);
+    --glow-video: 0 0 15px rgba(37, 99, 235, 0.4);
+    --glow-primary: 0 0 15px rgba(37, 99, 235, 0.3);
 }
 
 .dark {
@@ -42,6 +54,82 @@
     --chat-border: var(--chat-dark-border);
     --chat-text-primary: var(--chat-dark-text);
     --chat-text-muted: var(--chat-dark-text-muted);
+
+    --glow-call: 0 0 20px rgba(16, 185, 129, 0.2);
+    --glow-video: 0 0 20px rgba(37, 99, 235, 0.2);
+}
+
+/* Premium Animation Classes */
+.btn-hover-lift {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-hover-lift:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+.btn-hover-lift:active {
+    transform: translateY(0);
+}
+
+.btn-call:hover {
+    color: var(--color-call) !important;
+    box-shadow: var(--glow-call);
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.btn-video:hover {
+    color: var(--color-video) !important;
+    box-shadow: var(--glow-video);
+    background: rgba(37, 99, 235, 0.1);
+}
+
+.btn-attach:hover {
+    color: var(--color-attach) !important;
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.btn-resource:hover {
+    color: var(--color-resource) !important;
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.btn-mic-active {
+    color: var(--color-mic) !important;
+    animation: pulse-red 1.5s infinite;
+}
+
+@keyframes pulse-red {
+    0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
+/* Tab Active Transitions */
+.tab-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 20%;
+    right: 20%;
+    height: 3px;
+    background: var(--chat-primary);
+    border-radius: 3px 3px 0 0;
+    box-shadow: var(--glow-primary);
 }
 
 /* Base Layout Architecture */

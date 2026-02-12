@@ -876,8 +876,8 @@ function Chat() {
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
-                                className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all ${activeTab === tab
-                                    ? 'bg-chat-surface dark:bg-slate-700 shadow-sm text-chat-primary'
+                                className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all tab-btn ${activeTab === tab
+                                    ? 'bg-chat-surface dark:bg-slate-700 shadow-sm text-chat-primary active'
                                     : 'text-chat-text-muted hover:text-chat-text-primary'}`}
                             >
                                 {tab === 'requests' ? 'Inbox' : tab}
@@ -1042,13 +1042,13 @@ function Chat() {
                                             setTimeout(() => searchInputRef.current?.focus(), 100);
                                         }
                                     }}
-                                    className={`p-2 rounded-lg transition-colors ${showSearchInChat ? 'bg-chat-primary/10 text-chat-primary' : 'text-chat-text-muted hover:text-chat-primary hover:bg-chat-bg'}`}
+                                    className={`p-2 rounded-lg transition-colors btn-hover-lift ${showSearchInChat ? 'bg-chat-primary/20 text-chat-primary shadow-sm' : 'text-chat-text-muted hover:text-chat-primary hover:bg-chat-bg'}`}
                                 >
                                     <Search size={20} />
                                 </button>
-                                <button className="p-2 text-chat-text-muted hover:text-chat-primary hover:bg-chat-bg rounded-lg transition-colors"><Phone size={20} /></button>
-                                <button className="p-2 text-chat-text-muted hover:text-chat-primary hover:bg-chat-bg rounded-lg transition-colors"><Video size={20} /></button>
-                                <button className="p-2 text-chat-text-muted hover:text-chat-primary hover:bg-chat-bg rounded-lg transition-colors"><MoreVertical size={20} /></button>
+                                <button className="p-2 text-chat-text-muted btn-call btn-hover-lift rounded-lg transition-colors"><Phone size={20} /></button>
+                                <button className="p-2 text-chat-text-muted btn-video btn-hover-lift rounded-lg transition-colors"><Video size={20} /></button>
+                                <button className="p-2 text-chat-text-muted hover:text-chat-text-primary btn-hover-lift rounded-lg transition-colors"><MoreVertical size={20} /></button>
                             </div>
                         </header>
 
@@ -1216,10 +1216,10 @@ function Chat() {
                                     </AnimatePresence>
 
                                     <div className="chat-input-pill">
-                                        <button className="p-2 text-chat-text-muted hover:text-chat-primary transition-colors" title="Attach file" onClick={() => fileInputRef.current?.click()}>
+                                        <button className="p-2 text-chat-text-muted btn-attach btn-hover-lift transition-colors" title="Attach file" onClick={() => fileInputRef.current?.click()}>
                                             <Paperclip size={20} />
                                         </button>
-                                        <button onClick={() => setShowResourceShare(true)} className="p-2 text-chat-text-muted hover:text-chat-primary transition-colors" title="Share resource">
+                                        <button onClick={() => setShowResourceShare(true)} className="p-2 text-chat-text-muted btn-resource btn-hover-lift transition-colors" title="Share resource">
                                             <Hash size={20} />
                                         </button>
                                         <input
@@ -1257,13 +1257,13 @@ function Chat() {
                                                 <motion.button
                                                     whileTap={{ scale: 0.9 }}
                                                     onClick={handleSendMessage}
-                                                    className="w-10 h-10 bg-chat-primary text-white rounded-full flex items-center justify-center shadow-md active:bg-chat-primary-hover transition-colors"
+                                                    className="w-10 h-10 bg-chat-primary text-white rounded-full flex items-center justify-center shadow-lg active:bg-chat-primary-hover transition-all hover:scale-105"
                                                 >
                                                     <Send size={18} />
                                                 </motion.button>
                                             ) : (
-                                                <button onClick={() => setIsRecordingVoice(true)} className="w-10 h-10 text-chat-text-muted hover:text-chat-primary transition-colors flex items-center justify-center">
-                                                    <Mic size={20} />
+                                                <button onClick={() => setIsRecordingVoice(true)} className="w-10 h-10 text-chat-text-muted hover:bg-chat-bg rounded-full btn-hover-lift transition-all flex items-center justify-center">
+                                                    <Mic size={20} className={isRecordingVoice ? 'btn-mic-active' : ''} />
                                                 </button>
                                             )}
                                         </div>
