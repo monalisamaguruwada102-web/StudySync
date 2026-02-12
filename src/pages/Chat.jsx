@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MessageCircle, Send, Share2, Users, Plus, Search, X, Copy, Check, FileText, Brain, Youtube, ExternalLink, LayoutDashboard, CheckCheck, Play, ArrowDown, RefreshCw, Loader2, Clock, Sparkles, Reply, Bot } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { format, isToday, isYesterday } from 'date-fns';
+import { format, isToday, isYesterday, formatDistanceToNow } from 'date-fns';
 import useChat from '../hooks/useChat';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -443,6 +443,23 @@ function Chat() {
         return format(date, 'MMM d');
     }
 
+    function getInitials(userOrName) {
+        if (!userOrName) return 'S';
+        const name = typeof userOrName === 'string' ? userOrName : (userOrName.name || userOrName.email?.split('@')[0] || 'S');
+        const parts = name.split(/[\s.@_-]+/);
+        if (parts.length >= 2) {
+            return (parts[0][0] + parts[1][0]).toUpperCase();
+        }
+        return name.substring(0, 2).toUpperCase();
+    }
+
+    function formatLastSeen(timestamp) {
+        if (!timestamp) return 'Offline';
+        const date = new Date(timestamp);
+        const distance = formatDistanceToNow(date, { addSuffix: true });
+        return `Active ${distance}`;
+    }
+
     function getConversationDisplay(conv) {
         if (conv.type === 'group') {
             return {
@@ -845,7 +862,10 @@ function Chat() {
                 <div className="p-6 border-b border-chat-border">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
-                            <img src="/logo.svg" alt="StudySync" className="w-10 h-10" />
+                            <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-xl shadow-primary-500/30 relative overflow-hidden group hover:scale-105 transition-transform duration-300">
+                                <GraduationCap size={24} className="relative z-10" />
+                                <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent" />
+                            </div>
                             <span className="font-bold text-lg tracking-tight dark:text-white">StudySync</span>
                         </div>
                         <button
@@ -928,8 +948,8 @@ function Chat() {
                                     : 'hover:bg-chat-bg dark:hover:bg-slate-800 border-transparent border'}`}
                             >
                                 <div className="relative">
-                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white shadow-sm ${conv.type === 'group' ? 'bg-emerald-500' : 'bg-chat-primary'}`}>
-                                        {conv.type === 'group' ? <Users size={20} /> : (conv.otherUser?.name?.[0] || conv.otherUser?.email?.[0] || 'S').toUpperCase()}
+                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold shadow-sm ${conv.type === 'group' ? 'bg-emerald-500 text-white' : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
+                                        {conv.type === 'group' ? <Users size={20} /> : getInitials(conv.otherUser)}
                                     </div>
                                     {onlineUsers.has(conv.otherUser?.id) && (
                                         <span className="absolute -bottom-1 -right-1 block h-3.5 w-3.5 rounded-full bg-chat-success border-2 border-chat-surface dark:border-slate-800 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
@@ -998,8 +1018,8 @@ function Chat() {
                                     <ArrowDown size={20} className="rotate-90" />
                                 </button>
                                 <div className="relative cursor-pointer" onClick={() => activeConversation.type === 'group' && setShowGroupInfo(true)}>
-                                    <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center font-bold text-chat-primary">
-                                        {activeConversation.type === 'group' ? <Users size={20} /> : (activeConversation.otherUser?.name?.[0] || activeConversation.otherUser?.email?.[0] || 'S').toUpperCase()}
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${activeConversation.type === 'group' ? 'bg-blue-100 dark:bg-blue-900/30 text-chat-primary' : 'bg-red-100 dark:bg-red-900/30 text-red-600'}`}>
+                                        {activeConversation.type === 'group' ? <Users size={20} /> : getInitials(activeConversation.otherUser)}
                                     </div>
                                     {activeConversation.type !== 'group' && onlineUsers.has(activeConversation.otherUser?.id) && (
                                         <span className="absolute bottom-0 right-0 w-3 h-3 bg-chat-success border-2 border-white dark:border-slate-900 rounded-full" />
@@ -1019,7 +1039,7 @@ function Chat() {
                                             </div>
                                         ) : (
                                             <span className="text-[11px] text-chat-text-muted font-medium italic">
-                                                {activeConversation.otherUser?.last_seen_at ? `Last seen ${formatLastMessageTime(activeConversation.otherUser.last_seen_at).toLowerCase()}` : 'Last seen recently'}
+                                                {formatLastSeen(activeConversation.otherUser?.last_seen_at)}
                                             </span>
                                         )}
                                     </div>
@@ -1319,8 +1339,8 @@ function Chat() {
                                     className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-between group"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center font-bold">
-                                            {user.name?.charAt(0) || user.email?.charAt(0)}
+                                        <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center font-bold">
+                                            {getInitials(user)}
                                         </div>
                                         <div>
                                             <p className="text-sm font-bold dark:text-slate-100">{user.name || user.email?.split('@')[0]}</p>
