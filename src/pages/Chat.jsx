@@ -845,9 +845,7 @@ function Chat() {
                 <div className="p-6 border-b border-chat-border">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-chat-primary rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-                                <MessageCircle size={24} className="text-white" />
-                            </div>
+                            <img src="/logo.svg" alt="StudySync" className="w-10 h-10" />
                             <span className="font-bold text-lg tracking-tight dark:text-white">StudySync</span>
                         </div>
                         <button
@@ -907,7 +905,7 @@ function Chat() {
                                         <p className="text-[11px] text-chat-text-muted mb-3 line-clamp-2 leading-relaxed">{group.description}</p>
                                         <button
                                             onClick={() => handleJoinGroupById(group.inviteCode)}
-                                            className="w-full py-1.5 bg-chat-primary text-white text-xs font-bold rounded-lg hover:bg-chat-primary-hover transition-colors"
+                                            className="w-full py-1.5 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700 shadow-md shadow-purple-500/10 transition-colors"
                                         >
                                             Join Group
                                         </button>
@@ -940,7 +938,7 @@ function Chat() {
 
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between mb-0.5">
-                                        <span className={`text-sm font-bold truncate ${activeConversation?.id === conv.id ? 'text-chat-primary font-black' : 'text-chat-text-primary dark:text-slate-200'}`}>
+                                        <span className={`text-sm font-bold truncate ${activeConversation?.id === conv.id ? 'text-red-600 font-black' : 'text-red-500'}`}>
                                             {conv.type === 'group' ? conv.groupName : (conv.otherUser?.name || conv.otherUser?.email?.split('@')[0])}
                                         </span>
                                         {conv.lastMessageTime && (
@@ -972,7 +970,7 @@ function Chat() {
                 <div className="p-4 border-t border-chat-border bg-chat-bg/30 dark:bg-slate-900/30">
                     <button
                         onClick={() => setShowUserSelector(true)}
-                        className="w-full flex items-center justify-center gap-2 py-3 bg-chat-primary text-white rounded-xl font-bold text-sm hover:bg-chat-primary-hover shadow-lg shadow-blue-500/10 transition-all active:scale-[0.98]"
+                        className="w-full flex items-center justify-center gap-2 py-3 bg-purple-600 text-white rounded-xl font-bold text-sm hover:bg-purple-700 shadow-lg shadow-purple-500/10 transition-all active:scale-[0.98]"
                     >
                         <Plus size={18} />
                         New Message
@@ -1008,7 +1006,7 @@ function Chat() {
                                     )}
                                 </div>
                                 <div className="min-w-0">
-                                    <h2 className="font-bold text-chat-text-primary dark:text-white text-base truncate leading-none mb-1">
+                                    <h2 className="font-bold text-red-600 dark:text-red-400 text-base truncate leading-none mb-1">
                                         {activeConversation.type === 'group' ? activeConversation.groupName : (activeConversation.otherUser?.name || activeConversation.otherUser?.email?.split('@')[0])}
                                     </h2>
                                     <div className="flex items-center gap-1.5 h-4">
@@ -1283,7 +1281,7 @@ function Chat() {
                         </p>
                         <button
                             onClick={() => setShowUserSelector(true)}
-                            className="px-8 py-3 bg-chat-primary text-white rounded-xl font-bold hover:bg-chat-primary-hover shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+                            className="px-8 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 shadow-lg shadow-purple-500/20 active:scale-95 transition-all"
                         >
                             Start New Conversation
                         </button>

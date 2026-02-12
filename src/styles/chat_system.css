@@ -4,7 +4,18 @@
     --chat-primary-hover: #1D4ED8;
     --chat-bg: #F9FAFB;
     --chat-surface: #FFFFFF;
-    --chat-border: #E5E7EB;
+    --chat-border: #e2e8f0;
+    --chat-border-dark: #1e293b;
+
+    /* Custom Colors */
+    --color-purple: #9333ea;
+    --color-purple-hover: #7e22ce;
+    --color-red: #ef4444;
+    --color-red-dark: #f87171;
+    --color-start-chat: var(--chat-primary);
+    /* Assuming a default, adjust if needed */
+    --color-join-group: var(--color-purple);
+    --color-chat-name: var(--color-red);
     --chat-text-primary: #111827;
     --chat-text-muted: #6B7280;
     --chat-success: #10B981;
