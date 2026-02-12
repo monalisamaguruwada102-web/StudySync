@@ -19,7 +19,7 @@ class StudySyncTheme {
     scaffoldBackgroundColor: surfaceDark,
     cardTheme: CardTheme(
       color: cardGrey,
-      elevation: 4,
+      elevation: 4.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),
     appBarTheme: const AppBarTheme(
@@ -33,7 +33,8 @@ class StudySyncTheme {
       ),
     ),
     textTheme: const TextTheme(
-      displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+      displayLarge: TextStyle(
+          fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
       bodyLarge: TextStyle(fontSize: 16, color: Colors.white70),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(

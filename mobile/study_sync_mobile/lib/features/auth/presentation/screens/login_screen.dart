@@ -15,6 +15,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Study Sync Login')),
@@ -54,8 +61,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   return ElevatedButton(
                     onPressed: () {
                       context.read<AuthBloc>().add(
-                        LoginEvent(_emailController.text, _passwordController.text),
-                      );
+                            LoginEvent(_emailController.text,
+                                _passwordController.text),
+                          );
                     },
                     child: const Text('Login'),
                   );

@@ -6,7 +6,7 @@ import 'package:study_sync_mobile/core/network/socket_service.dart';
 import 'package:study_sync_mobile/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:study_sync_mobile/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:study_sync_mobile/features/auth/domain/repositories/auth_repository.dart';
-import 'package:study_sync_mobile/features/auth/presentation/bloc/auth_bloc_impl.dart';
+import 'package:study_sync_mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:study_sync_mobile/features/chat/data/datasources/chat_remote_data_source.dart';
 import 'package:study_sync_mobile/features/chat/data/datasources/message_remote_data_source.dart';
 import 'package:study_sync_mobile/features/chat/data/repositories/chat_repository_impl.dart';
@@ -34,7 +34,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => ChatRemoteDataSource(apiClient: sl()));
 
   // Features - Messaging
-  sl.registerFactory(() => MessageBloc(messageRepository: sl(), socketService: sl()));
+  sl.registerFactory(
+      () => MessageBloc(messageRepository: sl(), socketService: sl()));
   sl.registerLazySingleton<MessageRepository>(
     () => MessageRepositoryImpl(remoteDataSource: sl()),
   );
@@ -43,7 +44,7 @@ Future<void> init() async {
   // Core
   sl.registerLazySingleton(() => ApiClient(dio: sl(), secureStorage: sl()));
   sl.registerLazySingleton(() => SocketService(secureStorage: sl()));
-  
+
   // External
   sl.registerLazySingleton(() => Dio());
   sl.registerLazySingleton(() => const FlutterSecureStorage());

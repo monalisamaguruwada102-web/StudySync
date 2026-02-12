@@ -17,9 +17,16 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   final _messageController = TextEditingController();
 
   @override
+  void dispose() {
+    _messageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => sl<MessageBloc>()..add(LoadMessagesEvent(widget.conversation.id)),
+      create: (_) =>
+          sl<MessageBloc>()..add(LoadMessagesEvent(widget.conversation.id)),
       child: Scaffold(
         appBar: AppBar(title: Text(widget.conversation.name ?? 'Chat')),
         body: Column(
@@ -34,7 +41,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       reverse: true,
                       itemCount: state.messages.length,
                       itemBuilder: (context, index) {
-                        final message = state.messages[state.messages.length - 1 - index];
+                        final message =
+                            state.messages[state.messages.length - 1 - index];
                         return _MessageBubble(message: message);
                       },
                     );
@@ -72,11 +80,11 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 onPressed: () {
                   if (_messageController.text.isNotEmpty) {
                     context.read<MessageBloc>().add(
-                      SendMessageEvent(
-                        conversationId: widget.conversation.id,
-                        content: _messageController.text,
-                      ),
-                    );
+                          SendMessageEvent(
+                            conversationId: widget.conversation.id,
+                            content: _messageController.text,
+                          ),
+                        );
                     _messageController.clear();
                   }
                 },

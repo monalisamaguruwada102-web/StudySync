@@ -1,6 +1,4 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:study_sync_mobile/features/auth/domain/repositories/auth_repository.dart';
-import 'package:study_sync_mobile/features/auth/presentation/bloc/auth_bloc_state.dart'; // Split for clarity if needed, but here we include it in one
+part of 'auth_bloc.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository authRepository;

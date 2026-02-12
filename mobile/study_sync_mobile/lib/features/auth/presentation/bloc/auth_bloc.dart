@@ -1,5 +1,9 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:study_sync_mobile/features/auth/domain/entities/user.dart';
+import 'package:study_sync_mobile/features/auth/domain/repositories/auth_repository.dart';
+
+part 'auth_bloc_impl.dart';
 
 // Events
 abstract class AuthEvent extends Equatable {
@@ -35,14 +39,18 @@ abstract class AuthState extends Equatable {
 }
 
 class AuthInitial extends AuthState {}
+
 class AuthLoading extends AuthState {}
+
 class Authenticated extends AuthState {
   final User user;
   Authenticated(this.user);
   @override
   List<Object?> get props => [user];
 }
+
 class Unauthenticated extends AuthState {}
+
 class AuthError extends AuthState {
   final String message;
   AuthError(this.message);
