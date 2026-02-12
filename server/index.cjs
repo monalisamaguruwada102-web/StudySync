@@ -270,15 +270,26 @@ app.post('/api/auth/login', async (req, res) => {
             user = db.find('users', u => u.email === email);
 
             if (!user) {
-                // Create local cache entry from Supabase Auth user
+                console.log(`User ${email} not found locally, fetching from Supabase...`);
+                // Try fetching profile or user data from Supabase
+                const [cloudProfile, cloudUser] = await Promise.all([
+                    supabasePersistence.getById('profiles', authResult.id),
+                    supabasePersistence.getItemByField('users', 'email', email)
+                ]);
+
+                const existingData = cloudProfile || cloudUser;
+
+                // Create local cache entry from Supabase data
                 user = db.insert('users', {
                     id: authResult.id,
                     email: authResult.email,
                     supabaseAuthId: authResult.id,
-                    xp: 0,
-                    level: 1,
-                    badges: []
+                    name: existingData?.name || email.split('@')[0],
+                    xp: existingData?.xp || 0,
+                    level: existingData?.level || 1,
+                    badges: existingData?.badges || []
                 });
+                console.log(`✅ Local user cache created from Supabase data for: ${email}`);
             }
         } else {
             // Silently fall back to local if not found in Supabase Auth
@@ -774,9 +785,14 @@ app.post('/api/user/xp', authenticateToken, async (req, res) => {
     const result = db.addXP(req.user.id, amount);
     if (!result) return res.status(404).json({ error: 'User not found' });
 
-    // Sync to Supabase immediately
+    // Sync to Supabase immediately using upsertProfile for consistency
     try {
-        await supabasePersistence.upsertToCollection('users', result.user);
+        await supabasePersistence.upsertProfile({
+            id: req.user.id,
+            email: req.user.email,
+            xp: result.user.xp,
+            level: result.user.level
+        });
     } catch (syncErr) {
         console.warn('Could not sync XP to Supabase:', syncErr.message);
     }
@@ -1269,7 +1285,16 @@ genericCollections.forEach(collection => {
 
         if (xpGained > 0) {
             const xpResult = db.addXP(req.user.id, xpGained);
-            try { await supabasePersistence.upsertToCollection('users', xpResult.user); } catch (e) { }
+            try {
+                await supabasePersistence.upsertProfile({
+                    id: req.user.id,
+                    email: req.user.email,
+                    xp: xpResult.user.xp,
+                    level: xpResult.user.level
+                });
+            } catch (e) {
+                console.warn('Could not sync XP from collection gain:', e.message);
+            }
         }
 
         // 2. Try to sync to Supabase (Background-ish)
