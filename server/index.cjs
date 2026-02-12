@@ -443,6 +443,8 @@ app.get('/api/users/all', authenticateToken, async (req, res) => {
                 userMap.set(p.email.toLowerCase(), {
                     ...(existing || {}),
                     ...p,
+                    // Ensure last_seen_at is preserved from whichever source has it
+                    last_seen_at: p.last_seen_at || existing?.last_seen_at,
                     source: 'profile'
                 });
             }
@@ -1333,12 +1335,17 @@ genericCollections.forEach(collection => {
         if (xpGained > 0) {
             const xpResult = db.addXP(req.user.id, xpGained);
             try {
-                await supabasePersistence.upsertProfile({
-                    id: req.user.id,
-                    email: req.user.email,
-                    xp: xpResult.user.xp,
-                    level: xpResult.user.level
-                });
+                // Fetch full user to get latest XP/Level
+                const updatedUser = db.getById('users', req.user.id);
+                if (updatedUser) {
+                    await supabasePersistence.upsertProfile({
+                        id: req.user.id,
+                        email: req.user.email,
+                        xp: updatedUser.xp,
+                        level: updatedUser.level,
+                        updated_at: now
+                    });
+                }
             } catch (e) {
                 console.warn('Could not sync XP from collection gain:', e.message);
             }

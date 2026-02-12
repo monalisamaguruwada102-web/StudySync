@@ -28,8 +28,6 @@ const useChat = () => {
             // Initial unread counts calculation if not provided by server
             const counts = {};
             response.data.forEach(conv => {
-                // If the server doesn't provide unreadCount, we'd need to fetch or estimate.
-                // For now, let's assume the server might contribute or we start at 0 and grow.
                 counts[conv.id] = conv.unreadCount || 0;
             });
             setUnreadCounts(counts);

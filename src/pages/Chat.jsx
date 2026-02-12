@@ -207,11 +207,11 @@ function MessageBubble({ message, isOwn, handleOpenResource, formatTime, onReply
                     {isOwn && (
                         <div className="flex items-center">
                             {message.read ? (
-                                <Bot size={14} className="text-emerald-500 drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]" title="Seen" />
+                                <CheckCheck size={14} className="text-blue-400 drop-shadow-[0_0_5px_rgba(96,165,250,0.5)]" title="Read" />
                             ) : message.status === 'delivered' ? (
-                                <Bot size={14} className="text-yellow-500 drop-shadow-[0_0_5px_rgba(234,179,8,0.5)]" title="Delivered" />
+                                <CheckCheck size={14} className="text-slate-400 opacity-60" title="Delivered" />
                             ) : (
-                                <Bot size={14} className="text-rose-500 drop-shadow-[0_0_5px_rgba(244,63,94,0.5)]" title="Sent" />
+                                <Check size={14} className="text-slate-400 opacity-60" title="Sent" />
                             )}
                         </div>
                     )}
@@ -378,6 +378,8 @@ function Chat() {
     const [showGroupInfo, setShowGroupInfo] = useState(false);
     const [isRecordingVoice, setIsRecordingVoice] = useState(false);
     const [uploadingAttachment, setUploadingAttachment] = useState(false);
+    const [sessionStartTime, setSessionStartTime] = useState(null);
+    const [sessionDuration, setSessionDuration] = useState('00:00');
     const messagesEndRef = useRef(null);
     const messageRefs = useRef({});
     const searchInputRef = useRef(null);
@@ -545,11 +547,29 @@ function Chat() {
     useEffect(() => {
         if (activeConversation) {
             setIsAtBottom(true);
+            setSessionStartTime(new Date());
             setTimeout(() => {
                 messagesEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' });
             }, 200);
+        } else {
+            setSessionStartTime(null);
+            setSessionDuration('00:00');
         }
     }, [activeConversation?.id]);
+
+    useEffect(() => {
+        if (!sessionStartTime) return;
+
+        const timer = setInterval(() => {
+            const now = new Date();
+            const diff = Math.floor((now - sessionStartTime) / 1000);
+            const mins = Math.floor(diff / 60).toString().padStart(2, '0');
+            const secs = (diff % 60).toString().padStart(2, '0');
+            setSessionDuration(`${mins}:${secs}`);
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [sessionStartTime]);
 
     useEffect(() => {
         if (showUserSelector) {
@@ -650,8 +670,15 @@ function Chat() {
         }
     }
 
-    async function handleSendVoice(blob) {
+    async function handleSendVoice(blob, durationInSeconds) {
         if (!activeConversation) return;
+
+        const formatDuration = (seconds) => {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        };
+
         try {
             const formData = new FormData();
             formData.append('file', blob, 'voice-note.webm');
@@ -666,7 +693,7 @@ function Chat() {
                 'voice',
                 null,
                 replyTo || undefined,
-                { duration: '0:00' } // Could calculate duration if needed
+                { duration: formatDuration(durationInSeconds || 0) }
             );
             setReplyTo(null);
         } catch (err) {
@@ -1093,21 +1120,31 @@ function Chat() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-1">
-                                <button
-                                    onClick={() => {
-                                        setShowSearchInChat(!showSearchInChat);
-                                        if (!showSearchInChat) {
-                                            setTimeout(() => searchInputRef.current?.focus(), 100);
-                                        } else {
-                                            setSearchInChatQuery('');
-                                            setCurrentSearchIndex(-1);
-                                        }
-                                    }}
-                                    className={`p-2 transition-colors ${showSearchInChat ? 'text-blue-500' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
-                                >
-                                    <Search size={18} />
-                                </button>
+                            <div className="flex items-center gap-3">
+                                {sessionStartTime && (
+                                    <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-50/50 dark:bg-blue-900/20 rounded-full border border-blue-100/50 dark:border-blue-800/50">
+                                        <Clock size={12} className="text-blue-500 animate-pulse" />
+                                        <span className="text-[11px] font-mono font-bold text-blue-600 dark:text-blue-400">
+                                            {sessionDuration}
+                                        </span>
+                                    </div>
+                                )}
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        onClick={() => {
+                                            setShowSearchInChat(!showSearchInChat);
+                                            if (!showSearchInChat) {
+                                                setTimeout(() => searchInputRef.current?.focus(), 100);
+                                            } else {
+                                                setSearchInChatQuery('');
+                                                setCurrentSearchIndex(-1);
+                                            }
+                                        }}
+                                        className={`p-2 transition-colors ${showSearchInChat ? 'text-blue-500' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
+                                    >
+                                        <Search size={18} />
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -1246,7 +1283,7 @@ function Chat() {
                                     isOpen={showGroupInfo}
                                     onClose={() => setShowGroupInfo(false)}
                                     group={activeConversation}
-                                    members={allUsers.filter(u => activeConversation.participants?.includes(u.id))}
+                                    members={users.filter(u => activeConversation.participants?.includes(u.id))}
                                     onlineUsers={onlineUsers}
                                     currentUser={currentUser}
                                     onLeaveGroup={async (id) => {

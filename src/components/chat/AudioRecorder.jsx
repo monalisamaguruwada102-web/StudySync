@@ -67,7 +67,7 @@ const AudioRecorder = ({ onSend, onCancel }) => {
         if (!audioBlob) return;
         setIsUploading(true);
         try {
-            await onSend(audioBlob);
+            await onSend(audioBlob, recordingTime);
             handleCancel();
         } catch (err) {
             console.error('Error uploading voice note:', err);
