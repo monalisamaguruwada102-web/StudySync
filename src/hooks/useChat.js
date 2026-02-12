@@ -244,6 +244,11 @@ const useChat = () => {
     useEffect(() => {
         if (!activeConversation) return;
 
+        // Legacy fallback polling (every 10 seconds)
+        const interval = setInterval(() => {
+            fetchMessages(activeConversation.id);
+        }, 10000);
+
         // Heartbeat for last_seen_at tracking
         const heartbeatInterval = setInterval(() => {
             api.post('/presence/heartbeat').catch(() => { });
@@ -323,7 +328,7 @@ const useChat = () => {
                 if (document.hidden && Notification.permission === 'granted') {
                     new Notification('New Message', {
                         body: newMessage.content,
-                        icon: '/favicon.ico'
+                        icon: '/icon.png'
                     });
                 }
             })
@@ -357,7 +362,7 @@ const useChat = () => {
                         if (Notification.permission === 'granted') {
                             new Notification('New Chat Request', {
                                 body: 'Someone started a new conversation with you.',
-                                icon: '/favicon.ico'
+                                icon: '/icon.png'
                             });
                         }
                     }
@@ -407,7 +412,7 @@ const useChat = () => {
                     if (document.hidden && Notification.permission === 'granted') {
                         new Notification('New Message', {
                             body: newMessage.content,
-                            icon: '/favicon.ico'
+                            icon: '/icon.png'
                         });
                     }
                 }

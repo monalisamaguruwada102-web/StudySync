@@ -17,29 +17,6 @@ const PomodoroTimer = () => {
 
     const timerRef = useRef(null);
 
-    useEffect(() => {
-        if (isActive) {
-            timerRef.current = setInterval(() => {
-                if (seconds < 59) {
-                    setSeconds(s => s + 1);
-                } else if (minutes < MAX_MINUTES - 1) {
-                    setMinutes(m => m + 1);
-                    setSeconds(0);
-                } else {
-                    // Timer reached 60 minutes
-                    setMinutes(60);
-                    setSeconds(0);
-                    clearInterval(timerRef.current);
-                    setIsActive(false);
-                    handleModeSwitch();
-                }
-            }, 1000);
-        } else {
-            clearInterval(timerRef.current);
-        }
-        return () => clearInterval(timerRef.current);
-    }, [isActive, minutes, seconds]);
-
     const handleModeSwitch = async () => {
         if (mode === 'study') {
             try {
@@ -73,6 +50,30 @@ const PomodoroTimer = () => {
             new Notification(nextMode === 'study' ? 'Break over! Time to study.' : 'Study session finished! Take a break.');
         }
     };
+
+    useEffect(() => {
+        if (isActive) {
+            timerRef.current = setInterval(() => {
+                if (seconds < 59) {
+                    setSeconds(s => s + 1);
+                } else if (minutes < MAX_MINUTES - 1) {
+                    setMinutes(m => m + 1);
+                    setSeconds(0);
+                } else {
+                    // Timer reached 60 minutes
+                    setMinutes(60);
+                    setSeconds(0);
+                    clearInterval(timerRef.current);
+                    setIsActive(false);
+                    handleModeSwitch();
+                }
+            }, 1000);
+        } else {
+            clearInterval(timerRef.current);
+        }
+        return () => clearInterval(timerRef.current);
+    }, [isActive, minutes, seconds]);
+
 
     const toggleTimer = () => setIsActive(!isActive);
 
