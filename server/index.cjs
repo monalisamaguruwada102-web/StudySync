@@ -24,6 +24,9 @@ app.set('trust proxy', 1);
 app.use(cookieParser());
 app.use(express.json());
 
+// Initialize Supabase Client for direct usage in routes
+const supabase = supabasePersistence.initSupabase();
+
 // --- VERSIONING (For Auto-Push Updates) ---
 const SYSTEM_VERSION = "1.3.1";
 app.get('/api/version', (req, res) => res.json({ version: SYSTEM_VERSION }));
@@ -154,7 +157,10 @@ app.post('/api/upload', authenticateToken, (req, res) => {
             });
         } catch (uploadErr) {
             console.error('Upload error:', uploadErr);
-            res.status(500).json({ error: 'Internal server error during upload' });
+            res.status(500).json({
+                error: 'Internal server error during upload',
+                details: uploadErr.message
+            });
         }
     });
 });
@@ -1025,12 +1031,19 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
         res.json(finalMessage);
     } catch (error) {
         console.error('Error sending message:', error);
-        res.status(500).json({ error: 'Failed to send message' });
+        res.status(500).json({
+            error: 'Failed to send message',
+            details: error.message,
+            stack: IS_PROD ? undefined : error.stack
+        });
     }
 });
 
 app.post('/api/messages/:id/react', authenticateToken, async (req, res) => {
     try {
+        if (!supabase) {
+            return res.status(503).json({ error: 'Database service unavailable' });
+        }
         const messageId = req.params.id;
         const { emoji } = req.body;
         const userId = req.user.id;
@@ -1075,6 +1088,9 @@ app.post('/api/messages/:id/react', authenticateToken, async (req, res) => {
 
 app.post('/api/groups/:id/leave', authenticateToken, async (req, res) => {
     try {
+        if (!supabase) {
+            return res.status(503).json({ error: 'Database service unavailable' });
+        }
         const conversationId = req.params.id;
         const userId = req.user.id;
 
