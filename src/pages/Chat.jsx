@@ -402,11 +402,32 @@ function Chat() {
 
     async function handleJoinGroupById(invCode) {
         try {
-            await joinGroup(invCode);
-            alert('Successfully joined group!');
-            setActiveTab('chats');
+            const result = await joinGroup(invCode);
+            showToast('Successfully joined group!', 'success'); // Use toast instead of alert for consistency
+
+            // Switch to groups tab
+            setActiveTab('groups');
+
+            // Select the conversation
+            if (result.conversationId) {
+                // We use a small timeout to allow useChat to refresh conversations
+                setTimeout(() => {
+                    const joinedConv = result.group ? {
+                        id: result.conversationId,
+                        type: 'group',
+                        groupId: result.group.id,
+                        groupName: result.group.name,
+                        participants: result.group.members
+                    } : null;
+
+                    if (joinedConv) {
+                        setActiveConversation(joinedConv);
+                    }
+                }, 100);
+            }
         } catch (error) {
-            alert('Failed to join group: ' + error.message);
+            const errorMsg = error.response?.data?.error || error.message || 'Failed to join group';
+            showToast(errorMsg, 'error');
         }
     }
 
