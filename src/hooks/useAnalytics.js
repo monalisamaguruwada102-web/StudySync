@@ -28,10 +28,13 @@ export const useAnalytics = (logs, modules, tasks, sessions = []) => {
         // 1. Total Hours
         const totalHours = allLogs.reduce((acc, log) => acc + parseFloat(log.hours || 0), 0);
 
-        // 1.1 Today's Hours
-        const todayStr = new Date().toISOString().split('T')[0];
+        // 1.1 Today's Hours (Fix: Use local date instead of UTC)
+        const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD in local time
         const todayHours = allLogs
-            .filter(log => (log.date || log.createdAt)?.split('T')[0] === todayStr)
+            .filter(log => {
+                const logDate = log.date ? new Date(log.date) : (log.createdAt ? new Date(log.createdAt) : null);
+                return logDate && logDate.toLocaleDateString('en-CA') === todayStr;
+            })
             .reduce((acc, log) => acc + parseFloat(log.hours || 0), 0);
 
         // 2. Active Modules
