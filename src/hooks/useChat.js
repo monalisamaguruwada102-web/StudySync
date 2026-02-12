@@ -348,20 +348,29 @@ const useChat = () => {
 
         const channel = supabase.channel('public:conversations')
             .on('postgres_changes', {
-                event: 'INSERT',
+                event: '*', // Listen to INSERT and UPDATE
                 schema: 'public',
                 table: 'conversations'
             }, (payload) => {
-                const newConv = payload.new;
-                // Only add if we are a participant
-                if (newConv.participants && newConv.participants.includes(user.id)) {
-                    // Fetch full details (or just add raw for now)
+                const conv = payload.new;
+                console.log('🔔 Realtime Conversation Event:', payload.eventType, conv);
+
+                // Only add/update if we are a participant
+                if (conv.participants && conv.participants.includes(user.id)) {
                     setConversations(prev => {
-                        if (prev.some(c => c.id === newConv.id)) return prev;
-                        return [newConv, ...prev];
+                        const exists = prev.some(c => c.id === conv.id);
+                        if (payload.eventType === 'INSERT') {
+                            if (exists) return prev;
+                            return [conv, ...prev];
+                        } else if (payload.eventType === 'UPDATE') {
+                            return prev.map(c => c.id === conv.id ? { ...c, ...conv } : c);
+                        }
+                        return prev;
                     });
 
-                    if (newConv.type === 'direct' && newConv.initiator_id !== user.id) {
+                    // Trigger notification for new pending direct requests
+                    const initiatorId = conv.initiator_id || conv.initiatorId;
+                    if (payload.eventType === 'INSERT' && conv.type === 'direct' && initiatorId !== user.id && conv.status === 'pending') {
                         if (Notification.permission === 'granted') {
                             new Notification('New Chat Request', {
                                 body: 'Someone started a new conversation with you.',
@@ -371,7 +380,9 @@ const useChat = () => {
                     }
                 }
             })
-            .subscribe();
+            .subscribe((status) => {
+                console.log('📡 Conversations Realtime Status:', status);
+            });
 
         return () => {
             channel.unsubscribe();
