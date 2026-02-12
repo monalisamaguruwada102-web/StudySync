@@ -445,12 +445,13 @@ function Chat() {
 
     function getInitials(userOrName) {
         if (!userOrName) return 'S';
-        const name = typeof userOrName === 'string' ? userOrName : (userOrName.name || userOrName.email?.split('@')[0] || 'S');
-        const parts = name.split(/[\s.@_-]+/);
+        const email = typeof userOrName === 'string' ? userOrName : (userOrName.email || userOrName.name || 'S');
+        const emailPrefix = email.split('@')[0];
+        const parts = emailPrefix.split(/[\s.@_-]+/);
         if (parts.length >= 2) {
             return (parts[0][0] + parts[1][0]).toUpperCase();
         }
-        return name.substring(0, 2).toUpperCase();
+        return emailPrefix.substring(0, 2).toUpperCase();
     }
 
     function formatLastSeen(timestamp) {
@@ -959,7 +960,7 @@ function Chat() {
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between mb-0.5">
                                         <span className={`text-sm font-bold truncate ${activeConversation?.id === conv.id ? 'text-red-600 font-black' : 'text-red-500'}`}>
-                                            {conv.type === 'group' ? conv.groupName : (conv.otherUser?.name || conv.otherUser?.email?.split('@')[0])}
+                                            {conv.type === 'group' ? conv.groupName : (conv.otherUser?.email || conv.otherUser?.name)}
                                         </span>
                                         {conv.lastMessageTime && (
                                             <span className="text-[10px] text-chat-text-muted whitespace-nowrap">
@@ -1027,7 +1028,7 @@ function Chat() {
                                 </div>
                                 <div className="min-w-0">
                                     <h2 className="font-bold text-red-600 dark:text-red-400 text-base truncate leading-none mb-1">
-                                        {activeConversation.type === 'group' ? activeConversation.groupName : (activeConversation.otherUser?.name || activeConversation.otherUser?.email?.split('@')[0])}
+                                        {activeConversation.type === 'group' ? activeConversation.groupName : (activeConversation.otherUser?.email || activeConversation.otherUser?.name)}
                                     </h2>
                                     <div className="flex items-center gap-1.5 h-4">
                                         {activeConversation.type === 'group' ? (
@@ -1340,7 +1341,7 @@ function Chat() {
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center font-bold">
-                                            {getInitials(user)}
+                                            {getInitials(user.email)}
                                         </div>
                                         <div>
                                             <p className="text-sm font-bold dark:text-slate-100">{user.name || user.email?.split('@')[0]}</p>
