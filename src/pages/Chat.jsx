@@ -1360,7 +1360,7 @@ function Chat() {
                     isOpen={showGroupInfo}
                     onClose={() => setShowGroupInfo(false)}
                     group={activeConversation}
-                    members={users.filter(u => activeConversation.participants?.includes(u.id))}
+                    members={activeConversation ? users.filter(u => activeConversation.participants?.includes(u.id)) : []}
                     onlineUsers={onlineUsers}
                     currentUser={currentUser}
                     onLeaveGroup={async (id) => {
