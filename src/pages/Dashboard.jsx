@@ -7,6 +7,7 @@ import { useAnalytics } from '../hooks/useAnalytics';
 import Heatmap from '../components/analytics/Heatmap';
 import { useAuth } from '../context/AuthContext';
 import { getLeague } from '../utils/gamification';
+import { useGamification } from '../hooks/useGamification';
 import AnimatedBadge from '../components/ui/AnimatedBadge';
 import HelpModal from '../components/dashboard/HelpModal';
 import KnowledgeGraph from '../components/analytics/KnowledgeGraph';
@@ -110,6 +111,9 @@ const Dashboard = () => {
     }, []);
 
     const stats = useAnalytics(logs, modules, tasks, sessions);
+    // Use persistent badges from hook, passing stats to trigger checks
+    const { badges: persistentBadges } = useGamification(stats);
+
     const league = useMemo(() => getLeague(user?.level || 1), [user?.level]);
 
     const barData = {
@@ -255,7 +259,7 @@ const Dashboard = () => {
 
                     <Card title="Achievements">
                         <div className="grid grid-cols-2 gap-4">
-                            {stats.badges.length > 0 ? stats.badges.map(badge => {
+                            {persistentBadges.length > 0 ? persistentBadges.map(badge => {
                                 const Icon = badge.icon === 'Zap' ? Zap :
                                     badge.icon === 'Flame' ? Flame :
                                         badge.icon === 'Target' ? Target : Award;

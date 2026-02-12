@@ -709,6 +709,52 @@ app.post('/api/user/xp', authenticateToken, async (req, res) => {
     res.json(result);
 });
 
+// --- BADGES ENDPOINT ---
+app.post('/api/user/badges', authenticateToken, async (req, res) => {
+    const { badge } = req.body;
+    if (!badge || !badge.name) {
+        return res.status(400).json({ error: 'Invalid badge data' });
+    }
+
+    const user = db.find('users', u => u.id === req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // 1. Check if badge already exists
+    const currentBadges = user.badges || [];
+    const alreadyHas = currentBadges.some(b => b.name === badge.name);
+
+    if (alreadyHas) {
+        return res.json({ success: true, message: 'Badge already earned', badges: currentBadges });
+    }
+
+    // 2. Add new badge
+    const newBadge = { ...badge, earnedAt: new Date().toISOString() };
+    const updatedBadges = [...currentBadges, newBadge];
+
+    // 3. Update local DB
+    const updatedUser = db.update('users', user.id, { badges: updatedBadges });
+
+    // 4. Update Supabase
+    try {
+        await supabasePersistence.upsertToCollection('users', {
+            id: user.id,
+            badges: updatedBadges
+        });
+
+        // Also update profile if it exists
+        await supabasePersistence.upsertProfile({
+            id: user.id,
+            email: user.email,
+            badges: updatedBadges,
+            // Preserve other fields if possible, or upsert will handle basic
+        });
+    } catch (syncErr) {
+        console.warn('Could not sync badges to Supabase:', syncErr.message);
+    }
+
+    res.json({ success: true, badge: newBadge, badges: updatedBadges });
+});
+
 // --- CHAT ENDPOINTS ---
 // ... (Chat endpoints follow)
 
