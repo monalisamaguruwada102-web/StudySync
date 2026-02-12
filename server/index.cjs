@@ -73,7 +73,8 @@ function authenticateToken(req, res, next) {
                     db.update('users', req.user.id, { last_seen_at: timestamp });
 
                     // Update Supabase profiles
-                    if (supabase) {
+                    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(req.user.id);
+                    if (supabase && isUUID) {
                         supabase.from('profiles')
                             .update({ last_seen_at: timestamp })
                             .eq('id', req.user.id)
@@ -140,7 +141,8 @@ app.post('/api/presence/heartbeat', authenticateToken, async (req, res) => {
     const timestamp = new Date().toISOString();
     try {
         db.update('users', req.user.id, { last_seen_at: timestamp });
-        if (supabase) {
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(req.user.id);
+        if (supabase && isUUID) {
             await supabase.from('profiles')
                 .update({ last_seen_at: timestamp })
                 .eq('id', req.user.id);

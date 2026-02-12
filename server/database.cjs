@@ -162,7 +162,19 @@ const db = {
     insert: (collection, item) => {
         const data = readDB();
         // Use provided ID if available (for sync), otherwise generate UUID
-        const id = item.id || (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString());
+        let id = item.id;
+        if (!id) {
+            if (crypto.randomUUID) {
+                id = crypto.randomUUID();
+            } else {
+                // Fallback UUID v4 generator for older Node environments
+                id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            }
+        }
+
         const newItem = {
             ...item,
             id,
