@@ -8,8 +8,10 @@ import { useFirestore } from '../hooks/useFirestore';
 import { studyLogService, moduleService } from '../services/firestoreService';
 import { Plus, History, Trash2, Calendar, Book, FileText, Clock, Download } from 'lucide-react';
 import { format } from 'date-fns';
+import { useNotification } from '../context/NotificationContext';
 
 const StudyLogs = () => {
+    const { showToast, confirm } = useNotification();
     const { data: logs, loading, refresh } = useFirestore(studyLogService.getAll);
     const { data: modules } = useFirestore(moduleService.getAll);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,9 +59,16 @@ const StudyLogs = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Delete this study log?')) {
+        const isConfirmed = await confirm({
+            title: 'Delete Log',
+            message: 'Are you sure you want to delete this study session log?',
+            type: 'warning',
+            confirmLabel: 'Delete'
+        });
+        if (isConfirmed) {
             await studyLogService.delete(id);
             await refresh();
+            showToast('Session log deleted', 'info');
         }
     };
 

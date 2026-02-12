@@ -12,8 +12,10 @@ import aiService from '../services/aiService';
 import { supabase } from '../services/supabase';
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import ShareToChatModal from '../components/ui/ShareToChatModal';
+import { useNotification } from '../context/NotificationContext';
 
 const Notes = () => {
+    const { showToast, confirm } = useNotification();
     const { data: notes, loading, refresh } = useFirestore(noteService.getAll);
     const { data: modules } = useFirestore(moduleService.getAll);
     const [searchParams] = useSearchParams();
@@ -55,7 +57,7 @@ const Notes = () => {
             setIsRecording(false);
         } else {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                alert('Audio recording is not supported in this browser.');
+                showToast('Audio recording is not supported in this browser.', 'warning');
                 return;
             }
 
@@ -108,7 +110,7 @@ const Notes = () => {
                 setIsRecording(true);
             } catch (err) {
                 console.error('Error accessing microphone:', err);
-                alert('Could not access microphone. Please check permissions.');
+                showToast('Could not access microphone. Please check permissions.', 'error');
             }
         }
     };
@@ -129,7 +131,7 @@ const Notes = () => {
             setAudioEpisodes(prev => [...prev, { episode: episodeNum, url: response.data.filePath }]);
         } catch (error) {
             console.error(`Error uploading episode ${episodeNum}:`, error);
-            alert(`Failed to upload episode ${episodeNum}: ${error.message}`);
+            showToast(`Failed to upload episode ${episodeNum}: ${error.message}`, 'error');
         }
     };
 
@@ -180,16 +182,23 @@ const Notes = () => {
             setAudioEpisodes([]);
             setCurrentEpisode(1);
         } catch (error) {
-            alert('Error: ' + error.message);
+            showToast('Error: ' + error.message, 'error');
         } finally {
             setUploading(false);
         }
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Delete this note?')) {
+        const isConfirmed = await confirm({
+            title: 'Delete Note',
+            message: 'Are you sure you want to delete this note?',
+            type: 'warning',
+            confirmLabel: 'Delete'
+        });
+        if (isConfirmed) {
             await noteService.delete(id);
             await refresh();
+            showToast('Note deleted successfully', 'info');
         }
     };
 
@@ -213,7 +222,7 @@ const Notes = () => {
             await refresh();
         } catch (error) {
             console.error('AI Summarization failed:', error);
-            alert('AI Assistant is currently unavailable.');
+            showToast('AI Assistant is currently unavailable.', 'error');
         } finally {
             setSummarizingId(null);
         }
@@ -227,7 +236,7 @@ const Notes = () => {
             setQuizNoteTitle(note.title);
             setIsQuizOpen(true);
         } catch (error) {
-            alert('Failed to generate quiz. AI Service unavailable.');
+            showToast('Failed to generate quiz. AI Service unavailable.', 'error');
         } finally {
             setGeneratingQuizId(null);
         }
@@ -237,7 +246,7 @@ const Notes = () => {
         const url = `${window.location.origin}/notes/shared/${note.id}`;
         const shareText = `Check out this note on StudySync: ${note.title}\n${url}`;
         navigator.clipboard.writeText(shareText);
-        alert('External link copied to clipboard! The link includes the note title and StudySync branding.');
+        showToast('External link copied to clipboard!', 'success');
     };
 
     // Deep Link & Isolation Effect

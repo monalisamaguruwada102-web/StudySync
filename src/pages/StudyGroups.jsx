@@ -4,18 +4,18 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { Users, MessageSquare, Trophy, Star, Share2, Plus, Send, ChevronLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import useChat from '../hooks/useChat';
 
 const StudyGroups = () => {
     const { user } = useAuth();
+    const { showToast } = useNotification();
     const {
         conversations,
         messages,
         activeConversation,
         setActiveConversation,
         sendMessage,
-        loading,
-        availableGroups,
         fetchAvailableGroups,
         joinGroup
     } = useChat();
@@ -45,7 +45,7 @@ const StudyGroups = () => {
             setShowJoinModal(false);
             setInviteCode('');
         } catch (err) {
-            alert(err.message || 'Failed to join group');
+            showToast(err.message || 'Failed to join group', 'error');
         }
     };
 
@@ -75,7 +75,7 @@ const StudyGroups = () => {
             {activeTab === 'groups' ? (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)] lg:h-[calc(100vh-140px)]">
                     {/* Groups List - Hidden on mobile if group selected */}
-                    <div className={`lg:col-span-1 space-y-4 overflow-y-auto ${selectedGroup ? 'hidden lg:block' : 'block'}`}>
+                    <div className={`lg:col-span-1 space-y-4 overflow-y-auto ${activeConversation ? 'hidden lg:block' : 'block'}`}>
 
 
                         {groupConversations.length === 0 ? (

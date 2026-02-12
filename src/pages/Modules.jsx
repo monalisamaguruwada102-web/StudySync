@@ -10,8 +10,10 @@ import { moduleService, studyLogService, taskService, pomodoroService, flashcard
 import { useAnalytics } from '../hooks/useAnalytics';
 import { Plus, Edit2, Trash2, Target, BookOpen, Sparkles, Wand2, RefreshCcw } from 'lucide-react';
 import aiService from '../services/aiService';
+import { useNotification } from '../context/NotificationContext';
 
 const Modules = () => {
+    const { showToast, confirm } = useNotification();
     const { data: modules, loading, refresh } = useFirestore(moduleService.getAll);
     const { data: logs } = useFirestore(studyLogService.getAll);
     const { data: tasks } = useFirestore(taskService.getAll);
@@ -56,9 +58,16 @@ const Modules = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to delete this module? All associated data will be affected.')) {
+        const isConfirmed = await confirm({
+            title: 'Delete Module',
+            message: 'Are you sure you want to delete this module? All associated data will be affected.',
+            type: 'warning',
+            confirmLabel: 'Delete Module'
+        });
+        if (isConfirmed) {
             await moduleService.delete(id);
             await refresh();
+            showToast('Module deleted', 'info');
         }
     };
 
@@ -87,10 +96,10 @@ const Modules = () => {
                 });
             }
 
-            alert(`✨ Successfully generated ${newCards.length} flashcards for ${mod.name}! Check your Flashcards page.`);
+            showToast(`✨ Successfully generated ${newCards.length} flashcards for ${mod.name}!`, 'success');
         } catch (error) {
             console.error('AI Generation failed:', error);
-            alert('AI generation failed. Please try again.');
+            showToast('AI generation failed. Please try again.', 'error');
         } finally {
             setIsGenerating(null);
         }

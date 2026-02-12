@@ -9,8 +9,10 @@ import { taskService, moduleService } from '../services/firestoreService';
 import { Plus, CheckCircle, Circle, AlertCircle, Trash2, Calendar, Book, Database, Loader2 } from 'lucide-react';
 import { isBefore, parseISO, startOfDay } from 'date-fns';
 import api from '../services/api';
+import { useNotification } from '../context/NotificationContext';
 
 const Tasks = () => {
+    const { showToast, confirm } = useNotification();
     const { data: tasks, loading, refresh } = useFirestore(taskService.getAll);
     const { data: modules } = useFirestore(moduleService.getAll);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -34,7 +36,7 @@ const Tasks = () => {
         }
 
         if (!token) {
-            alert('Please configure your Notion API Token in Settings > Integrations first.');
+            showToast('Please configure your Notion API Token in Settings > Integrations first.', 'warning');
             return;
         }
 
@@ -42,10 +44,10 @@ const Tasks = () => {
         try {
             const response = await api.post('/sync/notion-tasks', { token, databaseId });
             await refresh();
-            alert(response.data.message || 'Notion tasks imported successfully!');
+            showToast(response.data.message || 'Notion tasks imported successfully!', 'success');
         } catch (error) {
             console.error('Notion import error:', error);
-            alert('Failed to import tasks from Notion.');
+            showToast('Failed to import tasks from Notion.', 'error');
         } finally {
             setIsImporting(false);
         }
@@ -66,9 +68,16 @@ const Tasks = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Delete this task?')) {
+        const isConfirmed = await confirm({
+            title: 'Delete Task',
+            message: 'Are you sure you want to delete this task?',
+            type: 'warning',
+            confirmLabel: 'Delete'
+        });
+        if (isConfirmed) {
             await taskService.delete(id);
             await refresh();
+            showToast('Task deleted', 'info');
         }
     };
 

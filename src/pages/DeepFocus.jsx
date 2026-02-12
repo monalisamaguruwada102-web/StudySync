@@ -30,6 +30,68 @@ const SOUNDS = {
     white: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3'  // Example URL
 };
 
+// Particle System Component to keep Math.random purely in useEffect
+const ParticleSystem = ({ theme, themes }) => {
+    const [particles, setParticles] = useState([]);
+
+    useEffect(() => {
+        const generateParticles = () => {
+            if (!theme || !themes[theme]) return [];
+
+            return [...Array(themes[theme].count)].map((_, i) => ({
+                id: i,
+                // General props
+                initialX: Math.random() * window.innerWidth,
+                initialY: theme === 'starfield' ? Math.random() * window.innerHeight : -20,
+                // Starfield specifics
+                opacity: Math.random(),
+                duration: theme === 'starfield' ? 2 + Math.random() * 4 :
+                    theme === 'rain' ? 0.5 + Math.random() * 0.5 :
+                        5 + Math.random() * 10,
+                // Rain/Leaves specifics
+                delay: Math.random() * 2,
+                // Leaves specifics
+                xStart: `${Math.random() * 100}%`,
+                xEnd: `${Math.random() * 100}%`,
+            }));
+        };
+
+        setParticles(generateParticles());
+    }, [theme, themes]);
+
+    return (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            {theme === 'starfield' && particles.map(p => (
+                <motion.div
+                    key={`star-${p.id}`}
+                    className="absolute w-[1px] h-[1px] bg-white rounded-full"
+                    initial={{ x: p.initialX, y: p.initialY, opacity: p.opacity }}
+                    animate={{ opacity: [0.2, 1, 0.2], scale: [1, 1.5, 1] }}
+                    transition={{ duration: p.duration, repeat: Infinity, ease: 'linear' }}
+                />
+            ))}
+            {theme === 'rain' && particles.map(p => (
+                <motion.div
+                    key={`drop-${p.id}`}
+                    className="absolute w-[1px] h-4 bg-blue-400/30"
+                    initial={{ x: p.initialX, y: -20 }}
+                    animate={{ y: window.innerHeight + 20 }}
+                    transition={{ duration: p.duration, repeat: Infinity, ease: 'linear', delay: p.delay }}
+                />
+            ))}
+            {theme === 'leaves' && particles.map(p => (
+                <motion.div
+                    key={`leaf-${p.id}`}
+                    className="absolute w-2 h-2 bg-green-500/10 rounded-full"
+                    initial={{ x: p.initialX, y: window.innerHeight + 20 }}
+                    animate={{ x: [p.xStart, p.xEnd], y: -20, rotate: 360 }}
+                    transition={{ duration: p.duration, repeat: Infinity, ease: 'linear' }}
+                />
+            ))}
+        </div>
+    );
+};
+
 const DeepFocus = () => {
     const { data: tasks } = useFirestore(taskService.getAll);
     const {
@@ -104,69 +166,7 @@ const DeepFocus = () => {
             <audio ref={audioRef} src={activeSound ? SOUNDS[activeSound] : ''} loop />
 
             {/* Immersive Background Particles */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                {activeTheme === 'starfield' && [...Array(themes.starfield.count)].map((_, i) => (
-                    <motion.div
-                        key={`star-${i}`}
-                        className="absolute w-[1px] h-[1px] bg-white rounded-full"
-                        initial={{
-                            x: Math.random() * window.innerWidth,
-                            y: Math.random() * window.innerHeight,
-                            opacity: Math.random(),
-                        }}
-                        animate={{
-                            opacity: [0.2, 1, 0.2],
-                            scale: [1, 1.5, 1],
-                        }}
-                        transition={{
-                            duration: 2 + Math.random() * 4,
-                            repeat: Infinity,
-                            ease: 'linear',
-                        }}
-                    />
-                ))}
-
-                {activeTheme === 'rain' && [...Array(themes.rain.count)].map((_, i) => (
-                    <motion.div
-                        key={`drop-${i}`}
-                        className="absolute w-[1px] h-4 bg-blue-400/30"
-                        initial={{
-                            x: Math.random() * window.innerWidth,
-                            y: -20,
-                        }}
-                        animate={{
-                            y: window.innerHeight + 20,
-                        }}
-                        transition={{
-                            duration: 0.5 + Math.random() * 0.5,
-                            repeat: Infinity,
-                            ease: 'linear',
-                            delay: Math.random() * 2,
-                        }}
-                    />
-                ))}
-
-                {activeTheme === 'leaves' && [...Array(themes.leaves.count)].map((_, i) => (
-                    <motion.div
-                        key={`leaf-${i}`}
-                        className="absolute w-2 h-2 bg-green-500/10 rounded-full"
-                        initial={{
-                            x: Math.random() * window.innerWidth,
-                            y: window.innerHeight + 20,
-                        }}
-                        animate={{
-                            x: [`${Math.random() * 100}%`, `${Math.random() * 100}%`],
-                            y: -20,
-                            rotate: 360,
-                        }}
-                        transition={{
-                            duration: 5 + Math.random() * 10,
-                            repeat: Infinity,
-                            ease: 'linear',
-                        }}
-                    />
-                ))}
-            </div>
+            <ParticleSystem theme={activeTheme} themes={themes} />
 
             {/* Gradient Orbs */}
             <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-600/10 rounded-full blur-[150px] animate-pulse" />

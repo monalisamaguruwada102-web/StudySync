@@ -11,6 +11,7 @@ import Modal from '../components/ui/Modal';
 import ResourceShareModal from '../components/chat/ResourceShareModal';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 
 // Resource Card Component (for shared items)
 function ChatMessageResourceCard({ resource, onClick }) {
@@ -222,6 +223,7 @@ function ResourceViewerModal({ isOpen, onClose, resource, loading, onNavigate })
 function Chat() {
     const navigate = useNavigate();
     const { user: currentUser } = useAuth();
+    const { showToast } = useNotification();
     const isAdmin = currentUser?.email === (import.meta.env.VITE_ADMIN_EMAIL || 'joshuamujakari15@gmail.com');
 
     // --- State & Refs ---
@@ -448,7 +450,7 @@ function Chat() {
         } catch (error) {
             console.error('Error creating group:', error);
             const errorMsg = error.response?.data?.error || error.message || 'Failed to create group';
-            alert(errorMsg);
+            showToast(errorMsg, 'error');
         }
     }
 
@@ -461,9 +463,9 @@ function Chat() {
 
             // 1. Success feedback
             if (result.alreadyMember) {
-                alert('You are already a member of this group!');
+                showToast('You are already a member of this group!', 'info');
             } else {
-                alert('Successfully joined group!');
+                showToast('Successfully joined group!', 'success');
             }
 
             // 2. Switch to groups tab
@@ -489,7 +491,7 @@ function Chat() {
         } catch (error) {
             console.error('Error joining group:', error);
             const errorMsg = error.response?.data?.error || error.message || 'Failed to join group';
-            alert(errorMsg);
+            showToast(errorMsg, 'error');
         }
     }
 
@@ -517,7 +519,7 @@ function Chat() {
         } catch (error) {
             console.error('Error fetching resource details:', error);
             const errorMsg = error.response?.data?.error || error.message || 'Failed to load resource details. It might have been deleted.';
-            alert(errorMsg);
+            showToast(errorMsg, 'error');
             setShowResourceViewer(false);
         } finally {
             setViewerLoading(false);

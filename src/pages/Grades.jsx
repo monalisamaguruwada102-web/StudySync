@@ -7,8 +7,10 @@ import Modal from '../components/ui/Modal';
 import { useFirestore } from '../hooks/useFirestore';
 import { gradeService, moduleService } from '../services/firestoreService';
 import { Plus, Calculator, Trophy, Info, Trash2, Edit2, TrendingUp } from 'lucide-react';
+import { useNotification } from '../context/NotificationContext';
 
 const Grades = () => {
+    const { showToast, confirm } = useNotification();
     const { data: grades, loading, refresh } = useFirestore(gradeService.getAll);
     const { data: modules } = useFirestore(moduleService.getAll);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -62,9 +64,16 @@ const Grades = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Delete this grade record?')) {
+        const isConfirmed = await confirm({
+            title: 'Delete Grade',
+            message: 'Are you sure you want to delete this grade record?',
+            type: 'warning',
+            confirmLabel: 'Delete'
+        });
+        if (isConfirmed) {
             await gradeService.delete(id);
             await refresh();
+            showToast('Grade record deleted', 'info');
         }
     };
 
@@ -142,7 +151,7 @@ const Grades = () => {
                         return (
                             <Card key={mod.id} title={mod.name} HeaderAction={
                                 <span className={`px-2 py-1 rounded-lg text-xs font-bold ${grade === 'A' ? 'bg-green-100 text-green-600' :
-                                        grade === 'B' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-600'
+                                    grade === 'B' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-600'
                                     }`}>
                                     Current Grade: {grade} ({displayScore}%)
                                 </span>

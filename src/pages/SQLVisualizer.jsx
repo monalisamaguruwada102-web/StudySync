@@ -4,8 +4,10 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { Plus, Trash2, Database, Code, Download, Copy, Table as TableIcon } from 'lucide-react';
+import { useNotification } from '../context/NotificationContext';
 
 const SQLVisualizer = () => {
+    const { showToast } = useNotification();
     const [tables, setTables] = useState([
         {
             id: 't1',
@@ -64,7 +66,7 @@ const SQLVisualizer = () => {
 
     const handleCopySQL = () => {
         navigator.clipboard.writeText(generateSQL());
-        alert('SQL copied to clipboard!');
+        showToast('SQL copied to clipboard!', 'success');
     };
 
     return (

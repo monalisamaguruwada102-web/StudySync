@@ -21,13 +21,14 @@ import {
     Music,
     Trash2
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useTheme } from '../context/ThemeContext';
+import { AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import ThemeSelector from '../components/ThemeSelector';
 
 const Settings = () => {
     const { user } = useAuth();
+    const { showToast, confirm, prompt } = useNotification();
 
 
     // Diagnostic logging for ReferenceError debugging
@@ -96,7 +97,7 @@ const Settings = () => {
             link.remove();
         } catch (error) {
             console.error('Export failed:', error);
-            alert('Export failed. Please try again.');
+            showToast('Export failed. Please try again.', 'error');
         } finally {
             setIsExporting(false);
         }
@@ -106,7 +107,14 @@ const Settings = () => {
         const file = event.target.files[0];
         if (!file) return;
 
-        if (!window.confirm('WARNING: This will overwrite your current database. Are you sure?')) {
+        const isConfirmed = await confirm({
+            title: 'Restore Database',
+            message: 'WARNING: This will replace ALL current data with the contents of the backup file. This action cannot be undone.',
+            type: 'warning',
+            confirmLabel: 'Overwrite & Restore'
+        });
+
+        if (!isConfirmed) {
             event.target.value = null;
             return;
         }
@@ -123,32 +131,46 @@ const Settings = () => {
             setImportStatus('success');
             setTimeout(() => window.location.reload(), 2000);
         } catch (error) {
-            setImportStatus('error');
             console.error('Import failed:', error);
+            setImportStatus('error');
+            showToast('Restore failed: ' + (error.response?.data?.error || error.message), 'error');
         } finally {
             setIsImporting(false);
-            event.target.value = null;
+            event.target.value = '';
         }
     };
 
     const handleDeleteAccount = async () => {
-        const confirm1 = window.confirm('CRITICAL WARNING: This will permanently DELETE your account and ALL associated data (tasks, notes, messages, flashcards, etc.) from BOTH local and cloud storage. This action is IRREVERSIBLE. Are you absolutely sure?');
-        if (!confirm1) return;
+        const isConfirmed = await confirm({
+            title: 'Delete Account',
+            message: 'CRITICAL WARNING: This will permanently DELETE your account and ALL associated data from BOTH local and cloud storage. This action is IRREVERSIBLE.',
+            type: 'error',
+            confirmLabel: 'Delete Forever'
+        });
 
-        const confirm2 = window.prompt('To confirm, please type your email to proceed:');
-        if (confirm2 !== user?.email) {
-            alert('Email does not match. Deletion cancelled.');
+        if (!isConfirmed) return;
+
+        const confirmEmail = await prompt({
+            title: 'Confirm Identity',
+            message: 'To confirm, please type your email to proceed:',
+            placeholder: user?.email
+        });
+
+        if (confirmEmail !== user?.email) {
+            showToast('Email does not match. Deletion cancelled.', 'warning');
             return;
         }
 
         setIsDeletingAccount(true);
         try {
             await api.delete('/user/account');
-            alert('Account deleted successfully. We\'re sorry to see you go.');
-            window.location.href = '/login';
+            showToast('Account deleted. We\'re sorry to see you go.', 'success', 5000);
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 2000);
         } catch (error) {
             console.error('Account deletion failed:', error);
-            alert('Failed to delete account: ' + (error.response?.data?.error || error.message));
+            showToast('Failed to delete account: ' + (error.response?.data?.error || error.message), 'error');
             setIsDeletingAccount(false);
         }
     };

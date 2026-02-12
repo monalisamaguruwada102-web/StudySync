@@ -7,6 +7,7 @@ import Modal from '../components/ui/Modal';
 import { useFirestore } from '../hooks/useFirestore';
 import { taskService, moduleService } from '../services/firestoreService';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import {
     Plus,
     MoreVertical,
@@ -21,6 +22,7 @@ import {
 } from 'lucide-react';
 
 const Kanban = () => {
+    const { showToast, confirm } = useNotification();
     const { data: tasks, refresh: refreshTasks } = useFirestore(taskService.getAll);
     const { data: modules } = useFirestore(moduleService.getAll);
     const { refreshAuth } = useAuth();
@@ -93,9 +95,16 @@ const Kanban = () => {
     };
 
     const deleteTask = async (id) => {
-        if (window.confirm('Delete this task?')) {
+        const isConfirmed = await confirm({
+            title: 'Delete Task',
+            message: 'Are you sure you want to delete this task?',
+            type: 'warning',
+            confirmLabel: 'Delete'
+        });
+        if (isConfirmed) {
             await taskService.delete(id);
             await refreshTasks();
+            showToast('Task deleted', 'info');
         }
     };
 

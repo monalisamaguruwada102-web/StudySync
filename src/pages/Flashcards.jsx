@@ -8,8 +8,10 @@ import { useFirestore } from '../hooks/useFirestore';
 import { flashcardDeckService, flashcardService, moduleService } from '../services/firestoreService';
 import { Plus, Book, Brain, ChevronRight, ChevronLeft, RotateCcw, Check, X, Layers, Play, Sparkles } from 'lucide-react';
 import aiService from '../services/aiService';
+import { useNotification } from '../context/NotificationContext';
 
 const Flashcards = () => {
+    const { showToast } = useNotification();
     const { data: decks, refresh: refreshDecks } = useFirestore(flashcardDeckService.getAll);
     const { data: cards, refresh: refreshCards } = useFirestore(flashcardService.getAll);
     const { data: modules } = useFirestore(moduleService.getAll);
@@ -56,7 +58,7 @@ const Flashcards = () => {
     const startStudy = (deck) => {
         const deckCards = cards.filter(c => c.deckId === deck.id);
         if (deckCards.length === 0) {
-            alert('Add some cards to this deck first!');
+            showToast('Add some cards to this deck first!', 'warning');
             return;
         }
         // Simple spaced repetition filter: lower levels prioritized
@@ -86,13 +88,13 @@ const Flashcards = () => {
             setIsFlipped(false);
         } else {
             setIsStudyMode(false);
-            alert('Study session complete!');
+            showToast('Study session complete!', 'success');
         }
     };
 
     const handleAIGenerateCards = async () => {
         if (!aiContext.trim()) {
-            alert('Please provide some context text for AI generation.');
+            showToast('Please provide some context text for AI generation.', 'warning');
             return;
         }
 
@@ -115,10 +117,10 @@ const Flashcards = () => {
             await refreshCards();
             setIsAIGenModalOpen(false);
             setAiContext('');
-            alert(`Successfully generated ${generatedCards.length} cards!`);
+            showToast(`Successfully generated ${generatedCards.length} cards!`, 'success');
         } catch (error) {
             console.error('AI Generation failed:', error);
-            alert('AI Service failed. Please check your API key.');
+            showToast('AI Service failed. Please check your API key.', 'error');
         } finally {
             setIsGenerating(false);
         }

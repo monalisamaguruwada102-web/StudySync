@@ -9,8 +9,10 @@ import { useFirestore } from '../hooks/useFirestore';
 import { tutorialService, moduleService } from '../services/firestoreService';
 import { Plus, Youtube, Trash2, Book, ExternalLink, Search, LayoutDashboard, Play, Share2, VideoOff } from 'lucide-react';
 import ShareToChatModal from '../components/ui/ShareToChatModal';
+import { useNotification } from '../context/NotificationContext';
 
 const Tutorials = () => {
+    const { showToast, confirm } = useNotification();
     const { data: tutorials, loading, refresh } = useFirestore(tutorialService.getAll);
     const { data: modules } = useFirestore(moduleService.getAll);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,7 +51,7 @@ const Tutorials = () => {
         try {
             const videoId = getYouTubeId(formData.url);
             if (!videoId) {
-                alert('Please enter a valid YouTube URL');
+                showToast('Please enter a valid YouTube URL', 'warning');
                 return;
             }
 
@@ -65,15 +67,23 @@ const Tutorials = () => {
             await refresh();
             setIsModalOpen(false);
             setFormData({ url: '', title: '', moduleId: '', topic: '', description: '' });
+            showToast('Tutorial added successfully', 'success');
         } catch (error) {
-            alert('Error: ' + error.message);
+            showToast('Error: ' + error.message, 'error');
         }
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Delete this tutorial?')) {
+        const isConfirmed = await confirm({
+            title: 'Delete Tutorial',
+            message: 'Are you sure you want to delete this tutorial?',
+            type: 'warning',
+            confirmLabel: 'Delete'
+        });
+        if (isConfirmed) {
             await tutorialService.delete(id);
             await refresh();
+            showToast('Tutorial deleted', 'info');
         }
     };
 
@@ -91,7 +101,7 @@ const Tutorials = () => {
         const url = `${window.location.origin}/tutorials/shared/${tutorial.id}`;
         const shareText = `Check out this tutorial on StudySync: ${tutorial.title}\n${url}`;
         navigator.clipboard.writeText(shareText);
-        alert('External link copied to clipboard!');
+        showToast('External link copied to clipboard!', 'success');
     };
 
     // Shared Tutorial Effect
