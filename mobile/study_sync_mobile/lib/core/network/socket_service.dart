@@ -13,17 +13,19 @@ class SocketService {
 
   Future<void> connect() async {
     final token = await secureStorage.read(key: 'access_token');
-    
-    socket = io.io('http://localhost:8004', io.OptionBuilder()
-      .setTransports(['websocket'])
-      .setAuth({'token': token})
-      .disableAutoConnect()
-      .build());
+
+    socket = io.io(
+        'http://localhost:8004',
+        io.OptionBuilder()
+            .setTransports(['websocket'])
+            .setAuth({'token': token})
+            .disableAutoConnect()
+            .build());
 
     socket.connect();
 
-    socket.onConnect((_) => print('🚀 Connected to WebSocket Gateway'));
-    
+    // socket.onConnect((_) => print('🚀 Connected to WebSocket Gateway'));
+
     socket.on('message_received', (data) {
       _messageController.add({'type': 'new_message', 'data': data});
     });
@@ -42,7 +44,8 @@ class SocketService {
   }
 
   void sendTyping(String conversationId, bool isTyping) {
-    socket.emit('typing', {'conversationId': conversationId, 'isTyping': isTyping});
+    socket.emit(
+        'typing', {'conversationId': conversationId, 'isTyping': isTyping});
   }
 
   void disconnect() {
