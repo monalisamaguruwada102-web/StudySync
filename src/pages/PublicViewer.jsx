@@ -93,16 +93,16 @@ const PublicViewer = () => {
                 >
                     <div className={`w-full h-full transition-all duration-500 transform-style-3d relative ${isFlipped ? 'rotate-y-180' : ''}`}>
                         {/* Front */}
-                        <div className="absolute inset-0 backface-hidden bg-white dark:bg-slate-900 border-2 border-primary-100 dark:border-primary-900/30 rounded-3xl shadow-xl flex flex-col items-center justify-center p-12 text-center">
-                            <p className="text-[10px] uppercase font-bold text-primary-500 mb-4 tracking-widest">Question</p>
-                            <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{currentCard.front}</h3>
-                            <p className="mt-8 text-xs text-slate-400 italic">Click to flip</p>
+                        <div className="absolute inset-0 backface-hidden bg-white dark:bg-slate-900 border-2 border-primary-100 dark:border-primary-900/30 rounded-3xl shadow-xl flex flex-col items-center justify-center p-6 md:p-12 text-center overflow-y-auto custom-scrollbar">
+                            <p className="text-[10px] uppercase font-bold text-primary-500 mb-4 tracking-widest shrink-0">Question</p>
+                            <h3 className="text-lg md:text-2xl font-bold text-slate-800 dark:text-slate-100 break-words w-full">{currentCard.front}</h3>
+                            <p className="mt-8 text-xs text-slate-400 italic shrink-0">Click to flip</p>
                         </div>
                         {/* Back */}
-                        <div className="absolute inset-0 backface-hidden rotate-y-180 bg-primary-50 dark:bg-primary-900/10 border-2 border-primary-200 dark:border-primary-800 rounded-3xl shadow-xl flex flex-col items-center justify-center p-12 text-center">
-                            <p className="text-[10px] uppercase font-bold text-primary-600 dark:text-primary-400 mb-4 tracking-widest">Answer</p>
-                            <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{currentCard.back}</h3>
-                            <p className="mt-8 text-xs text-slate-400 italic">Click to flip back</p>
+                        <div className="absolute inset-0 backface-hidden rotate-y-180 bg-primary-50 dark:bg-primary-900/10 border-2 border-primary-200 dark:border-primary-800 rounded-3xl shadow-xl flex flex-col items-center justify-center p-6 md:p-12 text-center overflow-y-auto custom-scrollbar">
+                            <p className="text-[10px] uppercase font-bold text-primary-600 dark:text-primary-400 mb-4 tracking-widest shrink-0">Answer</p>
+                            <h3 className="text-lg md:text-2xl font-bold text-slate-900 dark:text-slate-100 break-words w-full">{currentCard.back}</h3>
+                            <p className="mt-8 text-xs text-slate-400 italic shrink-0">Click to flip back</p>
                         </div>
                     </div>
                 </div>
