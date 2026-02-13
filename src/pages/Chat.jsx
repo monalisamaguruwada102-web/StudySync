@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Send, Share2, Users, Plus, Search, X, Copy, Check, FileText, Brain, Youtube, ExternalLink, LayoutDashboard, CheckCheck, Play, ArrowDown, RefreshCw, Loader2, Clock, Sparkles, Reply, Bot, GraduationCap } from 'lucide-react';
+import { MessageCircle, Send, Share2, Users, Plus, Search, X, Copy, Check, FileText, Brain, Youtube, ExternalLink, LayoutDashboard, CheckCheck, Play, ArrowDown, RefreshCw, Loader2, Clock, Sparkles, Reply, Bot, GraduationCap, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, isToday, isYesterday, formatDistanceToNow } from 'date-fns';
 import useChat from '../hooks/useChat';
@@ -1382,11 +1382,20 @@ function Chat() {
                                     className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-between group"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center font-bold">
+                                        <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center font-bold relative">
                                             {getInitials(user.email)}
+                                            <div className="absolute -bottom-1 -right-1 bg-yellow-500 text-white text-[8px] font-bold px-1 rounded-full border border-white dark:border-slate-800 flex items-center gap-0.5">
+                                                <Trophy size={8} />
+                                                {user.level || 1}
+                                            </div>
                                         </div>
                                         <div>
-                                            <p className="text-sm font-bold dark:text-slate-100">{user.name || user.email?.split('@')[0]}</p>
+                                            <div className="flex items-center gap-2">
+                                                <p className="text-sm font-bold dark:text-slate-100">{user.name || user.email?.split('@')[0]}</p>
+                                                <span className="text-[10px] font-bold text-amber-500 bg-amber-50 dark:bg-amber-900/20 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800">
+                                                    {user.xp || 0} XP
+                                                </span>
+                                            </div>
                                             <p className="text-[11px] text-slate-500 italic">{user.email}</p>
                                         </div>
                                     </div>
