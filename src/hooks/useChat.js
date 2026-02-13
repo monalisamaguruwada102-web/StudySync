@@ -19,23 +19,34 @@ const useChat = () => {
     const [availableGroups, setAvailableGroups] = useState([]);
     const typingTimeoutRef = useRef({});
 
+    // Helper to normalize conversation properties
+    const mapConversation = useCallback((conv) => ({
+        ...conv,
+        initiatorId: conv.initiator_id || conv.initiatorId,
+        lastMessageTime: conv.last_message_time || conv.lastMessageTime || conv.updated_at,
+        lastMessage: conv.last_message || conv.lastMessage,
+        otherUser: conv.other_user || conv.otherUser,
+        unreadCount: conv.unreadCount || 0
+    }), []);
+
     // Fetch all conversations
     const fetchConversations = useCallback(async () => {
         try {
             const response = await api.get('/conversations');
-            setConversations(response.data);
+            const mappedConversations = (response.data || []).map(mapConversation);
+            setConversations(mappedConversations);
 
-            // Initial unread counts calculation if not provided by server
+            // Initial unread counts calculation
             const counts = {};
-            response.data.forEach(conv => {
-                counts[conv.id] = conv.unreadCount || 0;
+            mappedConversations.forEach(conv => {
+                counts[conv.id] = conv.unreadCount;
             });
             setUnreadCounts(counts);
         } catch (err) {
             console.error('Error fetching conversations:', err);
             setError(err.message);
         }
-    }, []);
+    }, [mapConversation]);
 
     // Fetch available groups
     const fetchAvailableGroups = useCallback(async () => {
@@ -358,13 +369,7 @@ const useChat = () => {
                 // Only add/update if we are a participant
                 if (conv.participants && conv.participants.includes(user.id)) {
                     // Map snake_case to camelCase for consistency
-                    const mappedConv = {
-                        ...conv,
-                        initiatorId: conv.initiator_id || conv.initiatorId,
-                        lastMessageTime: conv.last_message_time || conv.lastMessageTime || conv.updated_at,
-                        lastMessage: conv.last_message || conv.lastMessage,
-                        otherUser: conv.other_user || conv.otherUser
-                    };
+                    const mappedConv = mapConversation(conv);
 
                     setConversations(prev => {
                         const exists = prev.some(c => c.id === mappedConv.id);
@@ -504,6 +509,15 @@ const useChat = () => {
             throw err;
         }
     }, [activeConversation, fetchConversations]);
+
+    // Keep activeConversation in sync with conversations list
+    useEffect(() => {
+        if (!activeConversation) return;
+        const updated = conversations.find(c => c.id === activeConversation.id);
+        if (updated && JSON.stringify(updated) !== JSON.stringify(activeConversation)) {
+            setActiveConversation(updated);
+        }
+    }, [conversations, activeConversation]);
 
     // Initial fetch
     useEffect(() => {
