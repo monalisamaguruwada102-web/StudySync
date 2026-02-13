@@ -309,10 +309,22 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 // Get all users for chat selector
-app.get('/api/users/all', authenticateToken, (req, res) => {
+app.get('/api/users/all', authenticateToken, async (req, res) => {
     try {
-        const users = db.get('users') || [];
-        const safeUsers = users.map(u => ({
+        // Try to fetch from Supabase first (includes profiles and legacy users)
+        let allUsers = null;
+        try {
+            allUsers = await supabasePersistence.getAllProfiles();
+        } catch (err) {
+            console.warn('Failed to fetch from Supabase, falling back to local:', err.message);
+        }
+
+        // Fallback to local DB if Supabase fails or returns nothing
+        if (!allUsers || allUsers.length === 0) {
+            allUsers = db.get('users') || [];
+        }
+
+        const safeUsers = allUsers.map(u => ({
             id: u.id,
             name: u.name,
             email: u.email,
