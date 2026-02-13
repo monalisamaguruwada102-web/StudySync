@@ -357,20 +357,28 @@ const useChat = () => {
 
                 // Only add/update if we are a participant
                 if (conv.participants && conv.participants.includes(user.id)) {
+                    // Map snake_case to camelCase for consistency
+                    const mappedConv = {
+                        ...conv,
+                        initiatorId: conv.initiator_id || conv.initiatorId,
+                        lastMessageTime: conv.last_message_time || conv.lastMessageTime || conv.updated_at,
+                        lastMessage: conv.last_message || conv.lastMessage,
+                        otherUser: conv.other_user || conv.otherUser
+                    };
+
                     setConversations(prev => {
-                        const exists = prev.some(c => c.id === conv.id);
+                        const exists = prev.some(c => c.id === mappedConv.id);
                         if (payload.eventType === 'INSERT') {
                             if (exists) return prev;
-                            return [conv, ...prev];
+                            return [mappedConv, ...prev];
                         } else if (payload.eventType === 'UPDATE') {
-                            return prev.map(c => c.id === conv.id ? { ...c, ...conv } : c);
+                            return prev.map(c => c.id === mappedConv.id ? { ...c, ...mappedConv } : c);
                         }
                         return prev;
                     });
 
                     // Trigger notification for new pending direct requests
-                    const initiatorId = conv.initiator_id || conv.initiatorId;
-                    if (payload.eventType === 'INSERT' && conv.type === 'direct' && initiatorId !== user.id && conv.status === 'pending') {
+                    if (payload.eventType === 'INSERT' && mappedConv.type === 'direct' && mappedConv.initiatorId !== user.id && mappedConv.status === 'pending') {
                         if (Notification.permission === 'granted') {
                             new Notification('New Chat Request', {
                                 body: 'Someone started a new conversation with you.',

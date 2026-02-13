@@ -384,7 +384,7 @@ function Chat() {
 
     // --- Derived State ---
     const directChats = conversations.filter(c =>
-        c.type === 'direct' && (!c.status || c.status === 'active' || (c.status === 'pending' && c.initiatorId === currentUser.id))
+        c.type === 'direct' && (!c.status || c.status === 'active' || (c.status === 'pending' && (c.initiatorId || c.initiator_id) === currentUser.id))
     );
     const joinedGroups = conversations.filter(c => c.type === 'group');
     const pendingRequests = conversations.filter(c =>
@@ -1235,7 +1235,7 @@ function Chat() {
                         <div className="chat-input-container">
                             {activeConversation.status === 'pending' ? (
                                 <div className="p-6 bg-chat-bg dark:bg-slate-800 rounded-2xl border border-chat-border text-center">
-                                    {activeConversation.initiatorId !== currentUser.id ? (
+                                    {(activeConversation.initiatorId || activeConversation.initiator_id) !== currentUser.id ? (
                                         <>
                                             <p className="text-sm font-medium mb-4">
                                                 {activeConversation.type === 'direct' ? (activeConversation.otherUser?.name || 'This user') : 'This group'} wants to connect with you.
