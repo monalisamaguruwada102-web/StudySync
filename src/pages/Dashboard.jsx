@@ -70,7 +70,7 @@ const DashboardHeader = ({ user }) => {
     return (
         <div className="flex items-center justify-between mb-8">
             <div>
-                <h1 className="text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tight mb-2">
+                <h1 className="text-2xl md:text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tight mb-2">
                     {greeting}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-purple-600 dark:from-primary-400 dark:to-purple-400">{user?.name || 'Student'}</span>
                 </h1>
                 <p className="text-slate-500 dark:text-slate-400 font-medium tracking-wide">
@@ -95,7 +95,7 @@ const DashboardHeader = ({ user }) => {
                             initial={{ opacity: 0, y: 10, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                            className="absolute right-0 top-full mt-4 w-96 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50 origin-top-right"
+                            className="absolute right-0 top-full mt-4 w-80 md:w-96 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50 origin-top-right"
                         >
                             <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50 backdrop-blur-sm">
                                 <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -223,7 +223,7 @@ const Dashboard = () => {
                 className={`mb-8 p-1 rounded-[2.5rem] bg-gradient-to-br ${league.gradient || 'from-slate-200 to-slate-100'} shadow-2xl relative overflow-hidden group`}
             >
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-150 contrast-150 mix-blend-overlay"></div>
-                <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-[2.2rem] p-8 flex flex-col md:flex-row items-center justify-between gap-8 h-full relative z-10">
+                <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-[2.2rem] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-8 h-full relative z-10">
                     <div className="flex items-center gap-6 text-center md:text-left">
                         <div className={`w-20 h-20 rounded-2xl flex items-center justify-center text-white shadow-2xl shadow-primary-500/40 relative overflow-hidden ${league.color.replace('text', 'bg').replace('-400', '-500')}`}>
                             <Trophy size={40} className="relative z-10 drop-shadow-md" />

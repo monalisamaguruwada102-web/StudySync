@@ -114,12 +114,12 @@ const Modules = () => {
 
     return (
         <Layout title="Module Management">
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-8">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Academic Modules</h1>
                     <p className="text-slate-500 dark:text-slate-400">Track and manage your study modules and targets.</p>
                 </div>
-                <Button onClick={() => handleOpenModal()} className="flex items-center gap-2">
+                <Button onClick={() => handleOpenModal()} className="flex items-center gap-2 w-full sm:w-auto justify-center">
                     <Plus size={20} />
                     <span>Add Module</span>
                 </Button>
