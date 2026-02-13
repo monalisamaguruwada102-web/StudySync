@@ -597,901 +597,905 @@ function Chat() {
 
     // --- Handlers ---
     async function fetchUsers() {
-        setIsRefreshingUsers(true);
-        try {
-            const response = await api.get('/users/all');
-            setUsers(response.data.filter(u => u.id !== currentUser.id));
-        } catch (error) {
-            console.error('Error fetching users:', error);
-        } finally {
-            setIsRefreshingUsers(false);
-        }
-    }
-
-    async function handleJoinGroupById(invCode) {
-        try {
-            const result = await joinGroup(invCode);
-            showToast('Successfully joined group!', 'success'); // Use toast instead of alert for consistency
-
-            // Switch to groups tab
-            setActiveTab('groups');
-
-            // Select the conversation
-            if (result.conversationId) {
-                // We use a small timeout to allow useChat to refresh conversations
-                setTimeout(() => {
-                    const joinedConv = result.group ? {
-                        id: result.conversationId,
-                        type: 'group',
-                        groupId: result.group.id,
-                        groupName: result.group.name,
-                        participants: result.group.members
-                    } : null;
-
-                    if (joinedConv) {
-                        setActiveConversation(joinedConv);
-                    }
-                }, 100);
+        // Simplified logic: filter current user on frontend, backend returns all
+        async function fetchUsers() {
+            setIsRefreshingUsers(true);
+            try {
+                const response = await api.get('/users/all');
+                setUsers(response.data.filter(u => u.id !== currentUser.id));
+            } catch (error) {
+                console.error('Error fetching users:', error);
+                // Fallback: If /users/all fails, we rely on active conversations to populate known users
+            } finally {
+                setIsRefreshingUsers(false);
             }
-        } catch (error) {
-            const errorMsg = error.response?.data?.error || error.message || 'Failed to join group';
-            showToast(errorMsg, 'error');
         }
-    }
 
-    function handleInputChange(e) {
-        setMessageInput(e.target.value);
-        if (activeConversation) {
-            sendTyping(activeConversation.id, e.target.value.length > 0);
+        async function handleJoinGroupById(invCode) {
+            try {
+                const result = await joinGroup(invCode);
+                showToast('Successfully joined group!', 'success'); // Use toast instead of alert for consistency
+
+                // Switch to groups tab
+                setActiveTab('groups');
+
+                // Select the conversation
+                if (result.conversationId) {
+                    // We use a small timeout to allow useChat to refresh conversations
+                    setTimeout(() => {
+                        const joinedConv = result.group ? {
+                            id: result.conversationId,
+                            type: 'group',
+                            groupId: result.group.id,
+                            groupName: result.group.name,
+                            participants: result.group.members
+                        } : null;
+
+                        if (joinedConv) {
+                            setActiveConversation(joinedConv);
+                        }
+                    }, 100);
+                }
+            } catch (error) {
+                const errorMsg = error.response?.data?.error || error.message || 'Failed to join group';
+                showToast(errorMsg, 'error');
+            }
         }
-    }
 
-    async function handleSendMessage() {
-        if (!messageInput.trim() || !activeConversation) return;
-        try {
-            await sendMessage(activeConversation.id, messageInput, 'text', null, replyTo || undefined);
-            setMessageInput('');
-            setReplyTo(null);
-            sendTyping(activeConversation.id, false);
-        } catch (error) {
-            console.error('Error sending message:', error);
+        function handleInputChange(e) {
+            setMessageInput(e.target.value);
+            if (activeConversation) {
+                sendTyping(activeConversation.id, e.target.value.length > 0);
+            }
         }
-    }
 
-    async function handleSelectUser(userId) {
-        try {
-            const conversation = await createDirectConversation(userId);
-            setActiveConversation(conversation);
-            setShowUserSelector(false);
-        } catch (error) {
-            console.error('Error creating conversation:', error);
+        async function handleSendMessage() {
+            if (!messageInput.trim() || !activeConversation) return;
+            try {
+                await sendMessage(activeConversation.id, messageInput, 'text', null, replyTo || undefined);
+                setMessageInput('');
+                setReplyTo(null);
+                sendTyping(activeConversation.id, false);
+            } catch (error) {
+                console.error('Error sending message:', error);
+            }
         }
-    }
 
-    async function handleSendVoice(blob, durationInSeconds) {
-        if (!activeConversation) return;
+        async function handleSelectUser(userId) {
+            try {
+                const conversation = await createDirectConversation(userId);
+                setActiveConversation(conversation);
+                setShowUserSelector(false);
+            } catch (error) {
+                console.error('Error creating conversation:', error);
+            }
+        }
 
-        const formatDuration = (seconds) => {
-            const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        async function handleSendVoice(blob, durationInSeconds) {
+            if (!activeConversation) return;
+
+            const formatDuration = (seconds) => {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            };
+
+            try {
+                const formData = new FormData();
+                formData.append('file', blob, 'voice-note.webm');
+
+                const uploadRes = await api.post('/upload', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+
+                await sendMessage(
+                    activeConversation.id,
+                    uploadRes.data.filePath,
+                    'voice',
+                    null,
+                    replyTo || undefined,
+                    { duration: formatDuration(durationInSeconds || 0) }
+                );
+                setReplyTo(null);
+            } catch (err) {
+                console.error('Error sending voice note:', err);
+                showToast('Failed to send voice note', 'error');
+            }
+        }
+
+        async function handleFileUpload(e) {
+            const file = e.target.files?.[0];
+            if (!file || !activeConversation) return;
+
+            setUploadingAttachment(true);
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const uploadRes = await api.post('/upload', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+
+                let type = 'file';
+                if (file.type.startsWith('image/')) type = 'image';
+                else if (file.type.startsWith('audio/')) type = 'voice';
+
+                await sendMessage(
+                    activeConversation.id,
+                    uploadRes.data.filePath,
+                    type,
+                    null,
+                    replyTo || undefined,
+                    {
+                        fileName: file.name,
+                        fileSize: (file.size / 1024).toFixed(1) + ' KB',
+                        mimeType: file.type
+                    }
+                );
+                setReplyTo(null);
+            } catch (err) {
+                console.error('Error uploading file:', err);
+                showToast('Failed to upload file', 'error');
+            } finally {
+                setUploadingAttachment(false);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+            }
+        }
+
+        async function handleCreateGroup() {
+            if (!groupName.trim()) return;
+            try {
+                const result = await createGroup(groupName, groupDescription);
+                setActiveConversation(result.conversation);
+                setGroupName('');
+                setGroupDescription('');
+                setShowGroupModal(false);
+                alert(`Group "${groupName}" created successfully!\n\nInvite Code: ${result.group.inviteCode}\n\nShare this code with your friends so they can join!`);
+            } catch (error) {
+                console.error('Error creating group:', error);
+                const errorMsg = error.response?.data?.error || error.message || 'Failed to create group';
+                showToast(errorMsg, 'error');
+            }
+        }
+
+        async function handleJoinGroup() {
+            if (!inviteCode.trim()) return;
+            try {
+                const result = await joinGroup(inviteCode);
+                setInviteCode('');
+                setShowJoinGroup(false);
+
+                // 1. Success feedback
+                if (result.alreadyMember) {
+                    showToast('You are already a member of this group!', 'info');
+                } else {
+                    showToast('Successfully joined group!', 'success');
+                }
+
+                // 2. Switch to groups tab
+                setActiveTab('groups');
+
+                // 3. Select the conversation
+                if (result.conversationId) {
+                    // We use a small timeout to allow useChat to refresh conversations
+                    setTimeout(() => {
+                        const joinedConv = result.group ? {
+                            id: result.conversationId,
+                            type: 'group',
+                            groupId: result.group.id,
+                            groupName: result.group.name,
+                            participants: result.group.members
+                        } : null;
+
+                        if (joinedConv) {
+                            setActiveConversation(joinedConv);
+                        }
+                    }, 100);
+                }
+            } catch (error) {
+                console.error('Error joining group:', error);
+                const errorMsg = error.response?.data?.error || error.message || 'Failed to join group';
+                showToast(errorMsg, 'error');
+            }
+        }
+
+        function handleCopyInviteCode(code) {
+            if (!code) return;
+            navigator.clipboard.writeText(code);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+
+        async function handleOpenResource(resource) {
+            setViewerLoading(true);
+            setShowResourceViewer(true);
+            setSelectedResourceData(null);
+            try {
+                let endpoint = '';
+                switch (resource.type) {
+                    // Use generic endpoints, not shared-specific ones which don't exist
+                    case 'note': endpoint = `/notes/${resource.resourceId}`; break;
+                    case 'flashcard': endpoint = `/flashcardDecks/${resource.resourceId}`; break;
+                    case 'tutorial': endpoint = `/tutorials/${resource.resourceId}`; break;
+                    default: throw new Error('Unknown resource type');
+                }
+                const response = await api.get(endpoint);
+                setSelectedResourceData({ ...response.data, type: resource.type });
+            } catch (error) {
+                console.error('Error fetching resource details:', error);
+                const errorMsg = error.response?.data?.error || error.message || 'Failed to load resource details. It might have been deleted.';
+                showToast(errorMsg, 'error');
+                setShowResourceViewer(false);
+            } finally {
+                setViewerLoading(false);
+            }
+        }
+
+        async function handleRequestResponse(status) {
+            if (!activeConversation) return;
+            try {
+                await respondToRequest(activeConversation.id, status);
+                if (status === 'rejected') {
+                    setActiveConversation(null);
+                } else if (status === 'active') {
+                    setActiveConversation(prev => ({ ...prev, status: 'active' }));
+                }
+            } catch (error) {
+                console.error('Error responding:', error);
+            }
+        }
+
+        async function handleDeleteConversation() {
+            if (!activeConversation) return;
+            setIsDeleting(true);
+            try {
+                await deleteConversation(activeConversation.id);
+                showToast('Conversation deleted', 'success');
+                setShowDeleteConfirm(false);
+            } catch (err) {
+                showToast('Failed to delete conversation', 'error');
+            } finally {
+                setIsDeleting(false);
+            }
+        }
+
+        // --- Derived ---
+        // --- Avatar Helper ---
+        const renderAvatar = (name, isOnline = false, isGroup = false) => {
+            let initials = '?';
+            if (name) {
+                if (name.includes('@')) {
+                    initials = name.split('@')[0].substring(0, 2).toUpperCase();
+                } else {
+                    initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                }
+            }
+            return (
+                <div className="relative flex-shrink-0 group">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg transition-transform group-hover:scale-105
+                    ${isGroup ? 'bg-gradient-to-br from-emerald-400 to-teal-600' : 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-blue-500/20'}`}>
+                        {isGroup ? <Users size={24} /> : initials}
+                    </div>
+                    {!isGroup && isOnline && (
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-chat-success border-2 border-white dark:border-slate-800 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse" />
+                    )}
+                </div>
+            );
         };
 
-        try {
-            const formData = new FormData();
-            formData.append('file', blob, 'voice-note.webm');
 
-            const uploadRes = await api.post('/upload', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-
-            await sendMessage(
-                activeConversation.id,
-                uploadRes.data.filePath,
-                'voice',
-                null,
-                replyTo || undefined,
-                { duration: formatDuration(durationInSeconds || 0) }
-            );
-            setReplyTo(null);
-        } catch (err) {
-            console.error('Error sending voice note:', err);
-            showToast('Failed to send voice note', 'error');
-        }
-    }
-
-    async function handleFileUpload(e) {
-        const file = e.target.files?.[0];
-        if (!file || !activeConversation) return;
-
-        setUploadingAttachment(true);
-        try {
-            const formData = new FormData();
-            formData.append('file', file);
-
-            const uploadRes = await api.post('/upload', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-
-            let type = 'file';
-            if (file.type.startsWith('image/')) type = 'image';
-            else if (file.type.startsWith('audio/')) type = 'voice';
-
-            await sendMessage(
-                activeConversation.id,
-                uploadRes.data.filePath,
-                type,
-                null,
-                replyTo || undefined,
-                {
-                    fileName: file.name,
-                    fileSize: (file.size / 1024).toFixed(1) + ' KB',
-                    mimeType: file.type
-                }
-            );
-            setReplyTo(null);
-        } catch (err) {
-            console.error('Error uploading file:', err);
-            showToast('Failed to upload file', 'error');
-        } finally {
-            setUploadingAttachment(false);
-            if (fileInputRef.current) fileInputRef.current.value = '';
-        }
-    }
-
-    async function handleCreateGroup() {
-        if (!groupName.trim()) return;
-        try {
-            const result = await createGroup(groupName, groupDescription);
-            setActiveConversation(result.conversation);
-            setGroupName('');
-            setGroupDescription('');
-            setShowGroupModal(false);
-            alert(`Group "${groupName}" created successfully!\n\nInvite Code: ${result.group.inviteCode}\n\nShare this code with your friends so they can join!`);
-        } catch (error) {
-            console.error('Error creating group:', error);
-            const errorMsg = error.response?.data?.error || error.message || 'Failed to create group';
-            showToast(errorMsg, 'error');
-        }
-    }
-
-    async function handleJoinGroup() {
-        if (!inviteCode.trim()) return;
-        try {
-            const result = await joinGroup(inviteCode);
-            setInviteCode('');
-            setShowJoinGroup(false);
-
-            // 1. Success feedback
-            if (result.alreadyMember) {
-                showToast('You are already a member of this group!', 'info');
-            } else {
-                showToast('Successfully joined group!', 'success');
-            }
-
-            // 2. Switch to groups tab
-            setActiveTab('groups');
-
-            // 3. Select the conversation
-            if (result.conversationId) {
-                // We use a small timeout to allow useChat to refresh conversations
-                setTimeout(() => {
-                    const joinedConv = result.group ? {
-                        id: result.conversationId,
-                        type: 'group',
-                        groupId: result.group.id,
-                        groupName: result.group.name,
-                        participants: result.group.members
-                    } : null;
-
-                    if (joinedConv) {
-                        setActiveConversation(joinedConv);
-                    }
-                }, 100);
-            }
-        } catch (error) {
-            console.error('Error joining group:', error);
-            const errorMsg = error.response?.data?.error || error.message || 'Failed to join group';
-            showToast(errorMsg, 'error');
-        }
-    }
-
-    function handleCopyInviteCode(code) {
-        if (!code) return;
-        navigator.clipboard.writeText(code);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    }
-
-    async function handleOpenResource(resource) {
-        setViewerLoading(true);
-        setShowResourceViewer(true);
-        setSelectedResourceData(null);
-        try {
-            let endpoint = '';
-            switch (resource.type) {
-                case 'note': endpoint = `/notes/shared/${resource.resourceId}`; break;
-                case 'flashcard': endpoint = `/flashcardDecks/shared/${resource.resourceId}`; break; // Assuming flashcards also need shared endpoint, verifying next
-                case 'tutorial': endpoint = `/tutorials/shared/${resource.resourceId}`; break;
-                default: throw new Error('Unknown resource type');
-            }
-            const response = await api.get(endpoint);
-            setSelectedResourceData({ ...response.data, type: resource.type });
-        } catch (error) {
-            console.error('Error fetching resource details:', error);
-            const errorMsg = error.response?.data?.error || error.message || 'Failed to load resource details. It might have been deleted.';
-            showToast(errorMsg, 'error');
-            setShowResourceViewer(false);
-        } finally {
-            setViewerLoading(false);
-        }
-    }
-
-    async function handleRequestResponse(status) {
-        if (!activeConversation) return;
-        try {
-            await respondToRequest(activeConversation.id, status);
-            if (status === 'rejected') {
-                setActiveConversation(null);
-            } else if (status === 'active') {
-                setActiveConversation(prev => ({ ...prev, status: 'active' }));
-            }
-        } catch (error) {
-            console.error('Error responding:', error);
-        }
-    }
-
-    async function handleDeleteConversation() {
-        if (!activeConversation) return;
-        setIsDeleting(true);
-        try {
-            await deleteConversation(activeConversation.id);
-            showToast('Conversation deleted', 'success');
-            setShowDeleteConfirm(false);
-        } catch (err) {
-            showToast('Failed to delete conversation', 'error');
-        } finally {
-            setIsDeleting(false);
-        }
-    }
-
-    // --- Derived ---
-    // --- Avatar Helper ---
-    const renderAvatar = (name, isOnline = false, isGroup = false) => {
-        let initials = '?';
-        if (name) {
-            if (name.includes('@')) {
-                initials = name.split('@')[0].substring(0, 2).toUpperCase();
-            } else {
-                initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-            }
-        }
         return (
-            <div className="relative flex-shrink-0 group">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black text-xl shadow-lg transition-transform group-hover:scale-105
-                    ${isGroup ? 'bg-gradient-to-br from-emerald-400 to-teal-600' : 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-blue-500/20'}`}>
-                    {isGroup ? <Users size={24} /> : initials}
+            <div className="chat-app-container">
+                {/* 1. Sidebar */}
+                <aside className={`chat-sidebar ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
+                    {/* Sidebar Header */}
+                    <div className="p-6 border-b border-chat-border">
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-xl shadow-primary-500/30 relative overflow-hidden group hover:scale-105 transition-transform duration-300">
+                                    <GraduationCap size={24} className="relative z-10" />
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent" />
+                                </div>
+                                <span className="font-bold text-lg tracking-tight dark:text-white">StudySync</span>
+                            </div>
+                            <button
+                                onClick={() => navigate('/')}
+                                className="p-2 hover:bg-chat-bg rounded-lg transition-colors text-chat-text-muted"
+                            >
+                                <LayoutDashboard size={20} />
+                            </button>
+                        </div>
+
+                        {/* Search Bar */}
+                        <div className="relative mb-6">
+                            <input
+                                type="text"
+                                placeholder="Search messages..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-chat-bg dark:bg-slate-800 border border-chat-border rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-chat-primary/20 outline-none transition-all dark:text-white"
+                            />
+                            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-chat-text-muted" />
+                        </div>
+
+                        {/* Tabs */}
+                        <div className="flex p-1 bg-chat-bg dark:bg-slate-800 rounded-xl gap-1">
+                            {['chats', 'groups', 'explore', 'requests'].map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setActiveTab(tab)}
+                                    className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all tab-btn ${activeTab === tab
+                                        ? 'bg-chat-surface dark:bg-slate-700 shadow-sm text-chat-primary active'
+                                        : 'text-chat-text-muted hover:text-chat-text-primary'}`}
+                                >
+                                    {tab === 'requests' ? 'Inbox' : tab}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Conversation List */}
+                    <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+                        {activeTab === 'explore' ? (
+                            <div className="p-2 space-y-3">
+                                {availableGroups.length === 0 ? (
+                                    <div className="text-center py-10 opacity-30">
+                                        <Users size={32} className="mx-auto mb-2 dark:text-slate-400" />
+                                        <p className="text-xs dark:text-slate-500">No public groups</p>
+                                    </div>
+                                ) : (
+                                    availableGroups.map(group => (
+                                        <div key={group.id} className="p-4 bg-chat-bg dark:bg-slate-800 rounded-2xl border border-chat-border hover:shadow-md transition-all">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <span className="font-bold text-sm dark:text-white">{group.name}</span>
+                                                <span className="text-[10px] bg-chat-primary/10 text-chat-primary px-2 py-0.5 rounded-full font-bold uppercase">
+                                                    {group.members?.length || 0} Members
+                                                </span>
+                                            </div>
+                                            <p className="text-[11px] text-chat-text-muted mb-3 line-clamp-2 leading-relaxed">{group.description}</p>
+                                            <button
+                                                onClick={() => handleJoinGroupById(group.inviteCode)}
+                                                className="w-full py-1.5 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700 shadow-md shadow-purple-500/10 transition-colors"
+                                            >
+                                                Join Group
+                                            </button>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        ) : displayList.length === 0 ? (
+                            <div className="text-center py-16 opacity-20">
+                                <MessageCircle size={40} className="mx-auto mb-2 dark:text-slate-400" />
+                                <p className="text-sm font-medium dark:text-slate-500">Clear for now</p>
+                            </div>
+                        ) : (
+                            displayList.map((conv) => {
+                                const display = getConversationDisplay(conv);
+                                return (
+                                    <div
+                                        key={conv.id}
+                                        onClick={() => setActiveConversation(conv)}
+                                        className={`p-3 rounded-2xl cursor-pointer transition-all flex items-center gap-3 mb-1 group relative ${activeConversation?.id === conv.id
+                                            ? 'bg-chat-primary/5 border-chat-primary/20 border'
+                                            : 'hover:bg-chat-bg dark:hover:bg-slate-800 border-transparent border'}`}
+                                    >
+                                        <div className="relative">
+                                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold shadow-sm ${conv.type === 'group' ? 'bg-emerald-500 text-white' : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
+                                                {conv.type === 'group' ? <Users size={20} /> : getInitials(display.title)}
+                                            </div>
+                                            {display.otherUser?.id && onlineUsers.has(display.otherUser.id) && (
+                                                <span className="absolute -bottom-1 -right-1 block h-3.5 w-3.5 rounded-full bg-chat-success border-2 border-chat-surface dark:border-slate-800 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                            )}
+                                        </div>
+
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between mb-0.5">
+                                                <span className={`text-sm font-bold truncate ${activeConversation?.id === conv.id ? 'text-red-600 font-black' : 'text-red-500'}`}>
+                                                    {display.title}
+                                                </span>
+                                                {conv.lastMessageTime && (
+                                                    <span className="text-[10px] text-chat-text-muted whitespace-nowrap">
+                                                        {formatLastMessageTime(conv.lastMessageTime)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <p className={`text-[12px] truncate text-chat-text-muted ${unreadCounts[conv.id] > 0 ? 'font-bold text-chat-text-primary dark:text-white' : ''}`}>
+                                                    {conv.lastMessage || 'No messages yet'}
+                                                </p>
+                                                {unreadCounts[conv.id] > 0 && (
+                                                    <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-lg min-w-[18px] text-center shadow-md shadow-red-500/20">
+                                                        {unreadCounts[conv.id]}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {activeConversation?.id === conv.id && (
+                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-chat-primary rounded-r-full shadow-[2px_0_10px_rgba(37,99,235,0.4)]" />
+                                        )}
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
+
+                    {/* Sidebar Footer */}
+                    <div className="p-4 border-t border-chat-border bg-chat-bg/30 dark:bg-slate-900/30">
+                        <button
+                            onClick={() => setShowUserSelector(true)}
+                            className="w-full flex items-center justify-center gap-2 py-3 bg-purple-600 text-white rounded-xl font-bold text-sm hover:bg-purple-700 shadow-lg shadow-purple-500/10 transition-all active:scale-[0.98]"
+                        >
+                            <Plus size={18} />
+                            New Message
+                        </button>
+                        {isAdmin && (
+                            <button
+                                onClick={() => setShowGroupModal(true)}
+                                className="w-full mt-2 flex items-center justify-center gap-2 py-2.5 bg-chat-surface dark:bg-slate-800 text-chat-primary border border-chat-primary/20 rounded-xl font-bold text-[13px] hover:bg-chat-bg transition-all"
+                            >
+                                <Plus size={16} />
+                                Create Group
+                            </button>
+                        )}
+                    </div>
+                </aside>
+
+                {/* 2. Main Panel */}
+                <main className="chat-main-panel">
+                    {activeConversation ? (
+                        <>
+                            {/* Chat Header */}
+                            <header className="px-6 py-4 bg-chat-surface dark:bg-slate-900 border-b border-chat-border flex items-center justify-between sticky top-0 z-10 shadow-sm shadow-black/5">
+                                <div className="flex items-center gap-4">
+                                    <button onClick={() => setActiveConversation(null)} className="md:hidden p-2 -ml-2 text-chat-text-muted hover:text-chat-text-primary">
+                                        <ArrowDown size={20} className="rotate-90" />
+                                    </button>
+                                    <div className="relative cursor-pointer" onClick={() => activeConversation.type === 'group' && setShowGroupInfo(true)}>
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${activeConversation.type === 'group' ? 'bg-blue-100 dark:bg-blue-900/30 text-chat-primary' : 'bg-red-100 dark:bg-red-900/30 text-red-600'}`}>
+                                            {activeConversation.type === 'group' ? <Users size={20} /> : getInitials(getConversationDisplay(activeConversation).title)}
+                                        </div>
+                                        {activeConversation.type !== 'group' && onlineUsers.has(getConversationDisplay(activeConversation).otherUser?.id) && (
+                                            <span className="absolute bottom-0 right-0 w-3 h-3 bg-chat-success border-2 border-white dark:border-slate-900 rounded-full" />
+                                        )}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <h2 className="font-bold text-red-600 dark:text-red-400 text-base truncate leading-none mb-1">
+                                            {getConversationDisplay(activeConversation).title}
+                                        </h2>
+                                        <div className="flex items-center gap-1.5 h-4">
+                                            {activeConversation.type === 'group' ? (
+                                                <span className="text-[11px] text-chat-text-muted font-medium">{activeConversation.participants?.length} members</span>
+                                            ) : onlineUsers.has(getConversationDisplay(activeConversation).otherUser?.id) ? (
+                                                <div className="flex items-center gap-1.5">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-chat-success animate-pulse" />
+                                                    <span className="text-[11px] text-chat-success font-bold uppercase tracking-wider">Online</span>
+                                                </div>
+                                            ) : (
+                                                <span className="text-[11px] text-chat-text-muted font-medium italic">
+                                                    {formatLastSeen(getConversationDisplay(activeConversation).otherUser?.last_seen_at)}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    {sessionStartTime && (
+                                        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-chat-bg dark:bg-slate-800 rounded-full border border-chat-border mr-2">
+                                            <Clock size={12} className="text-chat-primary" />
+                                            <span className="text-[11px] font-mono font-bold text-chat-primary">{sessionDuration}</span>
+                                        </div>
+                                    )}
+                                    <button
+                                        onClick={() => {
+                                            setShowSearchInChat(!showSearchInChat);
+                                            if (!showSearchInChat) {
+                                                setTimeout(() => searchInputRef.current?.focus(), 100);
+                                            }
+                                        }}
+                                        className={`p-2 rounded-lg transition-colors btn-hover-lift ${showSearchInChat ? 'bg-chat-primary/20 text-chat-primary shadow-sm' : 'text-chat-text-muted hover:text-chat-primary hover:bg-chat-bg'}`}
+                                    >
+                                        <Search size={20} />
+                                    </button>
+                                    <button className="p-2 text-chat-text-muted btn-call btn-hover-lift rounded-lg transition-colors"><Phone size={20} /></button>
+                                    <button className="p-2 text-chat-text-muted btn-video btn-hover-lift rounded-lg transition-colors"><Video size={20} /></button>
+                                    <div className="relative group/menu">
+                                        <button className="p-2 text-chat-text-muted hover:text-chat-text-primary btn-hover-lift rounded-lg transition-colors"><MoreVertical size={20} /></button>
+                                        <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl py-2 hidden group-hover/menu:block z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                            <button
+                                                onClick={() => setShowDeleteConfirm(true)}
+                                                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center gap-2 font-medium"
+                                            >
+                                                <X size={16} />
+                                                Delete Conversation
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </header>
+
+                            {/* In-Chat Search Bar */}
+                            <AnimatePresence>
+                                {showSearchInChat && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        className="px-4 py-2 bg-chat-bg dark:bg-slate-800 border-b border-chat-border overflow-hidden"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex-1 relative">
+                                                <input
+                                                    ref={searchInputRef}
+                                                    type="text"
+                                                    placeholder="Search messages..."
+                                                    value={searchInChatQuery}
+                                                    onChange={(e) => {
+                                                        setSearchInChatQuery(e.target.value);
+                                                        setCurrentSearchIndex(-1);
+                                                    }}
+                                                    className="w-full h-8 bg-chat-surface dark:bg-slate-900 border border-chat-border rounded-lg pl-8 pr-4 text-sm focus:ring-1 focus:ring-chat-primary outline-none dark:text-white"
+                                                />
+                                                <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-chat-text-muted" />
+                                            </div>
+                                            {searchResults.length > 0 && (
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[11px] font-medium text-chat-text-muted">
+                                                        {currentSearchIndex + 1} of {searchResults.length}
+                                                    </span>
+                                                    <div className="flex items-center border border-chat-border rounded-lg overflow-hidden bg-chat-surface dark:bg-slate-900">
+                                                        <button
+                                                            onClick={() => handleSearchNavigate('prev')}
+                                                            className="p-1 hover:bg-chat-bg text-chat-text-muted transition-colors"
+                                                        >
+                                                            <ArrowDown className="rotate-180" size={14} />
+                                                        </button>
+                                                        <div className="w-[1px] h-4 bg-chat-border" />
+                                                        <button
+                                                            onClick={() => handleSearchNavigate('next')}
+                                                            className="p-1 hover:bg-chat-bg text-chat-text-muted transition-colors"
+                                                        >
+                                                            <ArrowDown size={14} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            <button
+                                                onClick={() => {
+                                                    setShowSearchInChat(false);
+                                                    setSearchInChatQuery('');
+                                                    setCurrentSearchIndex(-1);
+                                                }}
+                                                className="text-[11px] font-bold text-chat-text-muted hover:text-chat-text-primary"
+                                            >
+                                                CANCEL
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
+                            {/* Messages Area */}
+                            <div
+                                className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar relative"
+                                ref={scrollContainerRef}
+                                onScroll={handleScroll}
+                            >
+                                <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: `radial-gradient(var(--chat-primary) 1px, transparent 1px)`, backgroundSize: '20px 20px' }} />
+
+                                {messages.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center h-full opacity-30 gap-4">
+                                        <div className="w-16 h-16 bg-chat-bg rounded-3xl flex items-center justify-center">
+                                            <MessageCircle size={32} className="dark:text-slate-400" />
+                                        </div>
+                                        <p className="text-sm font-medium dark:text-slate-500">No messages yet</p>
+                                    </div>
+                                ) : (
+                                    messages.map((msg, idx) => (
+                                        <MessageBubble
+                                            key={msg.id || idx}
+                                            message={msg}
+                                            isOwn={msg.senderId === currentUser.id}
+                                            handleOpenResource={handleOpenResource}
+                                            formatTime={formatMessageTime}
+                                            onReply={handleReply}
+                                            onScrollToMessage={scrollToMessage}
+                                            messageRef={(el) => { if (msg.id) messageRefs.current[msg.id] = el; }}
+                                            highlightQuery={searchInChatQuery}
+                                            onReact={toggleReaction}
+                                        />
+                                    ))
+                                )}
+
+                                {getTypingText() && (
+                                    <div className="flex items-center gap-2 ml-4 mb-4 text-xs text-chat-text-muted italic animate-pulse">
+                                        <div className="flex gap-0.5">
+                                            <div className="w-1 h-1 bg-chat-text-muted rounded-full"></div>
+                                            <div className="w-1 h-1 bg-chat-text-muted rounded-full animate-bounce"></div>
+                                            <div className="w-1 h-1 bg-chat-text-muted rounded-full"></div>
+                                        </div>
+                                        {getTypingText()}
+                                    </div>
+                                )}
+                                <div ref={messagesEndRef} className="h-4" />
+
+                                {/* Scroll to Bottom Button */}
+                                <AnimatePresence>
+                                    {!isAtBottom && (
+                                        <motion.button
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.8 }}
+                                            onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                                            className="fixed bottom-24 right-8 p-3 bg-chat-surface dark:bg-slate-800 border border-chat-border rounded-full shadow-lg text-chat-primary hover:bg-chat-bg transition-colors z-20"
+                                        >
+                                            <ArrowDown size={20} />
+                                        </motion.button>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
+                            {/* Input Area */}
+                            <div className="chat-input-container">
+                                {activeConversation.status === 'pending' ? (
+                                    <div className="p-6 bg-chat-bg dark:bg-slate-800 rounded-2xl border border-chat-border text-center">
+                                        {(activeConversation.initiatorId || activeConversation.initiator_id) !== currentUser.id ? (
+                                            <>
+                                                <p className="text-sm font-medium mb-4">
+                                                    {activeConversation.type === 'direct' ? (activeConversation.otherUser?.name || 'This user') : 'This group'} wants to connect with you.
+                                                </p>
+                                                <div className="flex gap-3 justify-center">
+                                                    <button onClick={() => handleRequestResponse('active')} className="px-6 py-2 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all shadow-lg shadow-green-500/20">Accept</button>
+                                                    <button onClick={() => handleRequestResponse('rejected')} className="px-6 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold hover:bg-slate-300 dark:hover:bg-slate-600 transition-all">Decline</button>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="flex flex-col items-center gap-2 opacity-60">
+                                                <Clock size={24} className="animate-pulse text-chat-primary" />
+                                                <p className="text-sm font-medium">Waiting for them to accept your request...</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <>
+                                        <AnimatePresence>
+                                            {replyTo && (
+                                                <motion.div
+                                                    initial={{ height: 0, opacity: 0 }}
+                                                    animate={{ height: 'auto', opacity: 1 }}
+                                                    exit={{ height: 0, opacity: 0 }}
+                                                    className="mb-3 p-3 bg-chat-bg dark:bg-slate-800 rounded-xl border-l-4 border-chat-primary flex items-center justify-between overflow-hidden"
+                                                >
+                                                    <div className="min-w-0">
+                                                        <p className="text-[10px] font-bold text-chat-primary uppercase tracking-wider mb-0.5">Replying to {replyTo.senderName}</p>
+                                                        <p className="text-xs text-chat-text-muted truncate">{replyTo.content}</p>
+                                                    </div>
+                                                    <button onClick={() => setReplyTo(null)} className="p-1.5 hover:bg-chat-border rounded-full text-chat-text-muted">
+                                                        <X size={14} />
+                                                    </button>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+
+                                        <div className="chat-input-pill">
+                                            <button className="p-2 text-chat-text-muted btn-attach btn-hover-lift transition-colors" title="Attach file" onClick={() => fileInputRef.current?.click()}>
+                                                <Paperclip size={20} />
+                                            </button>
+                                            <button onClick={() => setShowResourceShare(true)} className="p-2 text-chat-text-muted btn-resource btn-hover-lift transition-colors" title="Share resource">
+                                                <Hash size={20} />
+                                            </button>
+                                            <input
+                                                type="file"
+                                                ref={fileInputRef}
+                                                onChange={handleFileUpload}
+                                                className="hidden"
+                                            />
+                                            <div className="flex-1 relative">
+                                                <textarea
+                                                    value={messageInput}
+                                                    onChange={handleInputChange}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                                            e.preventDefault();
+                                                            handleSendMessage();
+                                                        }
+                                                    }}
+                                                    placeholder="Type a message..."
+                                                    rows={1}
+                                                    className="w-full bg-transparent border-none focus:ring-0 text-sm resize-none max-h-32 py-2 dark:text-white"
+                                                    style={{ height: 'auto', minHeight: '32px' }}
+                                                />
+                                                <div className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2">
+                                                    <button className="p-2 text-chat-text-muted hover:text-chat-primary">
+                                                        <Smile size={20} />
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-1">
+                                                {isRecordingVoice ? (
+                                                    <AudioRecorder onSend={handleSendVoice} onCancel={() => setIsRecordingVoice(false)} />
+                                                ) : messageInput.trim() ? (
+                                                    <motion.button
+                                                        whileTap={{ scale: 0.9 }}
+                                                        onClick={handleSendMessage}
+                                                        className="w-10 h-10 bg-chat-primary text-white rounded-full flex items-center justify-center shadow-lg active:bg-chat-primary-hover transition-all hover:scale-105"
+                                                    >
+                                                        <Send size={18} />
+                                                    </motion.button>
+                                                ) : (
+                                                    <button onClick={() => setIsRecordingVoice(true)} className="w-10 h-10 text-chat-text-muted hover:bg-chat-bg rounded-full btn-hover-lift transition-all flex items-center justify-center">
+                                                        <Mic size={20} className={isRecordingVoice ? 'btn-mic-active' : ''} />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </>
+                    ) : (
+                        <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-chat-bg dark:bg-slate-900/50">
+                            <div className="w-24 h-24 bg-chat-surface dark:bg-slate-800 rounded-[32px] flex items-center justify-center shadow-xl shadow-black/5 mb-8 rotate-3 transition-transform hover:rotate-0">
+                                <MessageCircle size={48} className="text-chat-primary" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-chat-text-primary dark:text-white mb-3">StudySync Messaging</h3>
+                            <p className="text-chat-text-muted max-w-sm mb-8 leading-relaxed">
+                                Collaborate with your study groups or message peers directly in real-time. Select a conversation to start.
+                            </p>
+                            <button
+                                onClick={() => setShowUserSelector(true)}
+                                className="px-8 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 shadow-lg shadow-purple-500/20 active:scale-95 transition-all"
+                            >
+                                Start New Conversation
+                            </button>
+                        </div>
+                    )}
+                </main>
+
+                {/* Modals Container */}
+                <div id="modals-container">
+                    <Modal isOpen={showUserSelector} onClose={() => setShowUserSelector(false)} title="Start a Conversation">
+                        <div className="space-y-4">
+                            <div className="flex gap-2">
+                                <div className="flex-1">
+                                    <Input
+                                        placeholder="Search users..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        icon={Search}
+                                    />
+                                </div>
+                                <button
+                                    onClick={fetchUsers}
+                                    disabled={isRefreshingUsers}
+                                    className="bg-blue-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                                >
+                                    {isRefreshingUsers ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
+                                    Refresh
+                                </button>
+                            </div>
+                            <div className="max-h-96 overflow-y-auto space-y-2 custom-scrollbar pr-1">
+                                {filteredUsers.map(user => (
+                                    <div
+                                        key={user.id}
+                                        onClick={() => handleSelectUser(user.id)}
+                                        className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-between group"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center font-bold">
+                                                {getInitials(user.email)}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold dark:text-slate-100">{user.name || user.email?.split('@')[0]}</p>
+                                                <p className="text-[11px] text-slate-500 italic">{user.email}</p>
+                                            </div>
+                                        </div>
+                                        <Plus size={18} className="text-slate-300 group-hover:text-blue-500" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </Modal>
+
+                    {isAdmin && (
+                        <Modal isOpen={showGroupModal} onClose={() => setShowGroupModal(false)} title="Create Group">
+                            <div className="space-y-4">
+                                <Input
+                                    placeholder="Group name"
+                                    value={groupName}
+                                    onChange={(e) => setGroupName(e.target.value)}
+                                />
+                                <Input
+                                    placeholder="Description (optional)"
+                                    value={groupDescription}
+                                    onChange={(e) => setGroupDescription(e.target.value)}
+                                />
+                                <Button onClick={handleCreateGroup} variant="primary" className="w-full">
+                                    Create Group
+                                </Button>
+                            </div>
+                        </Modal>
+                    )}
+
+                    <GroupInfoDrawer
+                        isOpen={showGroupInfo}
+                        onClose={() => setShowGroupInfo(false)}
+                        group={activeConversation}
+                        members={activeConversation ? users.filter(u => activeConversation.participants?.includes(u.id)) : []}
+                        onlineUsers={onlineUsers}
+                        currentUser={currentUser}
+                        onLeaveGroup={async (id) => {
+                            await leaveGroup(id);
+                            setShowGroupInfo(false);
+                        }}
+                    />
+
+                    <Modal isOpen={showJoinGroup} onClose={() => setShowJoinGroup(false)} title="Join Group">
+                        <div className="space-y-4">
+                            <Input
+                                placeholder="Enter invite code"
+                                value={inviteCode}
+                                onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                            />
+                            <Button onClick={handleJoinGroup} variant="primary" className="w-full">
+                                Join Group
+                            </Button>
+                        </div>
+                    </Modal>
+
+                    <ResourceShareModal
+                        isOpen={showResourceShare}
+                        onClose={() => setShowResourceShare(false)}
+                        onShare={async (resource) => {
+                            if (activeConversation) {
+                                await shareResource(activeConversation.id, resource);
+                            }
+                        }}
+                    />
+
+                    <ResourceViewerModal
+                        isOpen={showResourceViewer}
+                        onClose={() => setShowResourceViewer(false)}
+                        resource={selectedResourceData}
+                        loading={viewerLoading}
+                        onNavigate={(path) => navigate(path)}
+                    />
+
+                    <Modal
+                        isOpen={showDeleteConfirm}
+                        onClose={() => !isDeleting && setShowDeleteConfirm(false)}
+                        title="Delete Conversation"
+                    >
+                        <div className="space-y-4">
+                            <p className="text-sm text-chat-text-muted leading-relaxed">
+                                Are you sure you want to delete this conversation? This action will permanently remove all messages for you and cannot be undone.
+                            </p>
+                            <div className="flex gap-3 pt-2">
+                                <Button
+                                    variant="secondary"
+                                    className="flex-1"
+                                    onClick={() => setShowDeleteConfirm(false)}
+                                    disabled={isDeleting}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    variant="danger"
+                                    className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                                    onClick={handleDeleteConversation}
+                                    loading={isDeleting}
+                                >
+                                    {isDeleting ? 'Deleting...' : 'Delete'}
+                                </Button>
+                            </div>
+                        </div>
+                    </Modal>
                 </div>
-                {!isGroup && isOnline && (
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-chat-success border-2 border-white dark:border-slate-800 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse" />
-                )}
             </div>
         );
     };
 
 
-    return (
-        <div className="chat-app-container">
-            {/* 1. Sidebar */}
-            <aside className={`chat-sidebar ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
-                {/* Sidebar Header */}
-                <div className="p-6 border-b border-chat-border">
-                    <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-xl shadow-primary-500/30 relative overflow-hidden group hover:scale-105 transition-transform duration-300">
-                                <GraduationCap size={24} className="relative z-10" />
-                                <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent" />
-                            </div>
-                            <span className="font-bold text-lg tracking-tight dark:text-white">StudySync</span>
-                        </div>
-                        <button
-                            onClick={() => navigate('/')}
-                            className="p-2 hover:bg-chat-bg rounded-lg transition-colors text-chat-text-muted"
-                        >
-                            <LayoutDashboard size={20} />
-                        </button>
-                    </div>
 
-                    {/* Search Bar */}
-                    <div className="relative mb-6">
-                        <input
-                            type="text"
-                            placeholder="Search messages..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-chat-bg dark:bg-slate-800 border border-chat-border rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-chat-primary/20 outline-none transition-all dark:text-white"
-                        />
-                        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-chat-text-muted" />
-                    </div>
-
-                    {/* Tabs */}
-                    <div className="flex p-1 bg-chat-bg dark:bg-slate-800 rounded-xl gap-1">
-                        {['chats', 'groups', 'explore', 'requests'].map((tab) => (
-                            <button
-                                key={tab}
-                                onClick={() => setActiveTab(tab)}
-                                className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all tab-btn ${activeTab === tab
-                                    ? 'bg-chat-surface dark:bg-slate-700 shadow-sm text-chat-primary active'
-                                    : 'text-chat-text-muted hover:text-chat-text-primary'}`}
-                            >
-                                {tab === 'requests' ? 'Inbox' : tab}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Conversation List */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
-                    {activeTab === 'explore' ? (
-                        <div className="p-2 space-y-3">
-                            {availableGroups.length === 0 ? (
-                                <div className="text-center py-10 opacity-30">
-                                    <Users size={32} className="mx-auto mb-2 dark:text-slate-400" />
-                                    <p className="text-xs dark:text-slate-500">No public groups</p>
-                                </div>
-                            ) : (
-                                availableGroups.map(group => (
-                                    <div key={group.id} className="p-4 bg-chat-bg dark:bg-slate-800 rounded-2xl border border-chat-border hover:shadow-md transition-all">
-                                        <div className="flex justify-between items-start mb-2">
-                                            <span className="font-bold text-sm dark:text-white">{group.name}</span>
-                                            <span className="text-[10px] bg-chat-primary/10 text-chat-primary px-2 py-0.5 rounded-full font-bold uppercase">
-                                                {group.members?.length || 0} Members
-                                            </span>
-                                        </div>
-                                        <p className="text-[11px] text-chat-text-muted mb-3 line-clamp-2 leading-relaxed">{group.description}</p>
-                                        <button
-                                            onClick={() => handleJoinGroupById(group.inviteCode)}
-                                            className="w-full py-1.5 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700 shadow-md shadow-purple-500/10 transition-colors"
-                                        >
-                                            Join Group
-                                        </button>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    ) : displayList.length === 0 ? (
-                        <div className="text-center py-16 opacity-20">
-                            <MessageCircle size={40} className="mx-auto mb-2 dark:text-slate-400" />
-                            <p className="text-sm font-medium dark:text-slate-500">Clear for now</p>
-                        </div>
-                    ) : (
-                        displayList.map((conv) => {
-                            const display = getConversationDisplay(conv);
-                            return (
-                                <div
-                                    key={conv.id}
-                                    onClick={() => setActiveConversation(conv)}
-                                    className={`p-3 rounded-2xl cursor-pointer transition-all flex items-center gap-3 mb-1 group relative ${activeConversation?.id === conv.id
-                                        ? 'bg-chat-primary/5 border-chat-primary/20 border'
-                                        : 'hover:bg-chat-bg dark:hover:bg-slate-800 border-transparent border'}`}
-                                >
-                                    <div className="relative">
-                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold shadow-sm ${conv.type === 'group' ? 'bg-emerald-500 text-white' : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
-                                            {conv.type === 'group' ? <Users size={20} /> : getInitials(display.title)}
-                                        </div>
-                                        {display.otherUser?.id && onlineUsers.has(display.otherUser.id) && (
-                                            <span className="absolute -bottom-1 -right-1 block h-3.5 w-3.5 rounded-full bg-chat-success border-2 border-chat-surface dark:border-slate-800 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                        )}
-                                    </div>
-
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between mb-0.5">
-                                            <span className={`text-sm font-bold truncate ${activeConversation?.id === conv.id ? 'text-red-600 font-black' : 'text-red-500'}`}>
-                                                {display.title}
-                                            </span>
-                                            {conv.lastMessageTime && (
-                                                <span className="text-[10px] text-chat-text-muted whitespace-nowrap">
-                                                    {formatLastMessageTime(conv.lastMessageTime)}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <p className={`text-[12px] truncate text-chat-text-muted ${unreadCounts[conv.id] > 0 ? 'font-bold text-chat-text-primary dark:text-white' : ''}`}>
-                                                {conv.lastMessage || 'No messages yet'}
-                                            </p>
-                                            {unreadCounts[conv.id] > 0 && (
-                                                <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-lg min-w-[18px] text-center shadow-md shadow-red-500/20">
-                                                    {unreadCounts[conv.id]}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    {activeConversation?.id === conv.id && (
-                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-chat-primary rounded-r-full shadow-[2px_0_10px_rgba(37,99,235,0.4)]" />
-                                    )}
-                                </div>
-                            );
-                        })
-                    )}
-                </div>
-
-                {/* Sidebar Footer */}
-                <div className="p-4 border-t border-chat-border bg-chat-bg/30 dark:bg-slate-900/30">
-                    <button
-                        onClick={() => setShowUserSelector(true)}
-                        className="w-full flex items-center justify-center gap-2 py-3 bg-purple-600 text-white rounded-xl font-bold text-sm hover:bg-purple-700 shadow-lg shadow-purple-500/10 transition-all active:scale-[0.98]"
-                    >
-                        <Plus size={18} />
-                        New Message
-                    </button>
-                    {isAdmin && (
-                        <button
-                            onClick={() => setShowGroupModal(true)}
-                            className="w-full mt-2 flex items-center justify-center gap-2 py-2.5 bg-chat-surface dark:bg-slate-800 text-chat-primary border border-chat-primary/20 rounded-xl font-bold text-[13px] hover:bg-chat-bg transition-all"
-                        >
-                            <Plus size={16} />
-                            Create Group
-                        </button>
-                    )}
-                </div>
-            </aside>
-
-            {/* 2. Main Panel */}
-            <main className="chat-main-panel">
-                {activeConversation ? (
-                    <>
-                        {/* Chat Header */}
-                        <header className="px-6 py-4 bg-chat-surface dark:bg-slate-900 border-b border-chat-border flex items-center justify-between sticky top-0 z-10 shadow-sm shadow-black/5">
-                            <div className="flex items-center gap-4">
-                                <button onClick={() => setActiveConversation(null)} className="md:hidden p-2 -ml-2 text-chat-text-muted hover:text-chat-text-primary">
-                                    <ArrowDown size={20} className="rotate-90" />
-                                </button>
-                                <div className="relative cursor-pointer" onClick={() => activeConversation.type === 'group' && setShowGroupInfo(true)}>
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${activeConversation.type === 'group' ? 'bg-blue-100 dark:bg-blue-900/30 text-chat-primary' : 'bg-red-100 dark:bg-red-900/30 text-red-600'}`}>
-                                        {activeConversation.type === 'group' ? <Users size={20} /> : getInitials(getConversationDisplay(activeConversation).title)}
-                                    </div>
-                                    {activeConversation.type !== 'group' && onlineUsers.has(getConversationDisplay(activeConversation).otherUser?.id) && (
-                                        <span className="absolute bottom-0 right-0 w-3 h-3 bg-chat-success border-2 border-white dark:border-slate-900 rounded-full" />
-                                    )}
-                                </div>
-                                <div className="min-w-0">
-                                    <h2 className="font-bold text-red-600 dark:text-red-400 text-base truncate leading-none mb-1">
-                                        {getConversationDisplay(activeConversation).title}
-                                    </h2>
-                                    <div className="flex items-center gap-1.5 h-4">
-                                        {activeConversation.type === 'group' ? (
-                                            <span className="text-[11px] text-chat-text-muted font-medium">{activeConversation.participants?.length} members</span>
-                                        ) : onlineUsers.has(getConversationDisplay(activeConversation).otherUser?.id) ? (
-                                            <div className="flex items-center gap-1.5">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-chat-success animate-pulse" />
-                                                <span className="text-[11px] text-chat-success font-bold uppercase tracking-wider">Online</span>
-                                            </div>
-                                        ) : (
-                                            <span className="text-[11px] text-chat-text-muted font-medium italic">
-                                                {formatLastSeen(getConversationDisplay(activeConversation).otherUser?.last_seen_at)}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                                {sessionStartTime && (
-                                    <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-chat-bg dark:bg-slate-800 rounded-full border border-chat-border mr-2">
-                                        <Clock size={12} className="text-chat-primary" />
-                                        <span className="text-[11px] font-mono font-bold text-chat-primary">{sessionDuration}</span>
-                                    </div>
-                                )}
-                                <button
-                                    onClick={() => {
-                                        setShowSearchInChat(!showSearchInChat);
-                                        if (!showSearchInChat) {
-                                            setTimeout(() => searchInputRef.current?.focus(), 100);
-                                        }
-                                    }}
-                                    className={`p-2 rounded-lg transition-colors btn-hover-lift ${showSearchInChat ? 'bg-chat-primary/20 text-chat-primary shadow-sm' : 'text-chat-text-muted hover:text-chat-primary hover:bg-chat-bg'}`}
-                                >
-                                    <Search size={20} />
-                                </button>
-                                <button className="p-2 text-chat-text-muted btn-call btn-hover-lift rounded-lg transition-colors"><Phone size={20} /></button>
-                                <button className="p-2 text-chat-text-muted btn-video btn-hover-lift rounded-lg transition-colors"><Video size={20} /></button>
-                                <div className="relative group/menu">
-                                    <button className="p-2 text-chat-text-muted hover:text-chat-text-primary btn-hover-lift rounded-lg transition-colors"><MoreVertical size={20} /></button>
-                                    <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl py-2 hidden group-hover/menu:block z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                                        <button
-                                            onClick={() => setShowDeleteConfirm(true)}
-                                            className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center gap-2 font-medium"
-                                        >
-                                            <X size={16} />
-                                            Delete Conversation
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </header>
-
-                        {/* In-Chat Search Bar */}
-                        <AnimatePresence>
-                            {showSearchInChat && (
-                                <motion.div
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: 'auto', opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
-                                    className="px-4 py-2 bg-chat-bg dark:bg-slate-800 border-b border-chat-border overflow-hidden"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex-1 relative">
-                                            <input
-                                                ref={searchInputRef}
-                                                type="text"
-                                                placeholder="Search messages..."
-                                                value={searchInChatQuery}
-                                                onChange={(e) => {
-                                                    setSearchInChatQuery(e.target.value);
-                                                    setCurrentSearchIndex(-1);
-                                                }}
-                                                className="w-full h-8 bg-chat-surface dark:bg-slate-900 border border-chat-border rounded-lg pl-8 pr-4 text-sm focus:ring-1 focus:ring-chat-primary outline-none dark:text-white"
-                                            />
-                                            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-chat-text-muted" />
-                                        </div>
-                                        {searchResults.length > 0 && (
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-[11px] font-medium text-chat-text-muted">
-                                                    {currentSearchIndex + 1} of {searchResults.length}
-                                                </span>
-                                                <div className="flex items-center border border-chat-border rounded-lg overflow-hidden bg-chat-surface dark:bg-slate-900">
-                                                    <button
-                                                        onClick={() => handleSearchNavigate('prev')}
-                                                        className="p-1 hover:bg-chat-bg text-chat-text-muted transition-colors"
-                                                    >
-                                                        <ArrowDown className="rotate-180" size={14} />
-                                                    </button>
-                                                    <div className="w-[1px] h-4 bg-chat-border" />
-                                                    <button
-                                                        onClick={() => handleSearchNavigate('next')}
-                                                        className="p-1 hover:bg-chat-bg text-chat-text-muted transition-colors"
-                                                    >
-                                                        <ArrowDown size={14} />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
-                                        <button
-                                            onClick={() => {
-                                                setShowSearchInChat(false);
-                                                setSearchInChatQuery('');
-                                                setCurrentSearchIndex(-1);
-                                            }}
-                                            className="text-[11px] font-bold text-chat-text-muted hover:text-chat-text-primary"
-                                        >
-                                            CANCEL
-                                        </button>
-                                    </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-
-                        {/* Messages Area */}
-                        <div
-                            className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar relative"
-                            ref={scrollContainerRef}
-                            onScroll={handleScroll}
-                        >
-                            <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: `radial-gradient(var(--chat-primary) 1px, transparent 1px)`, backgroundSize: '20px 20px' }} />
-
-                            {messages.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center h-full opacity-30 gap-4">
-                                    <div className="w-16 h-16 bg-chat-bg rounded-3xl flex items-center justify-center">
-                                        <MessageCircle size={32} className="dark:text-slate-400" />
-                                    </div>
-                                    <p className="text-sm font-medium dark:text-slate-500">No messages yet</p>
-                                </div>
-                            ) : (
-                                messages.map((msg, idx) => (
-                                    <MessageBubble
-                                        key={msg.id || idx}
-                                        message={msg}
-                                        isOwn={msg.senderId === currentUser.id}
-                                        handleOpenResource={handleOpenResource}
-                                        formatTime={formatMessageTime}
-                                        onReply={handleReply}
-                                        onScrollToMessage={scrollToMessage}
-                                        messageRef={(el) => { if (msg.id) messageRefs.current[msg.id] = el; }}
-                                        highlightQuery={searchInChatQuery}
-                                        onReact={toggleReaction}
-                                    />
-                                ))
-                            )}
-
-                            {getTypingText() && (
-                                <div className="flex items-center gap-2 ml-4 mb-4 text-xs text-chat-text-muted italic animate-pulse">
-                                    <div className="flex gap-0.5">
-                                        <div className="w-1 h-1 bg-chat-text-muted rounded-full"></div>
-                                        <div className="w-1 h-1 bg-chat-text-muted rounded-full animate-bounce"></div>
-                                        <div className="w-1 h-1 bg-chat-text-muted rounded-full"></div>
-                                    </div>
-                                    {getTypingText()}
-                                </div>
-                            )}
-                            <div ref={messagesEndRef} className="h-4" />
-
-                            {/* Scroll to Bottom Button */}
-                            <AnimatePresence>
-                                {!isAtBottom && (
-                                    <motion.button
-                                        initial={{ opacity: 0, scale: 0.8 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        exit={{ opacity: 0, scale: 0.8 }}
-                                        onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })}
-                                        className="fixed bottom-24 right-8 p-3 bg-chat-surface dark:bg-slate-800 border border-chat-border rounded-full shadow-lg text-chat-primary hover:bg-chat-bg transition-colors z-20"
-                                    >
-                                        <ArrowDown size={20} />
-                                    </motion.button>
-                                )}
-                            </AnimatePresence>
-                        </div>
-
-                        {/* Input Area */}
-                        <div className="chat-input-container">
-                            {activeConversation.status === 'pending' ? (
-                                <div className="p-6 bg-chat-bg dark:bg-slate-800 rounded-2xl border border-chat-border text-center">
-                                    {(activeConversation.initiatorId || activeConversation.initiator_id) !== currentUser.id ? (
-                                        <>
-                                            <p className="text-sm font-medium mb-4">
-                                                {activeConversation.type === 'direct' ? (activeConversation.otherUser?.name || 'This user') : 'This group'} wants to connect with you.
-                                            </p>
-                                            <div className="flex gap-3 justify-center">
-                                                <button onClick={() => handleRequestResponse('active')} className="px-6 py-2 bg-chat-success text-white rounded-xl font-bold hover:opacity-90 transition-all">Accept</button>
-                                                <button onClick={() => handleRequestResponse('rejected')} className="px-6 py-2 bg-chat-surface dark:bg-slate-900 border border-chat-border text-chat-text-muted rounded-xl font-bold hover:bg-chat-bg transition-all">Decline</button>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div className="flex flex-col items-center gap-2 opacity-60">
-                                            <Clock size={24} className="animate-pulse text-chat-primary" />
-                                            <p className="text-sm font-medium">Waiting for them to accept your request...</p>
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <>
-                                    <AnimatePresence>
-                                        {replyTo && (
-                                            <motion.div
-                                                initial={{ height: 0, opacity: 0 }}
-                                                animate={{ height: 'auto', opacity: 1 }}
-                                                exit={{ height: 0, opacity: 0 }}
-                                                className="mb-3 p-3 bg-chat-bg dark:bg-slate-800 rounded-xl border-l-4 border-chat-primary flex items-center justify-between overflow-hidden"
-                                            >
-                                                <div className="min-w-0">
-                                                    <p className="text-[10px] font-bold text-chat-primary uppercase tracking-wider mb-0.5">Replying to {replyTo.senderName}</p>
-                                                    <p className="text-xs text-chat-text-muted truncate">{replyTo.content}</p>
-                                                </div>
-                                                <button onClick={() => setReplyTo(null)} className="p-1.5 hover:bg-chat-border rounded-full text-chat-text-muted">
-                                                    <X size={14} />
-                                                </button>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-
-                                    <div className="chat-input-pill">
-                                        <button className="p-2 text-chat-text-muted btn-attach btn-hover-lift transition-colors" title="Attach file" onClick={() => fileInputRef.current?.click()}>
-                                            <Paperclip size={20} />
-                                        </button>
-                                        <button onClick={() => setShowResourceShare(true)} className="p-2 text-chat-text-muted btn-resource btn-hover-lift transition-colors" title="Share resource">
-                                            <Hash size={20} />
-                                        </button>
-                                        <input
-                                            type="file"
-                                            ref={fileInputRef}
-                                            onChange={handleFileUpload}
-                                            className="hidden"
-                                        />
-                                        <div className="flex-1 relative">
-                                            <textarea
-                                                value={messageInput}
-                                                onChange={handleInputChange}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter' && !e.shiftKey) {
-                                                        e.preventDefault();
-                                                        handleSendMessage();
-                                                    }
-                                                }}
-                                                placeholder="Type a message..."
-                                                rows={1}
-                                                className="w-full bg-transparent border-none focus:ring-0 text-sm resize-none max-h-32 py-2 dark:text-white"
-                                                style={{ height: 'auto', minHeight: '32px' }}
-                                            />
-                                            <div className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2">
-                                                <button className="p-2 text-chat-text-muted hover:text-chat-primary">
-                                                    <Smile size={20} />
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center gap-1">
-                                            {isRecordingVoice ? (
-                                                <AudioRecorder onSend={handleSendVoice} onCancel={() => setIsRecordingVoice(false)} />
-                                            ) : messageInput.trim() ? (
-                                                <motion.button
-                                                    whileTap={{ scale: 0.9 }}
-                                                    onClick={handleSendMessage}
-                                                    className="w-10 h-10 bg-chat-primary text-white rounded-full flex items-center justify-center shadow-lg active:bg-chat-primary-hover transition-all hover:scale-105"
-                                                >
-                                                    <Send size={18} />
-                                                </motion.button>
-                                            ) : (
-                                                <button onClick={() => setIsRecordingVoice(true)} className="w-10 h-10 text-chat-text-muted hover:bg-chat-bg rounded-full btn-hover-lift transition-all flex items-center justify-center">
-                                                    <Mic size={20} className={isRecordingVoice ? 'btn-mic-active' : ''} />
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </>
-                ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-chat-bg dark:bg-slate-900/50">
-                        <div className="w-24 h-24 bg-chat-surface dark:bg-slate-800 rounded-[32px] flex items-center justify-center shadow-xl shadow-black/5 mb-8 rotate-3 transition-transform hover:rotate-0">
-                            <MessageCircle size={48} className="text-chat-primary" />
-                        </div>
-                        <h3 className="text-2xl font-bold text-chat-text-primary dark:text-white mb-3">StudySync Messaging</h3>
-                        <p className="text-chat-text-muted max-w-sm mb-8 leading-relaxed">
-                            Collaborate with your study groups or message peers directly in real-time. Select a conversation to start.
-                        </p>
-                        <button
-                            onClick={() => setShowUserSelector(true)}
-                            className="px-8 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 shadow-lg shadow-purple-500/20 active:scale-95 transition-all"
-                        >
-                            Start New Conversation
-                        </button>
-                    </div>
-                )}
-            </main>
-
-            {/* Modals Container */}
-            <div id="modals-container">
-                <Modal isOpen={showUserSelector} onClose={() => setShowUserSelector(false)} title="Start a Conversation">
-                    <div className="space-y-4">
-                        <div className="flex gap-2">
-                            <div className="flex-1">
-                                <Input
-                                    placeholder="Search users..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    icon={Search}
-                                />
-                            </div>
-                            <button
-                                onClick={fetchUsers}
-                                disabled={isRefreshingUsers}
-                                className="bg-blue-600 text-white px-4 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                            >
-                                {isRefreshingUsers ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
-                                Refresh
-                            </button>
-                        </div>
-                        <div className="max-h-96 overflow-y-auto space-y-2 custom-scrollbar pr-1">
-                            {filteredUsers.map(user => (
-                                <div
-                                    key={user.id}
-                                    onClick={() => handleSelectUser(user.id)}
-                                    className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-between group"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center font-bold">
-                                            {getInitials(user.email)}
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-bold dark:text-slate-100">{user.name || user.email?.split('@')[0]}</p>
-                                            <p className="text-[11px] text-slate-500 italic">{user.email}</p>
-                                        </div>
-                                    </div>
-                                    <Plus size={18} className="text-slate-300 group-hover:text-blue-500" />
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </Modal>
-
-                {isAdmin && (
-                    <Modal isOpen={showGroupModal} onClose={() => setShowGroupModal(false)} title="Create Group">
-                        <div className="space-y-4">
-                            <Input
-                                placeholder="Group name"
-                                value={groupName}
-                                onChange={(e) => setGroupName(e.target.value)}
-                            />
-                            <Input
-                                placeholder="Description (optional)"
-                                value={groupDescription}
-                                onChange={(e) => setGroupDescription(e.target.value)}
-                            />
-                            <Button onClick={handleCreateGroup} variant="primary" className="w-full">
-                                Create Group
-                            </Button>
-                        </div>
-                    </Modal>
-                )}
-
-                <GroupInfoDrawer
-                    isOpen={showGroupInfo}
-                    onClose={() => setShowGroupInfo(false)}
-                    group={activeConversation}
-                    members={activeConversation ? users.filter(u => activeConversation.participants?.includes(u.id)) : []}
-                    onlineUsers={onlineUsers}
-                    currentUser={currentUser}
-                    onLeaveGroup={async (id) => {
-                        await leaveGroup(id);
-                        setShowGroupInfo(false);
-                    }}
-                />
-
-                <Modal isOpen={showJoinGroup} onClose={() => setShowJoinGroup(false)} title="Join Group">
-                    <div className="space-y-4">
-                        <Input
-                            placeholder="Enter invite code"
-                            value={inviteCode}
-                            onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                        />
-                        <Button onClick={handleJoinGroup} variant="primary" className="w-full">
-                            Join Group
-                        </Button>
-                    </div>
-                </Modal>
-
-                <ResourceShareModal
-                    isOpen={showResourceShare}
-                    onClose={() => setShowResourceShare(false)}
-                    onShare={async (resource) => {
-                        if (activeConversation) {
-                            await shareResource(activeConversation.id, resource);
-                        }
-                    }}
-                />
-
-                <ResourceViewerModal
-                    isOpen={showResourceViewer}
-                    onClose={() => setShowResourceViewer(false)}
-                    resource={selectedResourceData}
-                    loading={viewerLoading}
-                    onNavigate={(path) => navigate(path)}
-                />
-
-                <Modal
-                    isOpen={showDeleteConfirm}
-                    onClose={() => !isDeleting && setShowDeleteConfirm(false)}
-                    title="Delete Conversation"
-                >
-                    <div className="space-y-4">
-                        <p className="text-sm text-chat-text-muted leading-relaxed">
-                            Are you sure you want to delete this conversation? This action will permanently remove all messages for you and cannot be undone.
-                        </p>
-                        <div className="flex gap-3 pt-2">
-                            <Button
-                                variant="secondary"
-                                className="flex-1"
-                                onClick={() => setShowDeleteConfirm(false)}
-                                disabled={isDeleting}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                variant="danger"
-                                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
-                                onClick={handleDeleteConversation}
-                                loading={isDeleting}
-                            >
-                                {isDeleting ? 'Deleting...' : 'Delete'}
-                            </Button>
-                        </div>
-                    </div>
-                </Modal>
-            </div>
-        </div>
-    );
-};
-
-
-
-export default Chat;
+    export default Chat;

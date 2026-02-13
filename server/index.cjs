@@ -199,7 +199,12 @@ app.post('/api/upload', authenticateToken, (req, res) => {
             );
 
             if (!publicUrl) {
-                console.error(`❌ Cloud upload failed for: ${file.originalname}`);
+                console.error(`❌ Cloud upload failed for: ${file.originalname}`, {
+                    bucket: 'study-materials',
+                    fileName,
+                    size: file.size,
+                    mimeType: file.mimetype
+                });
                 return res.status(500).json({ error: 'Failed to upload to cloud storage. Check server logs for details.' });
             }
 
@@ -295,13 +300,29 @@ app.post('/api/auth/register', async (req, res) => {
     // Set Secure HttpOnly Cookie
     res.cookie('auth_token', token, {
         httpOnly: true,
-        secure: IS_PROD,
-        sameSite: 'lax',
-        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
-    const { password: _, ...userWithoutPassword } = user;
-    res.status(201).json({ user: userWithoutPassword, token });
+    res.status(201).json({ user: { id: user.id, email: user.email, name: user.name }, token });
+});
+
+// Get all users for chat selector
+app.get('/api/users/all', authenticateToken, (req, res) => {
+    try {
+        const users = db.get('users') || [];
+        const safeUsers = users.map(u => ({
+            id: u.id,
+            name: u.name,
+            email: u.email,
+            avatar: u.avatar
+        }));
+        res.json(safeUsers);
+    } catch (error) {
+        console.error('Error fetching all users:', error);
+        res.status(500).json({ error: 'Failed to fetch users' });
+    }
 });
 
 app.post('/api/auth/login', async (req, res) => {
