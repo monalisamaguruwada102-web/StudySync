@@ -9,11 +9,28 @@ export const NotificationProvider = ({ children }) => {
     const [toasts, setToasts] = useState([]);
     const [dialog, setDialog] = useState(null);
 
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    const addNotification = useCallback((notification) => {
+        setNotifications(prev => [{ ...notification, id: Date.now(), read: false, timestamp: new Date() }, ...prev]);
+        setUnreadCount(prev => prev + 1);
+    }, []);
+
+    const markAllAsRead = useCallback(() => {
+        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+        setUnreadCount(0);
+    }, []);
+
     const showToast = useCallback((message, type = 'info', duration = 3000) => {
         const id = Date.now();
         setToasts(prev => [...prev, { id, message, type, duration }]);
+        // Auto-add to history for important events
+        if (type !== 'info') {
+            addNotification({ title: type.charAt(0).toUpperCase() + type.slice(1), message, type });
+        }
         return id;
-    }, []);
+    }, [addNotification]);
 
     const removeToast = useCallback((id) => {
         setToasts(prev => prev.filter(t => t.id !== id));
@@ -64,7 +81,7 @@ export const NotificationProvider = ({ children }) => {
     }, []);
 
     return (
-        <NotificationContext.Provider value={{ showToast, confirm, prompt }}>
+        <NotificationContext.Provider value={{ showToast, confirm, prompt, notifications, unreadCount, markAllAsRead, addNotification }}>
             {children}
 
             {/* Toast Container */}

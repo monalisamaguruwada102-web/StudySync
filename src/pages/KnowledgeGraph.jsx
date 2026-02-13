@@ -208,7 +208,14 @@ const KnowledgeGraph = () => {
                                 } items.
                             </p>
 
-                            <button className="w-full py-2.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-xl text-sm font-bold shadow-lg hover:transform hover:scale-[1.02] transition-all">
+                            <button
+                                onClick={() => {
+                                    if (selectedNode.type === 'module') navigate(`/modules`);
+                                    else if (selectedNode.type === 'task') navigate(`/tasks`);
+                                    else if (selectedNode.type === 'note') navigate(`/notes`);
+                                }}
+                                className="w-full py-2.5 bg-gradient-to-r from-slate-900 to-slate-800 dark:from-white dark:to-slate-200 text-white dark:text-slate-900 rounded-xl text-sm font-bold shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all duration-300"
+                            >
                                 Open Details
                             </button>
                         </motion.div>

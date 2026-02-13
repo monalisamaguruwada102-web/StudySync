@@ -136,6 +136,7 @@ export const useAnalytics = (logs, modules, tasks, sessions = []) => {
             totalRemaining,
             activeModules,
             pendingTasks,
+            completedTasks: tasks.filter(t => t.status === 'Completed').length,
             weeklyProgress: modules.length > 0 ? (moduleData.reduce((acc, m) => acc + m.progress, 0) / modules.length) : 0,
             moduleData,
             weeklyTrend,

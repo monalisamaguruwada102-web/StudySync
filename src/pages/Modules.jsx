@@ -132,53 +132,55 @@ const Modules = () => {
                     {stats.moduleData.map((mod) => {
                         const progress = mod.progress.toFixed(0);
                         return (
-                            <Card key={mod.id} className="group relative overflow-hidden transition-all hover:shadow-lg hover:border-primary-100">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="w-12 h-12 bg-primary-50 dark:bg-primary-900/20 rounded-xl flex items-center justify-center text-primary-600 dark:text-primary-400">
-                                        <BookOpen size={24} />
-                                    </div>
-                                    <div className="flex gap-1">
-                                        <Button
-                                            variant="ghost"
-                                            onClick={() => handleGenerateAI(mod)}
-                                            className={`!p-2 ${isGenerating === mod.id ? 'text-primary-500 animate-pulse' : 'text-slate-400 hover:text-primary-500'}`}
-                                            disabled={isGenerating !== null}
-                                            title="Generate AI Flashcards"
-                                        >
-                                            {isGenerating === mod.id ? <RefreshCcw className="animate-spin" size={16} /> : <Wand2 size={16} />}
-                                        </Button>
-                                        <Button variant="ghost" onClick={() => handleOpenModal(mod)} className="!p-2 text-slate-400 hover:text-primary-600">
-                                            <Edit2 size={16} />
-                                        </Button>
-                                        <Button variant="ghost" onClick={() => handleDelete(mod.id)} className="!p-2 text-slate-400 hover:text-red-500">
-                                            <Trash2 size={16} />
-                                        </Button>
-                                    </div>
-                                </div>
+                            <Card key={mod.id} className="group relative overflow-hidden transition-all hover:shadow-2xl hover:-translate-y-1 border-slate-200 dark:border-white/5 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
+                                <div className="absolute inset-0 bg-gradient-to-br from-white/0 via-white/0 to-primary-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1">{mod.name}</h3>
-                                <div className="flex justify-between items-start mb-4">
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 h-10">{mod.description || 'No description provided'}</p>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <div className="flex justify-between items-end">
-                                        <div className="flex flex-col gap-0.5">
-                                            <div className="flex items-center gap-2 text-primary-600 dark:text-primary-400 font-bold text-xs uppercase tracking-wider">
-                                                <Target size={14} />
-                                                <span>{mod.remaining}h Remaining</span>
-                                            </div>
-                                            <span className="text-[10px] text-slate-400 font-medium">{mod.hours.toFixed(1)}h / {mod.target}h Total</span>
+                                <div className="relative">
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div className="w-14 h-14 bg-gradient-to-br from-primary-100 to-indigo-100 dark:from-primary-900/40 dark:to-indigo-900/40 rounded-2xl flex items-center justify-center text-primary-600 dark:text-primary-400 shadow-inner">
+                                            <BookOpen size={28} />
                                         </div>
-                                        <span className="text-sm font-black text-slate-800 dark:text-slate-200">{progress}%</span>
+                                        <div className="flex gap-1 bg-white/50 dark:bg-black/20 rounded-lg p-1 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity translate-y-2 group-hover:translate-y-0">
+                                            <Button
+                                                variant="ghost"
+                                                onClick={() => handleGenerateAI(mod)}
+                                                className={`!p-2 h-8 w-8 ${isGenerating === mod.id ? 'text-primary-500 animate-pulse' : 'text-slate-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20'}`}
+                                                disabled={isGenerating !== null}
+                                                title="Generate AI Flashcards"
+                                            >
+                                                {isGenerating === mod.id ? <RefreshCcw className="animate-spin" size={14} /> : <Wand2 size={14} />}
+                                            </Button>
+                                            <Button variant="ghost" onClick={() => handleOpenModal(mod)} className="!p-2 h-8 w-8 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20">
+                                                <Edit2 size={14} />
+                                            </Button>
+                                            <Button variant="ghost" onClick={() => handleDelete(mod.id)} className="!p-2 h-8 w-8 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20">
+                                                <Trash2 size={14} />
+                                            </Button>
+                                        </div>
                                     </div>
-                                    <div className="h-2 bg-slate-100 dark:bg-slate-800/50 rounded-full overflow-hidden border border-slate-200/50 dark:border-white/5">
-                                        <motion.div
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${progress}%` }}
-                                            className="h-full bg-gradient-to-r from-primary-500 to-indigo-500 rounded-full"
-                                            transition={{ duration: 1, ease: "easeOut" }}
-                                        />
+
+                                    <h3 className="text-xl font-black text-slate-800 dark:text-white mb-2 tracking-tight">{mod.name}</h3>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 h-10 font-medium leading-relaxed">{mod.description || 'No description provided'}</p>
+
+                                    <div className="mt-6 space-y-4">
+                                        <div className="flex justify-between items-end">
+                                            <div className="flex flex-col gap-0.5">
+                                                <div className="flex items-center gap-2 text-primary-600 dark:text-primary-400 font-bold text-[10px] uppercase tracking-widest">
+                                                    <Target size={12} />
+                                                    <span>{mod.remaining}h Left</span>
+                                                </div>
+                                                <span className="text-xs text-slate-400 font-bold">{mod.hours.toFixed(1)} / {mod.target} Hours</span>
+                                            </div>
+                                            <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter">{progress}%</span>
+                                        </div>
+                                        <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${progress}%` }}
+                                                className="h-full bg-gradient-to-r from-primary-500 via-indigo-500 to-purple-500 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.4)]"
+                                                transition={{ duration: 1, ease: "easeOut" }}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </Card>

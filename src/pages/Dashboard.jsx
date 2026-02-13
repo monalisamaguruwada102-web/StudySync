@@ -58,18 +58,93 @@ ChartJS.register(
     Legend
 );
 
+import { Bell, X, Check } from 'lucide-react';
+import { useNotification } from '../context/NotificationContext';
+
 const DashboardHeader = ({ user }) => {
+    const { notifications, unreadCount, markAllAsRead } = useNotification();
+    const [isNotificationsOpen, setIsNotificationsOpen] = React.useState(false);
     const hour = new Date().getHours();
     const greeting = hour < 12 ? 'Good Morning' : hour < 18 ? 'Good Afternoon' : 'Good Evening';
 
     return (
-        <div className="mb-8">
-            <h1 className="text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tight mb-2">
-                {greeting}, <span className="text-primary-600 dark:text-primary-400">{user?.name || 'Student'}</span>
-            </h1>
-            <p className="text-slate-500 dark:text-slate-400 font-medium tracking-wide">
-                Here's your academic progress overview for today.
-            </p>
+        <div className="flex items-center justify-between mb-8">
+            <div>
+                <h1 className="text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tight mb-2">
+                    {greeting}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-purple-600 dark:from-primary-400 dark:to-purple-400">{user?.name || 'Student'}</span>
+                </h1>
+                <p className="text-slate-500 dark:text-slate-400 font-medium tracking-wide">
+                    Here's your academic progress overview for today.
+                </p>
+            </div>
+
+            <div className="relative">
+                <button
+                    onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                    className="p-3 bg-white dark:bg-slate-800 rounded-full shadow-lg shadow-slate-200/50 dark:shadow-black/20 border border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-primary-500 dark:hover:text-primary-400 transition-all relative"
+                >
+                    <Bell size={24} />
+                    {unreadCount > 0 && (
+                        <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 border-2 border-white dark:border-slate-800 rounded-full animate-pulse"></span>
+                    )}
+                </button>
+
+                <AnimatePresence>
+                    {isNotificationsOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                            className="absolute right-0 top-full mt-4 w-96 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50 origin-top-right"
+                        >
+                            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50 backdrop-blur-sm">
+                                <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                    Notifications
+                                    {unreadCount > 0 && (
+                                        <span className="bg-primary-500 text-white text-[10px] px-2 py-0.5 rounded-full">{unreadCount} New</span>
+                                    )}
+                                </h3>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={markAllAsRead}
+                                        className="p-1.5 text-slate-400 hover:text-green-500 hover:bg-green-500/10 rounded-lg transition-colors"
+                                        title="Mark all as read"
+                                    >
+                                        <Check size={16} />
+                                    </button>
+                                    <button
+                                        onClick={() => setIsNotificationsOpen(false)}
+                                        className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="max-h-[400px] overflow-y-auto custom-scrollbar p-2 space-y-2">
+                                {notifications.length === 0 ? (
+                                    <div className="py-12 text-center text-slate-400">
+                                        <Bell size={32} className="mx-auto mb-3 opacity-20" />
+                                        <p className="text-sm">No notifications yet</p>
+                                    </div>
+                                ) : (
+                                    notifications.map((notif) => (
+                                        <div key={notif.id} className={`p-3 rounded-2xl border transition-all ${notif.read ? 'bg-white dark:bg-slate-900 border-transparent opacity-60' : 'bg-primary-50 dark:bg-primary-900/10 border-primary-100 dark:border-primary-900/30'}`}>
+                                            <div className="flex items-start gap-3">
+                                                <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${notif.read ? 'bg-slate-300 dark:bg-slate-700' : 'bg-primary-500'}`} />
+                                                <div>
+                                                    <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-0.5">{notif.title || 'Notification'}</h4>
+                                                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{notif.message}</p>
+                                                    <span className="text-[10px] text-slate-400 mt-2 block">{new Date(notif.timestamp).toLocaleTimeString()}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
         </div>
     );
 };
@@ -145,84 +220,89 @@ const Dashboard = () => {
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`mb-8 p-6 rounded-3xl border flex flex-col md:flex-row items-center justify-between gap-6 backdrop-blur-xl ${league.bg} ${league.border} ${league.glow || ''}`}
+                className={`mb-8 p-1 rounded-[2.5rem] bg-gradient-to-br ${league.gradient || 'from-slate-200 to-slate-100'} shadow-2xl relative overflow-hidden group`}
             >
-                <div className="flex items-center gap-4 text-center md:text-left">
-                    <div className={`p-4 rounded-2xl bg-white/5 border border-white/10 ${league.color}`}>
-                        <Trophy size={32} className="drop-shadow-[0_0_10px_currentColor]" />
-                    </div>
-                    <div>
-                        <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
-                            <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${league.color}`}>{league.name} League</span>
-                            <span className="px-1.5 py-0.5 rounded-full bg-white/10 text-[8px] font-bold text-white/60">Ranked</span>
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-150 contrast-150 mix-blend-overlay"></div>
+                <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-[2.2rem] p-8 flex flex-col md:flex-row items-center justify-between gap-8 h-full relative z-10">
+                    <div className="flex items-center gap-6 text-center md:text-left">
+                        <div className={`w-20 h-20 rounded-2xl flex items-center justify-center text-white shadow-2xl shadow-primary-500/40 relative overflow-hidden ${league.color.replace('text', 'bg').replace('-400', '-500')}`}>
+                            <Trophy size={40} className="relative z-10 drop-shadow-md" />
+                            <div className="absolute inset-0 bg-gradient-to-tr from-white/30 to-transparent" />
                         </div>
-                        <h2 className="text-2xl font-black text-white leading-tight">Level {user?.level || 1} Elite</h2>
+                        <div>
+                            <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
+                                <span className={`text-xs font-black uppercase tracking-[0.25em] ${league.color}`}>{league.name} League</span>
+                                <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[9px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 dark:border-slate-700">Ranked</span>
+                            </div>
+                            <h2 className="text-3xl font-black text-slate-900 dark:text-white leading-none tracking-tight">Level {user?.level || 1} Elite</h2>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-2">You're in the top 5% of students this week.</p>
+                        </div>
                     </div>
-                </div>
 
-                <div className="flex items-center gap-8 lg:gap-12">
-                    <div className="text-center">
-                        <span className="block text-xl font-black text-white">{user?.xp || 0}</span>
-                        <span className="text-[9px] uppercase font-bold text-white/40 tracking-wider">Current XP</span>
-                    </div>
-                    <div className="text-center hidden sm:block">
-                        <span className="block text-xl font-black text-white">Top 5%</span>
-                        <span className="text-[9px] uppercase font-bold text-white/40 tracking-wider">Global Rank</span>
-                    </div>
-                    <div className="h-10 w-[1px] bg-white/10 hidden md:block" />
-                    <div className="flex flex-col gap-2 min-w-[120px]">
-                        <div className="flex justify-between text-[9px] font-bold uppercase tracking-wider">
-                            <span className="text-white/40">Next Level</span>
-                            <span className="text-white">65%</span>
+                    <div className="flex items-center gap-10 lg:gap-16">
+                        <div className="text-center">
+                            <span className="block text-3xl font-black text-slate-900 dark:text-white tracking-tight">{user?.xp || 0}</span>
+                            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Current XP</span>
                         </div>
-                        <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                            <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: '65%' }}
-                                className={`h-full ${league.color.replace('text', 'bg')}`}
-                            />
+                        <div className="h-12 w-[1px] bg-slate-200 dark:bg-slate-800 hidden md:block" />
+                        <div className="flex flex-col gap-3 min-w-[180px]">
+                            <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                                <span className="text-slate-400">Progress to Level {(user?.level || 1) + 1}</span>
+                                <span className="text-primary-500">65%</span>
+                            </div>
+                            <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: '65%' }}
+                                    className={`h-full bg-gradient-to-r ${league.gradient || 'from-primary-500 to-primary-400'} shadow-[0_0_20px_rgba(99,102,241,0.5)]`}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
             </motion.div>
 
             {/* Help Button */}
-            <div className="mb-6">
+            <div className="mb-8 flex justify-end">
                 <button
                     onClick={() => setIsHelpOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95 font-semibold text-sm"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 rounded-full shadow-lg shadow-slate-200/50 dark:shadow-black/20 border border-slate-100 dark:border-slate-700 transition-all active:scale-95 font-bold text-xs uppercase tracking-wider hover:border-primary-500/30"
                 >
-                    <HelpCircle size={18} />
-                    How to use Study Assistance
+                    <HelpCircle size={16} />
+                    <span>Guide</span>
                 </button>
             </div>
 
             <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
                 <StatCard
-                    icon={<Target className="text-primary-500" />}
+                    icon={<Target className="text-white" />}
+                    iconColor="bg-blue-500 shadow-blue-500/30"
                     label="Today's Goal"
                     value={`${stats.todayHours.toFixed(1)} / ${(user?.settings?.dailyStudyTarget || 2)}h`}
                     trend="Daily progress"
                     onClick={() => navigate('/logs')}
                 />
                 <StatCard
-                    icon={<Clock className="text-blue-500" />}
+                    icon={<Clock className="text-white" />}
+                    iconColor="bg-indigo-500 shadow-indigo-500/30"
                     label="Remaining Study"
                     value={`${stats.totalRemaining.toFixed(1)}h`}
                     trend="To complete targets"
                     onClick={() => navigate('/modules')}
                 />
                 <StatCard
-                    icon={<Layers className="text-purple-500" />}
+                    icon={<Layers className="text-white" />}
+                    iconColor="bg-purple-500 shadow-purple-500/30"
                     label="Active Modules"
                     value={stats.activeModules}
                     trend="Currently enrolled"
                     onClick={() => navigate('/modules')}
                 />
                 <StatCard
-                    icon={<Award className="text-pink-500" />}
+                    icon={<Award className="text-white" />}
+                    iconColor="bg-pink-500 shadow-pink-500/30"
                     label="Study Streak"
                     value={`${stats.streak} Days`}
                     trend="Keep it going!"
@@ -230,16 +310,15 @@ const Dashboard = () => {
                 />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
-                {/* Visual Journey Map (Replaces simple Heatmap) */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                {/* Visual Journey Map */}
                 <Card
                     title="My Learning Journey"
-                    className="lg:col-span-2 min-h-[400px]"
+                    className="lg:col-span-2 min-h-[450px]"
                     HeaderAction={
-                        <button className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-br from-primary-500 to-indigo-600 hover:from-primary-600 hover:to-indigo-700 text-white rounded-xl shadow-lg shadow-primary-500/20 transition-all active:scale-95 group overflow-hidden relative">
-                            <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <Map size={14} className="relative z-10" />
-                            <span className="text-[10px] font-black uppercase tracking-widest relative z-10">View Map</span>
+                        <button className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all text-[10px] font-black uppercase tracking-widest">
+                            <Map size={14} />
+                            View Map
                         </button>
                     }
                 >
@@ -247,13 +326,14 @@ const Dashboard = () => {
                 </Card>
 
                 {/* Focus Profile & Badges */}
-                <div className="space-y-6">
+                <div className="space-y-8">
                     <Card title="Focus DNA" HeaderAction={<Brain size={18} className="text-purple-500" />}>
-                        <div className="h-64">
+                        <div className="h-64 relative">
+                            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white/5 pointer-events-none rounded-full" />
                             <FocusRadar />
                         </div>
-                        <div className="mt-2 text-center text-xs text-slate-400">
-                            Analysis based on study patterns
+                        <div className="mt-4 text-center">
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Analysis based on study patterns</p>
                         </div>
                     </Card>
 
@@ -272,9 +352,12 @@ const Dashboard = () => {
                                     />
                                 );
                             }) : (
-                                <div className="col-span-2 py-8 text-center bg-slate-50 dark:bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800">
-                                    <Trophy size={24} className="mx-auto mb-2 text-slate-300 opacity-20" />
+                                <div className="col-span-2 py-12 text-center bg-slate-50 dark:bg-slate-800/50 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-700 group hover:border-primary-500/30 transition-colors">
+                                    <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                        <Trophy size={24} className="text-slate-300 group-hover:text-primary-500 transition-colors" />
+                                    </div>
                                     <p className="text-[10px] font-black text-slate-400 tracking-widest uppercase">No Badges Yet</p>
+                                    <p className="text-xs text-slate-400 mt-1">Keep studying to unlock rewards!</p>
                                 </div>
                             )}
                         </div>
@@ -288,21 +371,22 @@ const Dashboard = () => {
                         >
                             <div className="space-y-3">
                                 {cloudEvents.map(event => (
-                                    <div key={event.id} className="p-3 bg-blue-500/5 border border-blue-500/10 rounded-2xl hover:bg-blue-500/10 transition-colors cursor-default">
-                                        <div className="flex items-start justify-between gap-2">
+                                    <div key={event.id} className="p-4 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700/50 rounded-2xl hover:shadow-lg hover:border-blue-500/30 transition-all cursor-default group">
+                                        <div className="flex items-start justify-between gap-3">
                                             <div className="min-w-0">
-                                                <h4 className="text-[11px] font-black text-slate-800 dark:text-slate-100 truncate uppercase tracking-wider">{event.title}</h4>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className="text-[9px] font-bold text-blue-500 uppercase tracking-widest">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
+                                                    <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest">
                                                         {new Date(event.start).toLocaleDateString([], { month: 'short', day: 'numeric' })}
                                                     </span>
-                                                    <span className="text-[9px] font-medium text-slate-400">
-                                                        {new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                    </span>
                                                 </div>
+                                                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-blue-500 transition-colors">{event.title}</h4>
+                                                <span className="text-[10px] font-medium text-slate-400 mt-0.5 block">
+                                                    {new Date(event.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
                                             </div>
-                                            <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shrink-0">
-                                                <Calendar size={12} />
+                                            <div className="p-2 rounded-xl bg-blue-50 dark:bg-slate-700/50 text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                                                <Calendar size={14} />
                                             </div>
                                         </div>
                                     </div>
@@ -440,27 +524,29 @@ const Dashboard = () => {
     );
 };
 
-const StatCard = ({ icon, label, value, trend, onClick }) => (
+const StatCard = ({ icon, iconColor, label, value, trend, onClick }) => (
     <Card
-        className={`hover:shadow-md transition-shadow group relative overflow-hidden ${onClick ? 'cursor-pointer active:scale-95 transition-transform' : ''}`}
+        className={`hover:shadow-2xl transition-all duration-300 group relative overflow-hidden card-hover-effect ${onClick ? 'cursor-pointer active:scale-95' : ''}`}
         onClick={onClick}
     >
         <div className="relative z-10">
             <div className="flex items-start justify-between">
                 <div>
-                    <p className="text-slate-500 dark:text-slate-400 text-[9px] font-black uppercase tracking-wider mb-0.5">{label}</p>
-                    <h3 className="text-xl font-black text-slate-900 dark:text-slate-100">{value}</h3>
+                    <p className="text-slate-500 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">{label}</p>
+                    <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{value}</h3>
                 </div>
-                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl group-hover:bg-primary-500 group-hover:text-white transition-colors duration-300">
-                    {React.cloneElement(icon, { size: 18 })}
+                <div className={`p-4 rounded-2xl text-white shadow-lg ${iconColor || 'bg-slate-500'} group-hover:scale-110 transition-transform duration-300`}>
+                    {React.cloneElement(icon, { size: 20 })}
                 </div>
             </div>
             <div className="mt-4 flex items-center gap-2 text-[10px] font-bold">
-                <TrendingUp size={12} className="text-green-500" />
+                <div className="flex items-center justify-center w-5 h-5 rounded-full bg-green-500/10 text-green-500">
+                    <TrendingUp size={10} />
+                </div>
                 <span className="text-slate-500 dark:text-slate-400 tracking-wider uppercase">{trend}</span>
             </div>
         </div>
-        <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-primary-500/10 transition-colors" />
+        <div className="absolute top-0 right-0 w-32 h-32 bg-current opacity-5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:opacity-10 transition-opacity" />
     </Card>
 );
 

@@ -30,6 +30,7 @@ const ModuleDetail = React.lazy(() => import('./pages/ModuleDetail'));
 const Tutorials = React.lazy(() => import('./pages/Tutorials'));
 const Chat = React.lazy(() => import('./pages/Chat'));
 const PublicViewer = React.lazy(() => import('./pages/PublicViewer'));
+const KnowledgeGraph = React.lazy(() => import('./pages/KnowledgeGraph'));
 
 // Loading Screen Component
 const LoadingScreen = () => (
@@ -76,6 +77,7 @@ function App() {
                       <Route path="/calendar" element={<Calendar />} />
                       <Route path="/kanban" element={<Kanban />} />
                       <Route path="/sql" element={<SQLVisualizer />} />
+                      <Route path="/knowledge-graph" element={<KnowledgeGraph />} />
                       <Route path="/deep-analytics" element={<DeepAnalytics />} />
                       <Route path="/settings" element={<Settings />} />
                       <Route path="/focus" element={<DeepFocus />} />
