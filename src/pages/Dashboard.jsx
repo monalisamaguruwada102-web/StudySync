@@ -43,7 +43,7 @@ import {
     LineElement,
 } from 'chart.js';
 import { Bar, Doughnut, Line } from 'react-chartjs-2';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getModuleColor } from '../utils/colors';
 
 ChartJS.register(
