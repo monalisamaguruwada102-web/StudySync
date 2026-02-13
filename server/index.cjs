@@ -1412,8 +1412,33 @@ genericCollections.forEach(collection => {
 
     app.put(`/api/${collection}/:id`, authenticateToken, async (req, res) => {
         const updates = { ...req.body, updatedAt: new Date().toISOString() };
+
+        // Get existing item to check previous state (e.g. for XP)
+        const existingItem = db.getById(collection, req.params.id);
+
         let item = db.update(collection, req.params.id, updates);
         let syncStatus = 'local-only';
+
+        // XP Logic for Updates (specifically Tasks)
+        if (collection === 'tasks' && updates.status === 'Completed' && existingItem && existingItem.status !== 'Completed') {
+            const xpGained = 30; // Same as creation reward
+            const xpResult = db.addXP(req.user.id, xpGained);
+            try {
+                // Fetch full user to get latest XP/Level
+                const updatedUser = db.getById('users', req.user.id);
+                if (updatedUser) {
+                    await supabasePersistence.upsertProfile({
+                        id: req.user.id,
+                        email: req.user.email,
+                        xp: updatedUser.xp,
+                        level: updatedUser.level,
+                        updated_at: new Date().toISOString()
+                    });
+                }
+            } catch (e) {
+                console.warn('Could not sync XP from task completion:', e.message);
+            }
+        }
 
         const supabaseTable = tableMap[collection];
         if (supabaseTable) {
