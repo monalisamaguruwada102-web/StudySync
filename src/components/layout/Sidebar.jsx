@@ -62,41 +62,41 @@ const Sidebar = ({ isOpen, onClose }) => {
                 <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 via-transparent to-purple-500/5 pointer-events-none" />
 
                 {/* Logo Section */}
-                <div className="p-6 flex items-center justify-between gap-3 relative z-10 shrink-0">
+                <div className="p-4 lg:p-6 flex items-center justify-between gap-3 relative z-10 shrink-0">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-xl shadow-primary-500/30 relative overflow-hidden group hover:scale-105 transition-transform duration-300">
-                            <GraduationCap size={24} className="relative z-10" />
+                        <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-primary-600 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-xl shadow-primary-500/30 relative overflow-hidden group hover:scale-105 transition-transform duration-300">
+                            <GraduationCap size={20} className="relative z-10 lg:w-6 lg:h-6" />
                             <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent" />
                         </div>
                         <div>
-                            <span className="text-xl font-black bg-gradient-to-r from-slate-900 via-primary-600 to-purple-600 dark:from-slate-100 dark:via-primary-400 dark:to-purple-400 bg-clip-text text-transparent">
+                            <span className="text-lg lg:text-xl font-black bg-gradient-to-r from-slate-900 via-primary-600 to-purple-600 dark:from-slate-100 dark:via-primary-400 dark:to-purple-400 bg-clip-text text-transparent">
                                 StudySync
                             </span>
                             <div className="flex items-center gap-1 mt-0.5">
                                 <Sparkles size={8} className="text-primary-500" />
-                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Premium</span>
+                                <span className="text-[8px] lg:text-[9px] font-bold text-slate-400 uppercase tracking-wider">Premium</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Level Progress Card */}
-                <div className="mx-4 mb-4 shrink-0">
-                    <div className="p-4 bg-gradient-to-br from-slate-50 to-white dark:from-slate-800/50 dark:to-slate-900/50 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 shadow-lg shadow-slate-200/50 dark:shadow-black/20 relative overflow-hidden group hover:shadow-primary-500/10 transition-all duration-300">
+                <div className="mx-3 lg:mx-4 mb-3 lg:mb-4 shrink-0">
+                    <div className="p-3 lg:p-4 bg-gradient-to-br from-slate-50 to-white dark:from-slate-800/50 dark:to-slate-900/50 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 shadow-lg shadow-slate-200/50 dark:shadow-black/20 relative overflow-hidden group hover:shadow-primary-500/10 transition-all duration-300">
                         {/* Animated gradient background */}
                         <div className="absolute inset-0 bg-gradient-to-br from-primary-500/10 via-purple-500/5 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                         <div className="relative z-10">
                             <div className="flex items-center justify-between mb-2">
                                 <div className="flex items-center gap-2">
-                                    <div className="p-1.5 bg-gradient-to-br from-primary-500 to-purple-500 rounded-lg text-white shadow-md shadow-primary-500/30">
-                                        <Trophy size={14} />
+                                    <div className="p-1 lg:p-1.5 bg-gradient-to-br from-primary-500 to-purple-500 rounded-lg text-white shadow-md shadow-primary-500/30">
+                                        <Trophy size={12} className="lg:w-3.5 lg:h-3.5" />
                                     </div>
-                                    <span className="text-xs font-black bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent uppercase tracking-wider">
+                                    <span className="text-[10px] lg:text-xs font-black bg-gradient-to-r from-slate-800 to-slate-600 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent uppercase tracking-wider">
                                         Level {user?.level || 1}
                                     </span>
                                 </div>
-                                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                                <span className="text-[9px] lg:text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
                                     {user?.xp || 0} / {nextLevelXP} XP
                                 </span>
                             </div>
@@ -115,7 +115,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                 </div>
 
                 {/* Navigation (Mobile Only) */}
-                <div className="flex-1 overflow-y-auto min-h-0 px-4 pb-4 space-y-6 relative z-10 custom-scrollbar lg:hidden">
+                <div className="flex-1 overflow-y-auto min-h-0 px-4 pb-24 space-y-6 relative z-10 custom-scrollbar lg:hidden">
                     {navGroups.map((group, groupIndex) => (
                         <div key={group.title}>
                             <div className="px-1 mb-4">
