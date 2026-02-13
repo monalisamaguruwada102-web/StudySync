@@ -66,6 +66,7 @@ function App() {
                     <Route element={<ProtectedRoute />}>
                       <Route path="/" element={<Dashboard />} />
                       <Route path="/modules" element={<Modules />} />
+                      <Route path="/modules/:id" element={<ModuleDetail />} />
                       <Route path="/tutorials" element={<Tutorials />} />
                       <Route path="/tutorials/shared/:id" element={<Tutorials />} />
                       <Route path="/notes" element={<Notes />} />
