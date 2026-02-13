@@ -4,6 +4,9 @@ import 'package:study_sync_mobile/core/di/injection.dart';
 import 'package:study_sync_mobile/features/chat/domain/entities/conversation.dart';
 import 'package:study_sync_mobile/features/chat/domain/entities/message.dart';
 import 'package:study_sync_mobile/features/chat/presentation/bloc/message_bloc.dart';
+import 'package:study_sync_mobile/features/chat/presentation/screens/call_screen.dart';
+import 'package:study_sync_mobile/core/network/socket_service.dart';
+import 'dart:async';
 
 class ChatRoomScreen extends StatefulWidget {
   final Conversation conversation;
@@ -15,11 +18,62 @@ class ChatRoomScreen extends StatefulWidget {
 
 class _ChatRoomScreenState extends State<ChatRoomScreen> {
   final _messageController = TextEditingController();
+  StreamSubscription? _socketSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _socketSubscription = sl<SocketService>().messages.listen((event) {
+      if (event['type'] == 'call_made') {
+        _showIncomingCallDialog(event['data']);
+      }
+    });
+  }
 
   @override
   void dispose() {
     _messageController.dispose();
+    _socketSubscription?.cancel();
     super.dispose();
+  }
+
+  void _showIncomingCallDialog(dynamic data) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text("Incoming Call from ${data['name']}"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              sl<SocketService>()
+                  .socket
+                  .emit('call-rejected', {'to': data['from']});
+              Navigator.pop(context);
+            },
+            child: const Text("Reject", style: TextStyle(color: Colors.red)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CallScreen(
+                    socket: sl<SocketService>().socket,
+                    otherUserId: data['from'],
+                    otherUserName: data['name'],
+                    isIncoming: true,
+                    signal: data['signal'],
+                  ),
+                ),
+              );
+            },
+            child: const Text("Accept", style: TextStyle(color: Colors.green)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -28,7 +82,19 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       create: (_) =>
           sl<MessageBloc>()..add(LoadMessagesEvent(widget.conversation.id)),
       child: Scaffold(
-        appBar: AppBar(title: Text(widget.conversation.name ?? 'Chat')),
+        appBar: AppBar(
+          title: Text(widget.conversation.name ?? 'Chat'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.phone),
+              onPressed: () => _initiateCall(false),
+            ),
+            IconButton(
+              icon: const Icon(Icons.videocam),
+              onPressed: () => _initiateCall(true),
+            ),
+          ],
+        ),
         body: Column(
           children: [
             Expanded(
@@ -92,6 +158,20 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  void _initiateCall(bool isVideo) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CallScreen(
+          socket: sl<SocketService>().socket,
+          otherUserId: widget.conversation.id,
+          otherUserName: widget.conversation.name ?? 'Unknown',
+          isVideo: isVideo,
+        ),
       ),
     );
   }

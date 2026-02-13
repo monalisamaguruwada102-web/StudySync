@@ -158,6 +158,12 @@
       "languageVersion": "3.0"
     },
     {
+      "name": "dart_webrtc",
+      "rootUri": "file:///C:/Users/JOSHWEBS/AppData/Local/Pub/Cache/hosted/pub.dev/dart_webrtc-1.4.8",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
       "name": "dio",
       "rootUri": "file:///C:/Users/JOSHWEBS/AppData/Local/Pub/Cache/hosted/pub.dev/dio-5.9.1",
       "packageUri": "lib/",
@@ -270,6 +276,12 @@
       "rootUri": "file:///C:/Users/JOSHWEBS/Desktop/NNN/flutter/packages/flutter_web_plugins",
       "packageUri": "lib/",
       "languageVersion": "3.9"
+    },
+    {
+      "name": "flutter_webrtc",
+      "rootUri": "file:///C:/Users/JOSHWEBS/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_webrtc-0.10.8",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
     },
     {
       "name": "frontend_server_client",
@@ -500,6 +512,12 @@
       "languageVersion": "3.2"
     },
     {
+      "name": "platform_detect",
+      "rootUri": "file:///C:/Users/JOSHWEBS/AppData/Local/Pub/Cache/hosted/pub.dev/platform_detect-2.1.5",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
+    },
+    {
       "name": "plugin_platform_interface",
       "rootUri": "file:///C:/Users/JOSHWEBS/AppData/Local/Pub/Cache/hosted/pub.dev/plugin_platform_interface-2.1.8",
       "packageUri": "lib/",
@@ -608,6 +626,12 @@
       "languageVersion": "3.1"
     },
     {
+      "name": "synchronized",
+      "rootUri": "file:///C:/Users/JOSHWEBS/AppData/Local/Pub/Cache/hosted/pub.dev/synchronized-3.4.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.8"
+    },
+    {
       "name": "term_glyph",
       "rootUri": "file:///C:/Users/JOSHWEBS/AppData/Local/Pub/Cache/hosted/pub.dev/term_glyph-1.2.2",
       "packageUri": "lib/",
@@ -651,9 +675,9 @@
     },
     {
       "name": "web",
-      "rootUri": "file:///C:/Users/JOSHWEBS/AppData/Local/Pub/Cache/hosted/pub.dev/web-1.1.1",
+      "rootUri": "file:///C:/Users/JOSHWEBS/AppData/Local/Pub/Cache/hosted/pub.dev/web-0.5.1",
       "packageUri": "lib/",
-      "languageVersion": "3.4"
+      "languageVersion": "3.3"
     },
     {
       "name": "web_socket",
@@ -666,6 +690,12 @@
       "rootUri": "file:///C:/Users/JOSHWEBS/AppData/Local/Pub/Cache/hosted/pub.dev/web_socket_channel-3.0.3",
       "packageUri": "lib/",
       "languageVersion": "3.3"
+    },
+    {
+      "name": "webrtc_interface",
+      "rootUri": "file:///C:/Users/JOSHWEBS/AppData/Local/Pub/Cache/hosted/pub.dev/webrtc_interface-1.4.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "xdg_directories",

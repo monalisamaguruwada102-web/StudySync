@@ -37,6 +37,26 @@ class SocketService {
     socket.on('user_typing', (data) {
       _messageController.add({'type': 'typing', 'data': data});
     });
+
+    socket.on('call-made', (data) {
+      _messageController.add({'type': 'call_made', 'data': data});
+    });
+
+    socket.on('call-answered', (data) {
+      _messageController.add({'type': 'call_answered', 'data': data});
+    });
+
+    socket.on('call-rejected', (data) {
+      _messageController.add({'type': 'call_rejected', 'data': data});
+    });
+
+    socket.on('call-ended', (data) {
+      _messageController.add({'type': 'call_ended', 'data': data});
+    });
+
+    socket.on('ice-candidate', (data) {
+      _messageController.add({'type': 'ice_candidate', 'data': data});
+    });
   }
 
   void joinConversation(String conversationId) {

@@ -51,6 +51,52 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         console.log(`👋 User disconnected: ${socket.user.email}`);
+        // Notify others if in a call (optional improvement)
+    });
+
+    // --- WebRTC Signaling ---
+
+    socket.on('call-user', (data) => {
+        // data: { userToCall, signalData, from, name }
+        console.log(`📞 Call initiated from ${socket.user.id} to ${data.userToCall}`);
+        io.to(`user:${data.userToCall}`).emit('call-made', {
+            signal: data.signalData,
+            from: socket.user.id,
+            name: socket.user.name || socket.user.email
+        });
+    });
+
+    socket.on('make-answer', (data) => {
+        // data: { signal, to }
+        console.log(`✅ Call accepted by ${socket.user.id} for ${data.to}`);
+        io.to(`user:${data.to}`).emit('call-answered', {
+            signal: data.signal,
+            from: socket.user.id
+        });
+    });
+
+    socket.on('ice-candidate', (data) => {
+        // data: { to, candidate }
+        io.to(`user:${data.to}`).emit('ice-candidate', {
+            candidate: data.candidate,
+            from: socket.user.id
+        });
+    });
+
+    socket.on('call-rejected', (data) => {
+        // data: { to }
+        console.log(`❌ Call rejected by ${socket.user.id}`);
+        io.to(`user:${data.to}`).emit('call-rejected', {
+            from: socket.user.id
+        });
+    });
+
+    socket.on('hang-up', (data) => {
+        // data: { to }
+        console.log(`📴 Call ended by ${socket.user.id}`);
+        io.to(`user:${data.to}`).emit('call-ended', {
+            from: socket.user.id
+        });
     });
 });
 

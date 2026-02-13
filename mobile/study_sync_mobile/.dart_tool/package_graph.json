@@ -13,6 +13,7 @@
         "flutter",
         "flutter_bloc",
         "flutter_secure_storage",
+        "flutter_webrtc",
         "get_it",
         "hive",
         "hive_flutter",
@@ -247,6 +248,11 @@
         "sky_engine",
         "vector_math"
       ]
+    },
+    {
+      "name": "web",
+      "version": "0.5.1",
+      "dependencies": []
     },
     {
       "name": "yaml",
@@ -689,6 +695,55 @@
       ]
     },
     {
+      "name": "leak_tracker_testing",
+      "version": "3.0.2",
+      "dependencies": [
+        "leak_tracker",
+        "matcher",
+        "meta"
+      ]
+    },
+    {
+      "name": "leak_tracker",
+      "version": "11.0.2",
+      "dependencies": [
+        "clock",
+        "collection",
+        "meta",
+        "path",
+        "vm_service"
+      ]
+    },
+    {
+      "name": "term_glyph",
+      "version": "1.2.2",
+      "dependencies": []
+    },
+    {
+      "name": "string_scanner",
+      "version": "1.4.1",
+      "dependencies": [
+        "source_span"
+      ]
+    },
+    {
+      "name": "source_span",
+      "version": "1.10.2",
+      "dependencies": [
+        "collection",
+        "path",
+        "term_glyph"
+      ]
+    },
+    {
+      "name": "boolean_selector",
+      "version": "2.1.2",
+      "dependencies": [
+        "source_span",
+        "string_scanner"
+      ]
+    },
+    {
       "name": "socket_io_common",
       "version": "2.0.3",
       "dependencies": [
@@ -803,22 +858,6 @@
       "dependencies": []
     },
     {
-      "name": "string_scanner",
-      "version": "1.4.1",
-      "dependencies": [
-        "source_span"
-      ]
-    },
-    {
-      "name": "source_span",
-      "version": "1.10.2",
-      "dependencies": [
-        "collection",
-        "path",
-        "term_glyph"
-      ]
-    },
-    {
       "name": "xml",
       "version": "6.6.1",
       "dependencies": [
@@ -858,11 +897,6 @@
       ]
     },
     {
-      "name": "web",
-      "version": "1.1.1",
-      "dependencies": []
-    },
-    {
       "name": "file",
       "version": "7.0.1",
       "dependencies": [
@@ -893,37 +927,9 @@
       "dependencies": []
     },
     {
-      "name": "leak_tracker_testing",
-      "version": "3.0.2",
-      "dependencies": [
-        "leak_tracker",
-        "matcher",
-        "meta"
-      ]
-    },
-    {
-      "name": "leak_tracker",
-      "version": "11.0.2",
-      "dependencies": [
-        "clock",
-        "collection",
-        "meta",
-        "path",
-        "vm_service"
-      ]
-    },
-    {
-      "name": "term_glyph",
-      "version": "1.2.2",
+      "name": "vm_service",
+      "version": "15.0.2",
       "dependencies": []
-    },
-    {
-      "name": "boolean_selector",
-      "version": "2.1.2",
-      "dependencies": [
-        "source_span",
-        "string_scanner"
-      ]
     },
     {
       "name": "flutter_web_plugins",
@@ -1017,11 +1023,6 @@
       "dependencies": []
     },
     {
-      "name": "vm_service",
-      "version": "15.0.2",
-      "dependencies": []
-    },
-    {
       "name": "ffi",
       "version": "2.2.0",
       "dependencies": []
@@ -1083,6 +1084,50 @@
         "collection",
         "hooks"
       ]
+    },
+    {
+      "name": "flutter_webrtc",
+      "version": "0.10.8",
+      "dependencies": [
+        "collection",
+        "dart_webrtc",
+        "flutter",
+        "path_provider",
+        "web",
+        "webrtc_interface"
+      ]
+    },
+    {
+      "name": "webrtc_interface",
+      "version": "1.4.0",
+      "dependencies": []
+    },
+    {
+      "name": "dart_webrtc",
+      "version": "1.4.8",
+      "dependencies": [
+        "collection",
+        "js",
+        "logging",
+        "meta",
+        "platform_detect",
+        "synchronized",
+        "web",
+        "webrtc_interface"
+      ]
+    },
+    {
+      "name": "platform_detect",
+      "version": "2.1.5",
+      "dependencies": [
+        "meta",
+        "pub_semver"
+      ]
+    },
+    {
+      "name": "synchronized",
+      "version": "3.4.0",
+      "dependencies": []
     }
   ],
   "configVersion": 1
