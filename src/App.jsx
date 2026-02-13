@@ -29,6 +29,7 @@ const DeepFocus = React.lazy(() => import('./pages/DeepFocus'));
 const ModuleDetail = React.lazy(() => import('./pages/ModuleDetail'));
 const Tutorials = React.lazy(() => import('./pages/Tutorials'));
 const Chat = React.lazy(() => import('./pages/Chat'));
+const PublicViewer = React.lazy(() => import('./pages/PublicViewer'));
 
 // Loading Screen Component
 const LoadingScreen = () => (
@@ -56,6 +57,10 @@ function App() {
                 <React.Suspense fallback={<LoadingScreen />}>
                   <Routes>
                     <Route path="/login" element={<Login />} />
+
+                    {/* Public Sharing Routes */}
+                    <Route path="/share/tutorials/:id" element={<PublicViewer />} />
+                    <Route path="/share/flashcards/:id" element={<PublicViewer />} />
 
                     <Route element={<ProtectedRoute />}>
                       <Route path="/" element={<Dashboard />} />

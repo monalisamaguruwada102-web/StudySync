@@ -7,7 +7,8 @@ import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
 import { useFirestore } from '../hooks/useFirestore';
 import { tutorialService, moduleService } from '../services/firestoreService';
-import { Plus, Youtube, Trash2, Book, ExternalLink, Search, LayoutDashboard, Play, Share2, VideoOff } from 'lucide-react';
+import api from '../services/api';
+import { Plus, Youtube, Trash2, Book, ExternalLink, Search, LayoutDashboard, Play, Share2, VideoOff, Globe } from 'lucide-react';
 import ShareToChatModal from '../components/ui/ShareToChatModal';
 import { useNotification } from '../context/NotificationContext';
 
@@ -97,11 +98,30 @@ const Tutorials = () => {
         return matchesSearch && matchesModule;
     });
 
-    const handleCopyExternalLink = (tutorial) => {
-        const url = `${window.location.origin}/tutorials/shared/${tutorial.id}`;
-        const shareText = `Check out this tutorial on StudySync: ${tutorial.title}\n${url}`;
-        navigator.clipboard.writeText(shareText);
-        showToast('External link copied to clipboard!', 'success');
+    const handleCopyExternalLink = async (tutorial) => {
+        try {
+            // 1. Toggle public state if not already public (or just ensure it's public)
+            // We'll use the toggle endpoint. If we want to ONLY make it public, we might need a dedicated endpoint,
+            // but for now, we'll assume the user wants to share it, so we ensure it's public.
+            // Actually, let's just use the toggle endpoint to FLIP it if they click a specific "Toggle" button,
+            // but for "Copy Link", we should probably ensure it IS public.
+            // Let's stick to the plan: "Share Externally" button toggles public visibility.
+
+            // Call API to ensure it's public (or toggle)
+            const response = await api.post(`/public/tutorials/${tutorial.id}/toggle`);
+            if (response.data.isPublic) {
+                const url = `${window.location.origin}/share/tutorials/${tutorial.id}`;
+                const shareText = `Check out this tutorial on StudySync: ${tutorial.title}\n${url}`;
+                await navigator.clipboard.writeText(shareText);
+                showToast('Link copied & made public!', 'success');
+            } else {
+                showToast('Tutorial is now private.', 'info');
+            }
+            await refresh(); // Refresh to show new UI state if we add badges
+        } catch (error) {
+            console.error('Failed to share:', error);
+            showToast('Failed to generate share link', 'error');
+        }
     };
 
     // Shared Tutorial Effect
@@ -298,10 +318,10 @@ const Tutorials = () => {
                                                 <Button
                                                     variant="ghost"
                                                     onClick={() => handleCopyExternalLink(tutorial)}
-                                                    className="!p-1.5 text-slate-400 hover:text-blue-500"
-                                                    title="Copy Share Link"
+                                                    className={`!p-1.5 ${tutorial.isPublic ? 'text-primary-500 bg-primary-50' : 'text-slate-400 hover:text-blue-500'}`}
+                                                    title={tutorial.isPublic ? "Public (Click to toggle)" : "Share Externally"}
                                                 >
-                                                    <ExternalLink size={14} />
+                                                    <Globe size={14} />
                                                 </Button>
                                                 <Button
                                                     variant="ghost"

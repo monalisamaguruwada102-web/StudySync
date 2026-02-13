@@ -6,7 +6,8 @@ import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
 import { useFirestore } from '../hooks/useFirestore';
 import { flashcardDeckService, flashcardService, moduleService } from '../services/firestoreService';
-import { Plus, Book, Brain, ChevronRight, ChevronLeft, RotateCcw, Check, X, Layers, Play, Sparkles } from 'lucide-react';
+import api from '../services/api';
+import { Plus, Book, Brain, ChevronRight, ChevronLeft, RotateCcw, Check, X, Layers, Play, Sparkles, Globe } from 'lucide-react';
 import aiService from '../services/aiService';
 import { useNotification } from '../context/NotificationContext';
 
@@ -123,6 +124,24 @@ const Flashcards = () => {
             showToast('AI Service failed. Please check your API key.', 'error');
         } finally {
             setIsGenerating(false);
+        }
+    };
+
+    const handleCopyExternalLink = async (deck) => {
+        try {
+            const response = await api.post(`/public/flashcardDecks/${deck.id}/toggle`);
+            if (response.data.isPublic) {
+                const url = `${window.location.origin}/share/flashcards/${deck.id}`;
+                const shareText = `Check out this flashcard deck on StudySync: ${deck.name}\n${url}`;
+                await navigator.clipboard.writeText(shareText);
+                showToast('Link copied & made public!', 'success');
+            } else {
+                showToast('Deck is now private.', 'info');
+            }
+            await refreshDecks();
+        } catch (error) {
+            console.error('Failed to share:', error);
+            showToast('Failed to generate share link', 'error');
         }
     };
 
@@ -257,6 +276,14 @@ const Flashcards = () => {
                                         onClick={() => { setSelectedDeck(deck); setIsAIGenModalOpen(true); }}
                                     >
                                         <Sparkles size={16} className="text-purple-500" />
+                                    </Button>
+                                    <Button
+                                        variant="secondary"
+                                        className={`px-3 ${deck.isPublic ? 'text-primary-500 bg-primary-50' : ''}`}
+                                        title={deck.isPublic ? "Public (Click to toggle)" : "Share Externally"}
+                                        onClick={() => handleCopyExternalLink(deck)}
+                                    >
+                                        <Globe size={16} />
                                     </Button>
                                     <Button
                                         variant="secondary"

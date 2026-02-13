@@ -1478,6 +1478,96 @@ genericCollections.forEach(collection => {
 });
 
 
+// --- PUBLIC SHARING ENDPOINTS ---
+// These routes do NOT require authentication
+const publicCollections = ['tutorials', 'flashcardDecks', 'notes'];
+
+app.get('/api/public/:collection/:id', async (req, res) => {
+    const { collection, id } = req.params;
+
+    if (!publicCollections.includes(collection)) {
+        return res.status(400).json({ error: 'Collection not supported for public sharing' });
+    }
+
+    try {
+        // 1. Try to find locally first (fastest)
+        let item = db.getById(collection, id);
+
+        // 2. If not found locally, try Supabase (for persistent links)
+        if (!item) {
+            const supabaseTable = tableMap[collection];
+            if (supabaseTable) {
+                item = await supabasePersistence.getById(supabaseTable, id);
+            }
+        }
+
+        if (!item) {
+            return res.status(404).json({ error: 'Shared content not found' });
+        }
+
+        // Return only safe fields
+        const safeItem = {
+            id: item.id,
+            title: item.title || item.name,
+            description: item.description,
+            content: item.content, // For notes
+            cards: item.cards, // For flashcards (we might need to fetch them separately)
+            url: item.url, // For tutorials
+            videoId: item.videoId,
+            moduleId: item.moduleId,
+            isPublic: item.isPublic || false
+        };
+
+        // If it's a flashcard deck, we MUST fetch the cards too
+        if (collection === 'flashcardDecks') {
+            const allCards = db.get('flashcards') || [];
+            // Try to find local cards first
+            let deckCards = allCards.filter(c => c.deckId === item.id);
+
+            // If no local cards, try fetching from Supabase
+            if (deckCards.length === 0) {
+                const { data: cloudCards } = await supabasePersistence.client
+                    .from('flashcards')
+                    .select('*')
+                    .eq('deck_id', item.id || item.supabaseId); // Handle both ID types
+
+                if (cloudCards) {
+                    deckCards = cloudCards.map(c => ({ ...c, deckId: c.deck_id }));
+                }
+            }
+            safeItem.cards = deckCards;
+        }
+
+        res.json(safeItem);
+
+    } catch (error) {
+        console.error(`Error serving public content ${collection}/${id}:`, error);
+        res.status(500).json({ error: 'Failed to load shared content' });
+    }
+});
+
+app.post('/api/public/:collection/:id/toggle', authenticateToken, async (req, res) => {
+    const { collection, id } = req.params;
+    // simple endpoint to toggle public state
+    const item = db.getById(collection, id);
+    if (!item) return res.sendStatus(404);
+
+    // specific logic to update isPublic
+    const newState = !item.isPublic;
+    db.update(collection, id, { isPublic: newState });
+
+    // Sync to supabase
+    const supabaseTable = tableMap[collection];
+    if (supabaseTable) {
+        try {
+            await supabasePersistence.upsertToCollection(supabaseTable, { ...item, isPublic: newState });
+        } catch (e) { console.warn('Supabase sync failed for public toggle', e); }
+    }
+
+    res.json({ success: true, isPublic: newState });
+});
+
+
 
 // --- Data Preservation Endpoints (USER SCOPED) ---
 
