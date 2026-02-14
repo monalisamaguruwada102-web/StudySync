@@ -1,132 +1,147 @@
-import React, { useEffect, useState, useRef } from 'react';
-// Peer will be imported dynamically to ensure polyfills are ready
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Phone, PhoneOff, Mic, MicOff, Video, VideoOff, Maximize2, Minimize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Button from '../ui/Button';
 
-// Polyfill for simple-peer in Vite
-// import * as process from 'process';
-// window.global = window;
-// window.process = process;
-// window.Buffer = []; 
+const ICE_SERVERS = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+    ],
+};
 
 const CallModal = ({ socket, currentUser, activeCall, incomingCall, onEndCall, onAnswerCall }) => {
-    const [Peer, setPeer] = useState(null);
     const [stream, setStream] = useState(null);
     const [callAccepted, setCallAccepted] = useState(false);
     const [callEnded, setCallEnded] = useState(false);
-    const [name, setName] = useState('');
     const [isMuted, setIsMuted] = useState(false);
     const [isVideoOff, setIsVideoOff] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
 
     const myVideo = useRef();
     const userVideo = useRef();
-    const connectionRef = useRef();
+    const peerConnection = useRef(null);
 
-    useEffect(() => {
-        // Load simple-peer in background
-        import('simple-peer').then(module => {
-            setPeer(() => module.default);
+    const createPeerConnection = useCallback((currentStream) => {
+        const pc = new RTCPeerConnection(ICE_SERVERS);
+
+        currentStream.getTracks().forEach((track) => {
+            pc.addTrack(track, currentStream);
         });
 
-        if (activeCall) {
-            startCall();
-        } else if (incomingCall) {
-            setName(incomingCall.name);
-        }
-    }, [activeCall, incomingCall]);
-
-    const startCall = async () => {
-        try {
-            let ActivePeer = Peer;
-            if (!ActivePeer) {
-                const module = await import('simple-peer');
-                ActivePeer = module.default;
-                setPeer(() => ActivePeer);
+        pc.ontrack = (event) => {
+            if (userVideo.current && event.streams[0]) {
+                userVideo.current.srcObject = event.streams[0];
             }
+        };
 
+        pc.onicecandidate = (event) => {
+            if (event.candidate && socket) {
+                const target = activeCall?.recipientId || incomingCall?.from;
+                if (target) {
+                    socket.emit('ice-candidate', {
+                        candidate: event.candidate,
+                        to: target,
+                    });
+                }
+            }
+        };
+
+        peerConnection.current = pc;
+        return pc;
+    }, [socket, activeCall, incomingCall]);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleIceCandidate = (data) => {
+            if (peerConnection.current && data.candidate) {
+                peerConnection.current.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(console.error);
+            }
+        };
+
+        socket.on('ice-candidate', handleIceCandidate);
+        return () => {
+            socket.off('ice-candidate', handleIceCandidate);
+        };
+    }, [socket]);
+
+    useEffect(() => {
+        if (activeCall && !incomingCall) {
+            initiateCall();
+        }
+    }, [activeCall]);
+
+    const initiateCall = async () => {
+        try {
             const currentStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             setStream(currentStream);
             if (myVideo.current) {
                 myVideo.current.srcObject = currentStream;
             }
 
-            if (incomingCall) {
-                // We are answering
-                answerCall(currentStream);
-            } else if (activeCall) {
-                // We are calling
-                const peer = new ActivePeer({
-                    initiator: true,
-                    trickle: false,
-                    stream: currentStream
-                });
+            const pc = createPeerConnection(currentStream);
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
 
-                peer.on('signal', (data) => {
-                    socket.emit('call-user', {
-                        userToCall: activeCall.recipientId,
-                        signalData: data,
-                        from: currentUser.id,
-                        name: currentUser.name
-                    });
-                });
+            socket.emit('call-user', {
+                userToCall: activeCall.recipientId,
+                signalData: { type: 'offer', sdp: offer.sdp },
+                from: currentUser.id,
+                name: currentUser.name || currentUser.email,
+            });
 
-                peer.on('stream', (userStream) => {
-                    if (userVideo.current) {
-                        userVideo.current.srcObject = userStream;
-                    }
-                });
-
-                socket.on('call-answered', (signal) => {
+            socket.on('call-answered', async (data) => {
+                if (data.signal && peerConnection.current) {
+                    await peerConnection.current.setRemoteDescription(
+                        new RTCSessionDescription({ type: 'answer', sdp: data.signal.sdp })
+                    );
                     setCallAccepted(true);
-                    peer.signal(signal);
-                });
-
-                connectionRef.current = peer;
-            }
+                }
+            });
         } catch (err) {
-            console.error("Error accessing media devices:", err);
+            console.error('Error initiating call:', err);
             onEndCall();
         }
     };
 
-    const answerCall = async (currentStream) => {
-        let ActivePeer = Peer;
-        if (!ActivePeer) {
-            const module = await import('simple-peer');
-            ActivePeer = module.default;
-            setPeer(() => ActivePeer);
-        }
-
-        setCallAccepted(true);
-        const peer = new ActivePeer({
-            initiator: false,
-            trickle: false,
-            stream: currentStream
-        });
-
-        peer.on('signal', (data) => {
-            socket.emit('make-answer', { signal: data, to: incomingCall.from });
-        });
-
-        peer.on('stream', (userStream) => {
-            if (userVideo.current) {
-                userVideo.current.srcObject = userStream;
+    const answerCall = async () => {
+        try {
+            const currentStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            setStream(currentStream);
+            if (myVideo.current) {
+                myVideo.current.srcObject = currentStream;
             }
-        });
 
-        peer.signal(incomingCall.signal);
-        connectionRef.current = peer;
+            const pc = createPeerConnection(currentStream);
+
+            if (incomingCall?.signal) {
+                await pc.setRemoteDescription(
+                    new RTCSessionDescription({ type: 'offer', sdp: incomingCall.signal.sdp })
+                );
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
+
+                socket.emit('make-answer', {
+                    signal: { type: 'answer', sdp: answer.sdp },
+                    to: incomingCall.from,
+                });
+
+                setCallAccepted(true);
+            }
+        } catch (err) {
+            console.error('Error answering call:', err);
+            onEndCall();
+        }
     };
 
     const leaveCall = () => {
         setCallEnded(true);
-        if (connectionRef.current) {
-            connectionRef.current.destroy();
+        if (peerConnection.current) {
+            peerConnection.current.close();
+            peerConnection.current = null;
         }
         if (stream) {
-            stream.getTracks().forEach(track => track.stop());
+            stream.getTracks().forEach((track) => track.stop());
         }
         socket.off('call-answered');
         onEndCall();
@@ -134,15 +149,21 @@ const CallModal = ({ socket, currentUser, activeCall, incomingCall, onEndCall, o
 
     const toggleMute = () => {
         if (stream) {
-            stream.getAudioTracks()[0].enabled = !stream.getAudioTracks()[0].enabled;
-            setIsMuted(!stream.getAudioTracks()[0].enabled);
+            const audioTrack = stream.getAudioTracks()[0];
+            if (audioTrack) {
+                audioTrack.enabled = !audioTrack.enabled;
+                setIsMuted(!audioTrack.enabled);
+            }
         }
     };
 
     const toggleVideo = () => {
         if (stream) {
-            stream.getVideoTracks()[0].enabled = !stream.getVideoTracks()[0].enabled;
-            setIsVideoOff(!stream.getVideoTracks()[0].enabled);
+            const videoTrack = stream.getVideoTracks()[0];
+            if (videoTrack) {
+                videoTrack.enabled = !videoTrack.enabled;
+                setIsVideoOff(!videoTrack.enabled);
+            }
         }
     };
 
@@ -173,7 +194,7 @@ const CallModal = ({ socket, currentUser, activeCall, incomingCall, onEndCall, o
                                 <PhoneOff size={24} />
                             </button>
                             <button
-                                onClick={startCall}
+                                onClick={answerCall}
                                 className="w-14 h-14 rounded-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center shadow-lg transition-transform hover:scale-110 animate-bounce"
                             >
                                 <Phone size={24} />
