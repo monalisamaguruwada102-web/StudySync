@@ -398,20 +398,6 @@ function Chat() {
         };
     }, [currentUser]);
 
-    // Handle initiating a call
-    const initiateCall = useCallback((isVideo = true) => {
-        if (!activeConversation || activeConversation.type === 'group') return;
-
-        const otherUser = getConversationDisplay(activeConversation).otherUser;
-        if (!otherUser) return;
-
-        setActiveCall({
-            recipientId: otherUser.id,
-            recipientName: otherUser.name || otherUser.email,
-            isVideo
-        });
-    }, [activeConversation]);
-
     // --- Custom Hooks ---
     const {
         conversations,
@@ -552,6 +538,20 @@ function Chat() {
             otherUser: finalUser
         };
     }
+
+    // Handle initiating a call
+    const initiateCall = useCallback((isVideo = true) => {
+        if (!activeConversation || activeConversation.type === 'group') return;
+
+        const otherUser = getConversationDisplay(activeConversation).otherUser;
+        if (!otherUser) return;
+
+        setActiveCall({
+            recipientId: otherUser.id,
+            recipientName: otherUser.name || otherUser.email,
+            isVideo
+        });
+    }, [activeConversation, users, onlineUsers]);
 
     function getTypingText() {
         if (!activeConversation || typingUsers.size === 0) return null;
