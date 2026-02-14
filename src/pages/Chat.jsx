@@ -366,8 +366,14 @@ function Chat() {
     useEffect(() => {
         if (!currentUser) return;
 
-        // Connect to WebSocket Gateway (Port 8004)
-        const socket = io('http://localhost:8004', {
+        // Only connect if the WebSocket gateway URL is configured
+        const wsUrl = import.meta.env.VITE_WS_GATEWAY_URL;
+        if (!wsUrl) {
+            // Video calls disabled — no WebSocket gateway configured
+            return;
+        }
+
+        const socket = io(wsUrl, {
             auth: { token: localStorage.getItem('auth_token') || '' }
         });
         socketRef.current = socket;
