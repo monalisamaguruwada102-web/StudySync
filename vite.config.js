@@ -1,9 +1,22 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import tailwindcss from '@tailwindcss/vite'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
 // https://vite.dev/config/
 export default defineConfig({
+  plugins: [
+    react(),
+    tailwindcss(),
+    nodePolyfills({
+      globals: {
+        Buffer: true,
+        global: true,
+        process: true,
+      },
+      protocolImports: true,
+    }),
+  ],
   server: {
     host: true, // Listen on all local IPs
     proxy: {
@@ -11,10 +24,6 @@ export default defineConfig({
       '/uploads': 'http://localhost:3001',
     },
   },
-  plugins: [
-    react(),
-    tailwindcss(),
-  ],
   build: {
     rollupOptions: {
       output: {

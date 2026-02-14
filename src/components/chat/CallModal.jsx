@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import Peer from 'simple-peer';
+// Peer will be imported dynamically to ensure polyfills are ready
 import { Phone, PhoneOff, Mic, MicOff, Video, VideoOff, Maximize2, Minimize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
@@ -11,6 +11,7 @@ import Button from '../ui/Button';
 // window.Buffer = []; 
 
 const CallModal = ({ socket, currentUser, activeCall, incomingCall, onEndCall, onAnswerCall }) => {
+    const [Peer, setPeer] = useState(null);
     const [stream, setStream] = useState(null);
     const [callAccepted, setCallAccepted] = useState(false);
     const [callEnded, setCallEnded] = useState(false);
@@ -24,6 +25,11 @@ const CallModal = ({ socket, currentUser, activeCall, incomingCall, onEndCall, o
     const connectionRef = useRef();
 
     useEffect(() => {
+        // Load simple-peer in background
+        import('simple-peer').then(module => {
+            setPeer(() => module.default);
+        });
+
         if (activeCall) {
             startCall();
         } else if (incomingCall) {
@@ -33,6 +39,13 @@ const CallModal = ({ socket, currentUser, activeCall, incomingCall, onEndCall, o
 
     const startCall = async () => {
         try {
+            let ActivePeer = Peer;
+            if (!ActivePeer) {
+                const module = await import('simple-peer');
+                ActivePeer = module.default;
+                setPeer(() => ActivePeer);
+            }
+
             const currentStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             setStream(currentStream);
             if (myVideo.current) {
@@ -44,7 +57,7 @@ const CallModal = ({ socket, currentUser, activeCall, incomingCall, onEndCall, o
                 answerCall(currentStream);
             } else if (activeCall) {
                 // We are calling
-                const peer = new Peer({
+                const peer = new ActivePeer({
                     initiator: true,
                     trickle: false,
                     stream: currentStream
@@ -78,9 +91,16 @@ const CallModal = ({ socket, currentUser, activeCall, incomingCall, onEndCall, o
         }
     };
 
-    const answerCall = (currentStream) => {
+    const answerCall = async (currentStream) => {
+        let ActivePeer = Peer;
+        if (!ActivePeer) {
+            const module = await import('simple-peer');
+            ActivePeer = module.default;
+            setPeer(() => ActivePeer);
+        }
+
         setCallAccepted(true);
-        const peer = new Peer({
+        const peer = new ActivePeer({
             initiator: false,
             trickle: false,
             stream: currentStream
