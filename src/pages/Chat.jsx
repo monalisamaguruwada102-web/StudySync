@@ -1159,18 +1159,22 @@ function Chat() {
                                 >
                                     <Search size={20} />
                                 </button>
-                                <button
-                                    onClick={() => initiateCall(false)}
-                                    className="p-2 text-chat-text-muted btn-call btn-hover-lift rounded-lg transition-colors"
-                                >
-                                    <Phone size={20} />
-                                </button>
-                                <button
-                                    onClick={() => initiateCall(true)}
-                                    className="p-2 text-chat-text-muted btn-video btn-hover-lift rounded-lg transition-colors"
-                                >
-                                    <Video size={20} />
-                                </button>
+                                {socketRef.current && (
+                                    <>
+                                        <button
+                                            onClick={() => initiateCall(false)}
+                                            className="p-2 text-chat-text-muted btn-call btn-hover-lift rounded-lg transition-colors"
+                                        >
+                                            <Phone size={20} />
+                                        </button>
+                                        <button
+                                            onClick={() => initiateCall(true)}
+                                            className="p-2 text-chat-text-muted btn-video btn-hover-lift rounded-lg transition-colors"
+                                        >
+                                            <Video size={20} />
+                                        </button>
+                                    </>
+                                )}
                                 <div className="relative group/menu">
                                     <button className="p-2 text-chat-text-muted hover:text-chat-text-primary btn-hover-lift rounded-lg transition-colors"><MoreVertical size={20} /></button>
                                     <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl py-2 hidden group-hover/menu:block z-50 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -1581,9 +1585,9 @@ function Chat() {
                 activeCall={activeCall}
                 incomingCall={incomingCall}
                 onEndCall={() => {
-                    if (activeCall) {
+                    if (activeCall && socketRef.current) {
                         socketRef.current.emit('hang-up', { to: activeCall.recipientId });
-                    } else if (incomingCall) {
+                    } else if (incomingCall && socketRef.current) {
                         socketRef.current.emit('call-rejected', { to: incomingCall.from });
                     }
                     setActiveCall(null);
