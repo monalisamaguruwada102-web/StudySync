@@ -14,6 +14,9 @@ import { ReactionPicker, MessageReactions } from '../components/chat/ReactionPic
 import { GroupInfoDrawer } from '../components/chat/GroupInfoDrawer';
 import AudioRecorder from '../components/chat/AudioRecorder';
 import VoiceNotePlayer from '../components/chat/VoiceNotePlayer';
+import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import { Image, Paperclip, Mic, Smile, MoreVertical, Phone, Video, Hash } from 'lucide-react';
 import { io } from 'socket.io-client';
 import CallModal from '../components/chat/CallModal';
