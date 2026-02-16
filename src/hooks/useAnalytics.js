@@ -75,8 +75,12 @@ export const useAnalytics = (logs, modules, tasks, sessions = []) => {
         const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const weeklyTrend = days.map((day, index) => {
             const dayLogs = allLogs.filter(log => {
-                const logDate = log.date ? new Date(log.date) : (log.createdAt ? new Date(log.createdAt) : null);
-                return logDate && logDate.getDay() === index && isWithinInterval(logDate, { start: weekStart, end: weekEnd });
+                const dateVal = log.date || log.createdAt || log.created_at;
+                if (!dateVal) return false;
+                const logDate = new Date(dateVal);
+                return logDate.getDay() === index &&
+                    logDate >= weekStart &&
+                    logDate <= weekEnd;
             });
 
             // Breakdown by module
@@ -97,21 +101,23 @@ export const useAnalytics = (logs, modules, tasks, sessions = []) => {
 
         // 6. Streak tracking (Real Logic)
         const sortedDates = [...new Set(allLogs.map(log => {
-            const date = log.date || log.createdAt;
-            return date ? new Date(date).toISOString().split('T')[0] : null;
+            const dateVal = log.date || log.createdAt;
+            if (!dateVal) return null;
+            // Use local date string YYYY-MM-DD
+            return new Date(dateVal).toLocaleDateString('en-CA');
         }))].filter(Boolean).sort().reverse();
 
         let streak = 0;
         if (sortedDates.length > 0) {
-            const today = new Date().toISOString().split('T')[0];
-            const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+            const today = new Date().toLocaleDateString('en-CA');
+            const yesterday = new Date(Date.now() - 86400000).toLocaleDateString('en-CA');
 
             if (sortedDates[0] === today || sortedDates[0] === yesterday) {
                 streak = 1;
                 for (let i = 0; i < sortedDates.length - 1; i++) {
                     const current = new Date(sortedDates[i]);
                     const next = new Date(sortedDates[i + 1]);
-                    const diff = (current - next) / (1000 * 60 * 60 * 24);
+                    const diff = Math.round((current - next) / (1000 * 60 * 60 * 24));
                     if (diff === 1) streak++;
                     else break;
                 }

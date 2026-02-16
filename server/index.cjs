@@ -11,6 +11,7 @@ const ical = require('node-ical');
 const axios = require('axios');
 const cookieParser = require('cookie-parser');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { initScheduler } = require('./scheduler_utf8.cjs');
 require('dotenv').config();
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -1318,6 +1319,24 @@ const tableMap = {
     'messages': 'messages'
 };
 
+const { runDailyReports } = require('./scheduler_utf8.cjs');
+
+app.post('/api/admin/trigger-daily-reports', authenticateToken, async (req, res) => {
+    // Basic safety check
+    if (req.user.email !== 'joshua@joshwebs.co.zw' && !req.user.email?.includes('admin')) {
+        return res.status(403).json({ error: 'Permission denied' });
+    }
+
+    try {
+        console.log('Manual trigger: Running daily reports...');
+        await runDailyReports();
+        res.json({ success: true, message: 'Daily reports triggered successfully' });
+    } catch (error) {
+        console.error('Manual trigger failed:', error);
+        res.status(500).json({ error: 'Manual trigger failed', details: error.message });
+    }
+});
+
 genericCollections.forEach(collection => {
     app.get(`/api/${collection}`, authenticateToken, async (req, res) => {
         const supabaseTable = tableMap[collection];
@@ -2136,6 +2155,18 @@ const syncLocalDataToCloud = async () => {
                             if (!syncItem.answer) syncItem.answer = ' ';
                         }
 
+                        // Explicit mapping for Task due dates and ownership
+                        if (localCol === 'tasks') {
+                            if (syncItem.dueDate) syncItem.due_date = syncItem.dueDate;
+                            if (!syncItem.userId && item.userId) syncItem.userId = item.userId;
+                        }
+
+                        if (syncItem.taskId && !isUUID(syncItem.taskId)) {
+                            const t = db.getById('tasks', syncItem.taskId);
+                            if (t?.supabaseId) syncItem.taskId = t.supabaseId;
+                            else syncItem.taskId = null;
+                        }
+
                         const cloudItem = await supabasePersistence.upsertToCollection(remoteTable, syncItem);
                         if (cloudItem) {
                             db.update(localCol, item.id, { supabaseId: cloudItem.id });
@@ -2171,6 +2202,9 @@ const server = app.listen(PORT, async () => {
     setInterval(syncLocalDataToCloud, 5 * 60 * 1000);
     // Every 10 minutes (Cloud -> Local) to keep multiple clients in sync
     setInterval(restoreCloudData, 10 * 60 * 1000);
+
+    // Initialize the daily study report scheduler
+    initScheduler();
 });
 
 // Graceful shutdown handling
