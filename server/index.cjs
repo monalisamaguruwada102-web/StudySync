@@ -2188,7 +2188,7 @@ const syncLocalDataToCloud = async () => {
 };
 
 // SPA Fallback: Serve index.html for all /study/* routes
-app.get('/study/*', (req, res) => {
+app.get('/study/(.*)', (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
