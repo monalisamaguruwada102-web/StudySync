@@ -88,7 +88,7 @@ const runDailyReports = async () => {
     console.log('🚀 Starting daily study report process with Cloud Sync...');
     const users = db.get('users') || [];
 
-    const yesterdayStr = new Date(Date.now() - 86400000).toLocaleDateString('en-CA');
+    const yesterdayStr = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 
     for (const user of users) {
         if (!user.email) continue;
@@ -112,13 +112,13 @@ const runDailyReports = async () => {
 
         const yesterdayLogs = userLogs.filter(l => {
             const dateVal = l.date || l.createdAt || l.created_at;
-            return dateVal && new Date(dateVal).toLocaleDateString('en-CA') === yesterdayStr;
+            return dateVal && String(dateVal).split('T')[0] === yesterdayStr;
         });
         const previousDayHours = yesterdayLogs.reduce((acc, l) => acc + parseFloat(l.hours || 0), 0);
 
         const tasksCompleted = userTasks.filter(t => {
             const dateVal = t.updatedAt || t.updated_at || t.created_at;
-            return t.status === 'Completed' && dateVal && new Date(dateVal).toLocaleDateString('en-CA') === yesterdayStr;
+            return t.status === 'Completed' && dateVal && String(dateVal).split('T')[0] === yesterdayStr;
         }).length;
 
         // --- ENHANCED: Activity Fallback Logic ---
@@ -128,7 +128,7 @@ const runDailyReports = async () => {
         const weeklyHours = weeklyLogs.reduce((acc, l) => acc + parseFloat(l.hours || 0), 0);
 
         const lastSession = userLogs.sort((a, b) => new Date(b.date || b.createdAt || b.created_at) - new Date(a.date || a.createdAt || a.created_at))[0];
-        const lastSessionDate = lastSession ? new Date(lastSession.date || lastSession.createdAt || lastSession.created_at).toLocaleDateString('en-CA') : 'No activity yet';
+        const lastSessionDate = lastSession ? String(lastSession.date || lastSession.createdAt || lastSession.created_at).split('T')[0] : 'No activity yet';
 
         // Modules involved (using weekly if yesterday is empty for more context)
         const relevantLogs = yesterdayLogs.length > 0 ? yesterdayLogs : weeklyLogs.slice(0, 5);
@@ -138,13 +138,13 @@ const runDailyReports = async () => {
         // Streak logic (Simplified for the email, but consistent)
         const sortedDates = [...new Set(userLogs.map(log => {
             const dateVal = log.date || log.createdAt || log.created_at;
-            return dateVal ? new Date(dateVal).toLocaleDateString('en-CA') : null;
+            return dateVal ? String(dateVal).split('T')[0] : null;
         }))].filter(Boolean).sort().reverse();
 
         let streak = 0;
         if (sortedDates.length > 0) {
-            const todayStr = new Date().toLocaleDateString('en-CA');
-            const yesterStr = new Date(Date.now() - 86400000).toLocaleDateString('en-CA');
+            const todayStr = new Date().toISOString().split('T')[0];
+            const yesterStr = new Date(Date.now() - 86400000).toISOString().split('T')[0];
             if (sortedDates[0] === todayStr || sortedDates[0] === yesterStr) {
                 streak = 1;
                 for (let i = 0; i < sortedDates.length - 1; i++) {

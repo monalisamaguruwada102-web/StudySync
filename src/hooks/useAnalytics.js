@@ -103,14 +103,14 @@ export const useAnalytics = (logs, modules, tasks, sessions = []) => {
         const sortedDates = [...new Set(allLogs.map(log => {
             const dateVal = log.date || log.createdAt;
             if (!dateVal) return null;
-            // Use local date string YYYY-MM-DD
-            return new Date(dateVal).toLocaleDateString('en-CA');
+            // Use string splitting to avoid timezone shifts for YYYY-MM-DD or ISO
+            return String(dateVal).split('T')[0];
         }))].filter(Boolean).sort().reverse();
 
         let streak = 0;
         if (sortedDates.length > 0) {
-            const today = new Date().toLocaleDateString('en-CA');
-            const yesterday = new Date(Date.now() - 86400000).toLocaleDateString('en-CA');
+            const today = new Date().toISOString().split('T')[0];
+            const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 
             if (sortedDates[0] === today || sortedDates[0] === yesterday) {
                 streak = 1;

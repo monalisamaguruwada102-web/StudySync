@@ -23,15 +23,15 @@ const getLiveDashboardStats = async (userId) => {
 
         // 3. Calculate Streak (Real Logic from useAnalytics.js)
         const sortedDates = [...new Set((logs || []).map(log => {
-            const dateVal = log.date || log.created_at;
+            const dateVal = log.date || log.created_at || log.createdAt;
             if (!dateVal) return null;
-            return new Date(dateVal).toLocaleDateString('en-CA');
+            return String(dateVal).split('T')[0];
         }))].filter(Boolean).sort().reverse();
 
         let streak = 0;
         if (sortedDates.length > 0) {
-            const today = new Date().toLocaleDateString('en-CA');
-            const yesterday = new Date(Date.now() - 86400000).toLocaleDateString('en-CA');
+            const today = new Date().toISOString().split('T')[0];
+            const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
             if (sortedDates[0] === today || sortedDates[0] === yesterday) {
                 streak = 1;
                 for (let i = 0; i < sortedDates.length - 1; i++) {
@@ -121,7 +121,7 @@ const getWeeklyAnalytics = async (userId) => {
         (logs || []).forEach(log => {
             const dateVal = log.date || log.created_at;
             if (!dateVal) return;
-            const date = new Date(dateVal).toLocaleDateString('en-CA');
+            const date = String(dateVal).split('T')[0];
             if (dailyXP[date] !== undefined) {
                 dailyXP[date] += Math.round(parseFloat(log.hours || 0) * 100);
             }
@@ -133,7 +133,7 @@ const getWeeklyAnalytics = async (userId) => {
         (tasks || []).forEach(task => {
             const dateVal = task.updated_at || task.updatedAt || task.created_at;
             if (!dateVal) return;
-            const date = new Date(dateVal).toLocaleDateString('en-CA');
+            const date = String(dateVal).split('T')[0];
             if (dailyXP[date] !== undefined) {
                 dailyXP[date] += 150;
             }
