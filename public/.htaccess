@@ -1,12 +1,22 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /study/
-  
-  # If requested file or directory exists, serve it
+
+  # 1. Force trailing slash on /study
+  # This ensures the browser's base URL is always /study/
+  RewriteCond %{REQUEST_URI} ^/study$ [NC]
+  RewriteRule ^(.*)$ /study/ [L,R=301]
+
+  # 2. Skip fallback for existing files and directories
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
-  # All other requests redirect to index.html (absolute fallback)
-  RewriteRule . /study/index.html [L]
+  # 3. Prevent redirecting missing assets to index.html (STOPS MIME TYPE ERRORS)
+  # If a JS or CSS file is missing, return a 404 instead of serving HTML
+  RewriteCond %{REQUEST_URI} \.(js|css|gif|png|jpg|jpeg|svg|ico|json|map|js\.map)$ [NC]
+  RewriteRule ^ - [L,R=404]
+
+  # 4. Standard SPA routing fallback
+  RewriteRule . index.html [L]
 </IfModule>
