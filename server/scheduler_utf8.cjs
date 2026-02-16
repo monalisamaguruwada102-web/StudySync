@@ -12,7 +12,7 @@ const generatePrediction = async (user, stats) => {
     if (!genAI) return "Keep up the great work! Consistency is key to mastering your modules.";
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const noteContext = stats.recentNotes && stats.recentNotes.length > 0
             ? stats.recentNotes.map(n => `- Note: "${n.title}"\n  Content: ${n.content}`).join('\n')
@@ -208,54 +208,63 @@ const runDailyReports = async () => {
 
         const prediction = await generatePrediction(user, stats);
 
-        await sendStudyReport(user, {
-            ...stats,
-            prediction
-        });
-        console.log(`✅ SUCCESS: Report sent to ${user.email}`);
-
-        // --- NEW: Advanced Engagement Logic ---
-
-        // 1. Milestone Recognition: Level Up
+        // --- CONSOLIDATED ENGAGEMENT DATA ---
+        const milestones = [];
+        // 1. Level Up
         if (stats.level > (user.level || 1)) {
-            console.log(`🎊 Level Up detected for ${user.email}: ${user.level} -> ${stats.level}`);
-            await sendMilestoneReward(user, 'LEVEL_UP', { level: stats.level, xp: stats.xp });
-            // Update local DB to prevent multiple notifications
+            milestones.push({
+                type: 'LEVEL_UP',
+                title: `🏆 LEVEL ${stats.level} UNLOCKED`,
+                message: `Mastery of the system is within your reach. Awarded for earning ${stats.totalXP || stats.xp} Total XP.`
+            });
             db.update('users', user.id, { level: stats.level });
         }
-
-        // 2. Milestone Recognition: Streak Repair
+        // 2. Streak Repair
         const prevStreak = user.streak || 0;
         if (stats.streak === 0 && prevStreak > 0) {
-            console.log(`⚠️ Streak loss detected for ${user.email}. Sending repair offer.`);
-            await sendMilestoneReward(user, 'STREAK_REPAIR');
+            milestones.push({
+                type: 'STREAK_REPAIR',
+                title: '💝 STREAK REPAIR OFFER',
+                message: 'We noticed you missed a day, but your hard work shouldn\'t disappear. Log in now and complete a session to restore your momentum!'
+            });
         }
-        // Sync local streak for repair detection
         db.update('users', user.id, { streak: stats.streak });
 
         // 3. Deadline Alerts (Due in 3 days)
+        let criticalTaskPayload = null;
         const threeDaysFromNow = new Date();
         threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
         const threeDaysStr = threeDaysFromNow.toISOString().split('T')[0];
 
-        const criticalTask = userTasks.find(t =>
+        const matchingTask = userTasks.find(t =>
             t.status !== 'Completed' &&
             (t.dueDate || t.due_date)?.split('T')[0] === threeDaysStr
         );
-
-        if (criticalTask) {
-            console.log(`⏰ Critical deadline detected for ${user.email}: ${criticalTask.title}`);
-            const advice = await generateStudyAdvice(user, criticalTask);
-            await sendDeadlineAlert(user, criticalTask, advice);
+        if (matchingTask) {
+            const advice = await generateStudyAdvice(user, matchingTask);
+            criticalTaskPayload = { ...matchingTask, advice, dueDate: matchingTask.dueDate || matchingTask.due_date };
         }
 
         // 4. Daily Active Recall Snippet
+        let flashcardPayload = null;
+        let flashcardSrCount = 0;
         if (liveStats.flashcards && liveStats.flashcards.length > 0) {
-            const randomCard = liveStats.flashcards[Math.floor(Math.random() * liveStats.flashcards.length)];
-            const srCount = liveStats.flashcards.filter(c => (c.level || 1) <= 2).length;
-            console.log(`🧠 Sending Active Recall snippet to ${user.email}`);
-            await sendActiveRecallSnippet(user, randomCard, srCount);
+            flashcardPayload = liveStats.flashcards[Math.floor(Math.random() * liveStats.flashcards.length)];
+            flashcardSrCount = liveStats.flashcards.filter(c => (c.level || 1) <= 2).length;
         }
+
+        // --- SEND THE UNIFIED REPORT ---
+        const { sendUnifiedEngagementReport } = require('./emailService.cjs');
+        await sendUnifiedEngagementReport(user, {
+            stats: stats,
+            prediction: prediction,
+            milestones: milestones,
+            criticalTask: criticalTaskPayload,
+            flashcard: flashcardPayload,
+            srCount: flashcardSrCount
+        });
+
+        console.log(`✅ SUCCESS: Unified engagement report sent to ${user.email}`);
 
     }
     console.log('✅ Daily study reports and engagement checks completed.');

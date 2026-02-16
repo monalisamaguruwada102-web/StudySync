@@ -487,11 +487,137 @@ const sendWeeklyRetrospective = async (user, analytics) => {
     }
 };
 
+/**
+ * Sends a consolidated engagement report containing stats, rewards, deadlines, and active recall.
+ */
+const sendUnifiedEngagementReport = async (user, data) => {
+    const { email, name } = user;
+    if (!email) return;
+
+    const {
+        stats,
+        prediction,
+        milestones = [],
+        criticalTask,
+        flashcard,
+        srCount
+    } = data;
+
+    const subject = milestones.length > 0
+        ? `Academic Achievement Unlocked! 🏆 + Your Daily Report`
+        : `Your Daily Academic Intelligence Report - ${new Date().toLocaleDateString()}`;
+
+    const mailOptions = {
+        from: process.env.SMTP_FROM || '"StudySync" <no-reply@studysync.app>',
+        to: email,
+        subject: subject,
+        html: `
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; background-color: #0f172a; color: #f8fafc; border-radius: 16px; overflow: hidden; border: 1px solid #1e293b; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+                <!-- Header -->
+                <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 35px; text-align: center;">
+                    <h1 style="margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.025em; color: #ffffff;">StudySync</h1>
+                    <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; color: #dbeafe; text-transform: uppercase; letter-spacing: 0.1em;">Precision Study Intelligence</p>
+                </div>
+
+                <div style="padding: 35px;">
+                    <div style="text-align: center; margin-bottom: 35px;">
+                        <h2 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700;">Morning, ${name || 'Researcher'}! ☀️</h2>
+                        <p style="margin: 10px 0 0 0; line-height: 1.6; color: #94a3b8; font-size: 16px;">Here is your unified daily academic briefing.</p>
+                    </div>
+
+                    <!-- Milestones/Rewards Section -->
+                    ${milestones.map(m => `
+                        <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 25px; border-radius: 12px; border: 1px solid ${m.type === 'LEVEL_UP' ? '#8b5cf6' : '#ec4899'}; margin-bottom: 30px; text-align: center;">
+                            <span style="font-size: 40px;">${m.type === 'LEVEL_UP' ? '🏆' : '💝'}</span>
+                            <h3 style="color: white; margin: 10px 0;">${m.title}</h3>
+                            <p style="color: #cbd5e1; font-size: 14px; line-height: 1.6;">${m.message}</p>
+                        </div>
+                    `).join('')}
+
+                    <!-- Core Performance Stats -->
+                    <div style="background-color: #1e293b; padding: 20px; border-radius: 15px; border: 1px solid #334155; margin-bottom: 30px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <span style="font-size: 14px; font-weight: 700; color: #3b82f6;">LEVEL ${stats.level}</span>
+                            <span style="font-size: 12px; font-weight: 600; color: #64748b;">${stats.xp} XP</span>
+                        </div>
+                        <div style="height: 10px; background-color: #0f172a; border-radius: 5px; overflow: hidden;">
+                            <div style="width: ${Math.min((stats.xp / (stats.level * 1000) * 100), 100).toFixed(0)}%; height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 5px;"></div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 12px; margin-top: 25px;">
+                            <div style="flex: 1; background-color: #0f172a; padding: 15px; border-radius: 10px; text-align: center;">
+                                <div style="font-size: 10px; color: #64748b; text-transform: uppercase;">Activity</div>
+                                <div style="font-size: 20px; font-weight: 800; color: #3b82f6;">${stats.previousDayHours.toFixed(1)}h</div>
+                            </div>
+                            <div style="flex: 1; background-color: #0f172a; padding: 15px; border-radius: 10px; text-align: center;">
+                                <div style="font-size: 10px; color: #64748b; text-transform: uppercase;">Streak</div>
+                                <div style="font-size: 20px; font-weight: 800; color: #10b981;">${stats.streak} 🔥</div>
+                            </div>
+                            <div style="flex: 1; background-color: #0f172a; padding: 15px; border-radius: 10px; text-align: center;">
+                                <div style="font-size: 10px; color: #64748b; text-transform: uppercase;">Tasks</div>
+                                <div style="font-size: 20px; font-weight: 800; color: #f59e0b;">${stats.tasksCompleted}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Strategic Prediction -->
+                    <div style="background-color: #0f172a; padding: 25px; border-radius: 12px; border-left: 4px solid #3b82f6; margin-bottom: 30px;">
+                        <h4 style="margin: 0 0 10px 0; font-size: 13px; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.05em;">AI Strategic Analysis</h4>
+                        <p style="margin: 0; font-style: italic; color: #cbd5e1; line-height: 1.7; font-size: 14px;">"${prediction}"</p>
+                    </div>
+
+                    <!-- Critical Deadline -->
+                    ${criticalTask ? `
+                        <div style="background-color: #451a03; padding: 20px; border-radius: 12px; border: 1px solid #f59e0b; margin-bottom: 30px;">
+                            <h4 style="margin: 0 0 10px 0; font-size: 13px; color: #f59e0b; text-transform: uppercase;">⚠️ High Priority Deadline</h4>
+                            <p style="margin: 0; color: white; font-weight: 700;">${criticalTask.title}</p>
+                            <p style="margin: 5px 0 15px 0; color: #fcd34d; font-size: 13px;">Due: ${new Date(criticalTask.dueDate).toLocaleDateString()}</p>
+                            <div style="background-color: #0f172a; padding: 12px; border-radius: 8px; font-size: 13px; color: #cbd5e1; font-style: italic;">
+                                "${criticalTask.advice}"
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <!-- Daily Active Recall -->
+                    ${flashcard ? `
+                        <div style="background-color: #064e3b; padding: 25px; border-radius: 12px; border: 1px solid #10b981; margin-bottom: 30px; text-align: center;">
+                            <h4 style="margin: 0 0 15px 0; font-size: 13px; color: #34d399; text-transform: uppercase;">🧠 Daily Active Recall</h4>
+                            <div style="background-color: #0f172a; padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                                <p style="margin: 0; color: white; font-size: 18px; font-weight: 600;">${flashcard.question}</p>
+                            </div>
+                            ${srCount > 0 ? `<p style="color: #6ee7b7; font-size: 12px; font-weight: 600;">⚠️ ${srCount} other cards due for review!</p>` : ''}
+                            <a href="https://www.joshwebs.co.zw/study/flashcards" style="display: inline-block; margin-top: 10px; color: #10b981; text-decoration: none; font-size: 14px; font-weight: 700;">REVEAL ANSWER →</a>
+                        </div>
+                    ` : ''}
+
+                    <div style="text-align: center; margin-top: 20px;">
+                        <a href="https://www.joshwebs.co.zw/study" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 16px 45px; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 16px; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);">ENTER STUDY COMMAND CENTER</a>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div style="background-color: #020617; padding: 30px; text-align: center; border-top: 1px solid #1e293b;">
+                    <p style="margin: 0; font-size: 12px; color: #475569;">&copy; 2026 JOSHWEBS STUDY ASSISTANCE SYSTEM</p>
+                    <p style="margin: 5px 0 0 0; font-size: 11px; color: #334155;">Automated Academic Intelligence Briefing</p>
+                </div>
+            </div>
+        `
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`✅ Unified engagement report sent to ${email}: ${info.messageId}`);
+    } catch (error) {
+        console.error(`❌ Failed to send unified engagement report to ${email}:`, error);
+    }
+};
+
 module.exports = {
     sendStudyReport,
     sendTutorialGuide,
     sendActiveRecallSnippet,
     sendDeadlineAlert,
     sendMilestoneReward,
-    sendWeeklyRetrospective
+    sendWeeklyRetrospective,
+    sendUnifiedEngagementReport
 };
