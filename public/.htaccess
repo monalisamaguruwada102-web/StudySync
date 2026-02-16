@@ -2,14 +2,11 @@
   RewriteEngine On
   RewriteBase /study/
   
-  # Ensure JS files are explicitly given the correct MIME type if served as text/html
-  AddType application/javascript .js
-  
   # If requested file or directory exists, serve it
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
-  # All other requests redirect to index.html
-  RewriteRule ^ index.html [L]
+  # All other requests redirect to index.html (absolute fallback)
+  RewriteRule . /study/index.html [L]
 </IfModule>
