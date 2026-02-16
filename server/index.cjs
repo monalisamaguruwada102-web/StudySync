@@ -1984,6 +1984,11 @@ const getLocalChatBoatResponse = (message, context = {}) => {
     return responses[Math.floor(Math.random() * responses.length)];
 };
 
+// Redirect bare root to /study/ so React Router (basename="/study") can match routes
+app.get('/', (req, res) => {
+    res.redirect('/study/');
+});
+
 // SPA Catch-all (Ignore assets and API)
 app.get(/.*/, (req, res, next) => {
     // If request is for an asset or API, skip to 404
