@@ -583,15 +583,15 @@ const sendUnifiedEngagementReport = async (user, data) => {
                         <div style="background-color: #064e3b; padding: 25px; border-radius: 12px; border: 1px solid #10b981; margin-bottom: 30px; text-align: center;">
                             <h4 style="margin: 0 0 15px 0; font-size: 13px; color: #34d399; text-transform: uppercase;">🧠 Daily Active Recall</h4>
                             <div style="background-color: #0f172a; padding: 20px; border-radius: 10px; margin-bottom: 15px;">
-                                <p style="margin: 0; color: white; font-size: 18px; font-weight: 600;">${flashcard.question}</p>
+                                <p style="margin: 0; color: white; font-size: 18px; font-weight: 600;">${flashcard.front}</p>
                             </div>
                             ${srCount > 0 ? `<p style="color: #6ee7b7; font-size: 12px; font-weight: 600;">⚠️ ${srCount} other cards due for review!</p>` : ''}
-                            <a href="https://www.joshwebs.co.zw/study/flashcards/?id=${flashcard.id}" style="display: inline-block; margin-top: 10px; color: #10b981; text-decoration: none; font-size: 14px; font-weight: 700;">REVEAL ANSWER →</a>
+                            <a href="https://www.joshwebs.co.zw/study/flashcards?id=${flashcard.id}" style="display: inline-block; margin-top: 10px; color: #10b981; text-decoration: none; font-size: 14px; font-weight: 700;">REVEAL ANSWER →</a>
                         </div>
                     ` : ''}
 
                     <div style="text-align: center; margin-top: 20px;">
-                        <a href="https://www.joshwebs.co.zw/study/" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 16px 45px; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 16px; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);">ENTER STUDY COMMAND CENTER</a>
+                        <a href="https://www.joshwebs.co.zw/study" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 16px 45px; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 16px; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);">ENTER STUDY COMMAND CENTER</a>
                     </div>
                 </div>
 

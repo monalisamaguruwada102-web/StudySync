@@ -44,7 +44,7 @@ const Flashcards = () => {
         if (revealId && cards.length > 0) {
             const card = cards.find(c => String(c.id) === String(revealId));
             if (card) {
-                const deck = decks.find(d => d.id === card.deckId);
+                const deck = decks.find(d => String(d.id) === String(card.deckId));
                 if (deck) {
                     setSelectedDeck(deck);
                     setStudyCards([card]);
@@ -166,7 +166,7 @@ const Flashcards = () => {
         }
     };
 
-    if (isStudyMode) {
+    if (isStudyMode && selectedDeck) {
         const currentCard = studyCards[currentIndex];
         return (
             <Layout title={`Studying: ${selectedDeck.name}`}>
