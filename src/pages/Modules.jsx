@@ -105,11 +105,13 @@ const Modules = () => {
         }
     };
 
+    // calculateProgress now uses analytics data (manual hours + study logs)
     const calculateProgress = (mod) => {
-        const target = mod.targetHours;
+        const analyticsEntry = stats.moduleData.find(m => m.id === mod.id);
+        if (analyticsEntry) return Math.min(analyticsEntry.progress, 100).toFixed(0);
+        const target = parseFloat(mod.targetHours || 0);
         if (!target || target === 0) return 0;
-        const total = parseFloat(mod.totalHoursStudied || 0);
-        return Math.min((total / target) * 100, 100).toFixed(0);
+        return Math.min((parseFloat(mod.totalHoursStudied || 0) / target) * 100, 100).toFixed(0);
     };
 
     return (

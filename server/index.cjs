@@ -1652,6 +1652,24 @@ app.post('/api/admin/import', authenticateToken, jsonUpload.single('file'), asyn
     }
 });
 
+// Trigger daily study report emails on-demand
+app.post('/api/admin/trigger-report', authenticateToken, async (req, res) => {
+    try {
+        console.log(`📧 Manual report trigger by ${req.user.email}`);
+        const { runDailyReports } = require('./scheduler_utf8.cjs');
+        // Run async in background so the response returns immediately
+        runDailyReports().then(() => {
+            console.log('✅ Manual report trigger completed');
+        }).catch(err => {
+            console.error('❌ Manual report trigger failed:', err);
+        });
+        res.json({ success: true, message: 'Report generation triggered. Emails will be sent shortly.' });
+    } catch (error) {
+        console.error('Trigger report error:', error);
+        res.status(500).json({ error: 'Failed to trigger reports: ' + error.message });
+    }
+});
+
 // Full Account Deletion
 app.delete('/api/user/account', authenticateToken, async (req, res) => {
     try {
