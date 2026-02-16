@@ -13,6 +13,13 @@ const getLiveDashboardStats = async (userId) => {
     if (!supabase) return null;
 
     try {
+        // 0. Fetch User Profile for Theme, Streak, and Timer State
+        const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single();
+        const { data: userRecord } = await supabase.from('users').select('*').eq('id', userId).single();
+
+        // Merge profile and user (legacy fallback)
+        const combinedUser = { ...(userRecord || {}), ...(profile || {}) };
+
         // 1. Fetch all study logs
         const { data: logs } = await supabase.from('study_logs').select('*').eq('user_id', userId);
         const totalHours = (logs || []).reduce((acc, l) => acc + parseFloat(l.hours || 0), 0);
@@ -51,8 +58,14 @@ const getLiveDashboardStats = async (userId) => {
         const totalXP = hoursXP + tasksXP + streakXP;
         const liveLevel = Math.floor(totalXP / 1000) + 1;
 
-        // 5. Fetch Modules for context
-        const { data: modules } = await supabase.from('modules').select('*').eq('user_id', userId);
+        // 5. Fetch Modules and map to camelCase for the frontend/scheduler
+        const { data: rawModules } = await supabase.from('modules').select('*').eq('user_id', userId);
+        const modules = (rawModules || []).map(m => ({
+            ...m,
+            targetHours: m.target_hours,
+            totalHoursStudied: m.total_hours_studied
+        }));
+
 
         // 6. Fetch Flashcards and Decks (New for Active Recall)
         const { data: decks } = await supabase.from('flashcard_decks').select('*').eq('user_id', userId);
@@ -66,7 +79,10 @@ const getLiveDashboardStats = async (userId) => {
         return {
             totalHours,
             completedTasksCount,
-            streak,
+            streak: combinedUser.streak || streak, // Priority to profile streak if set
+            theme: combinedUser.theme || 'default',
+            darkMode: combinedUser.dark_mode || false,
+            timerState: combinedUser.timer_state || {},
             totalXP,
             level: liveLevel,
             logs: logs || [],

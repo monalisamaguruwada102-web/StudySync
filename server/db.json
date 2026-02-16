@@ -6,7 +6,7 @@
       "id": "1769561085648",
       "createdAt": "2026-01-28T00:44:45.648Z",
       "supabaseId": "1769561085648",
-      "updatedAt": "2026-02-09T05:59:33.897Z",
+      "updatedAt": "2026-02-16T20:00:42.691Z",
       "timer_state": {
         "timeLeft": 3600,
         "isRunning": false,
@@ -16,7 +16,8 @@
         "lastUpdate": 1770616764058
       },
       "theme": "default",
-      "dark_mode": false
+      "dark_mode": false,
+      "streak": 0
     },
     {
       "id": "6e145a1e-645c-4e80-93bc-9500469b8a1b",
@@ -27,7 +28,9 @@
       "badges": [],
       "createdAt": "2026-02-08T15:55:53.470Z",
       "supabaseId": "1769561085649",
-      "tutorial_completed": false
+      "tutorial_completed": false,
+      "streak": 0,
+      "updatedAt": "2026-02-16T20:00:46.878Z"
     },
     {
       "id": "1738640325000",
@@ -38,7 +41,9 @@
       "badges": [],
       "createdAt": "2026-02-09T05:52:35.342Z",
       "supabaseId": "1738640325000",
-      "tutorial_completed": false
+      "tutorial_completed": false,
+      "streak": 0,
+      "updatedAt": "2026-02-16T20:00:51.625Z"
     },
     {
       "id": "94b96706-33d1-4bed-bcc8-cd0c5281ea85",
@@ -60,8 +65,9 @@
         "selectedTask": null,
         "lastUpdate": 1770618621939
       },
-      "updatedAt": "2026-02-09T07:00:02.104Z",
-      "supabaseId": "94b96706-33d1-4bed-bcc8-cd0c5281ea85"
+      "updatedAt": "2026-02-16T20:00:56.224Z",
+      "supabaseId": "94b96706-33d1-4bed-bcc8-cd0c5281ea85",
+      "streak": 0
     },
     {
       "id": "2e421591-dbcb-458a-bf2c-fa5460065b64",
@@ -72,7 +78,9 @@
       "badges": [],
       "createdAt": "2026-02-09T06:10:22.649Z",
       "supabaseId": "2e421591-dbcb-458a-bf2c-fa5460065b64",
-      "tutorial_completed": false
+      "tutorial_completed": false,
+      "streak": 0,
+      "updatedAt": "2026-02-16T20:01:01.401Z"
     },
     {
       "id": "37f98a6a-1fab-4ef1-9c8e-916e6a371251",
@@ -83,7 +91,9 @@
       "badges": [],
       "createdAt": "2026-02-09T07:00:00.726Z",
       "supabaseId": "37f98a6a-1fab-4ef1-9c8e-916e6a371251",
-      "tutorial_completed": false
+      "tutorial_completed": false,
+      "streak": 0,
+      "updatedAt": "2026-02-16T20:01:06.321Z"
     },
     {
       "id": "97d031e6-00f7-4b26-8722-682254410b29",
@@ -94,7 +104,9 @@
       "badges": [],
       "createdAt": "2026-02-10T02:56:50.406Z",
       "supabaseId": "97d031e6-00f7-4b26-8722-682254410b29",
-      "tutorial_completed": false
+      "tutorial_completed": false,
+      "streak": 0,
+      "updatedAt": "2026-02-16T20:01:10.834Z"
     },
     {
       "id": "337274c6-dcc2-427d-92a7-2108e2508c88",
@@ -109,7 +121,8 @@
       "createdAt": "2026-02-10T02:57:06.567Z",
       "tutorial_completed": false,
       "supabaseId": "337274c6-dcc2-427d-92a7-2108e2508c88",
-      "updatedAt": "2026-02-11T07:32:17.881Z"
+      "updatedAt": "2026-02-16T20:01:15.841Z",
+      "streak": 0
     },
     {
       "id": "c8dfa2b4-96b3-42fc-ad3c-47a915d32eb9",
@@ -120,7 +133,9 @@
       "badges": [],
       "createdAt": "2026-02-10T02:58:40.578Z",
       "supabaseId": "c8dfa2b4-96b3-42fc-ad3c-47a915d32eb9",
-      "tutorial_completed": false
+      "tutorial_completed": false,
+      "streak": 0,
+      "updatedAt": "2026-02-16T20:01:21.909Z"
     },
     {
       "email": "system-test-1770773745876@example.com",
@@ -133,7 +148,8 @@
       "createdAt": "2026-02-11T01:35:50.208Z",
       "tutorial_completed": false,
       "supabaseId": "08367c08-3ce8-465a-82d0-13c06a89f2c6",
-      "updatedAt": "2026-02-11T07:32:18.597Z"
+      "updatedAt": "2026-02-16T20:01:26.608Z",
+      "streak": 0
     }
   ],
   "modules": [

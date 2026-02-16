@@ -49,7 +49,7 @@ const mapToTable = (item, table = null) => {
     // Keys to skip by default or based on table
     const skipKeys = [
         'supabaseId', 'supabaseAuthId', 'videoId', 'thumbnail', 'active', 'lastActive',
-        'timerState', 'timer_state', 'darkMode', 'dark_mode', 'theme', 'password'
+        'password'
     ];
 
     // profiles table is strict about metadata; some fields live only in users (legacy)
