@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -17,6 +18,9 @@ const Flashcards = () => {
     const { data: cards, refresh: refreshCards } = useFirestore(flashcardService.getAll);
     const { data: modules } = useFirestore(moduleService.getAll);
 
+    const [searchParams] = useSearchParams();
+    const revealId = searchParams.get('id');
+
     const [selectedDeck, setSelectedDeck] = useState(null);
     const [isStudyMode, setIsStudyMode] = useState(false);
     const [isDeckModalOpen, setIsDeckModalOpen] = useState(false);
@@ -34,6 +38,23 @@ const Flashcards = () => {
     const [isAIGenModalOpen, setIsAIGenModalOpen] = useState(false);
     const [aiContext, setAiContext] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
+
+    // Deep link handling
+    useEffect(() => {
+        if (revealId && cards.length > 0) {
+            const card = cards.find(c => String(c.id) === String(revealId));
+            if (card) {
+                const deck = decks.find(d => d.id === card.deckId);
+                if (deck) {
+                    setSelectedDeck(deck);
+                    setStudyCards([card]);
+                    setCurrentIndex(0);
+                    setIsStudyMode(true);
+                    setIsFlipped(true);
+                }
+            }
+        }
+    }, [revealId, cards, decks]);
 
     const handleCreateDeck = async (e) => {
         e.preventDefault();

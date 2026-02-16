@@ -12,7 +12,7 @@ const generatePrediction = async (user, stats) => {
     if (!genAI) return "Keep up the great work! Consistency is key to mastering your modules.";
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
         const noteContext = stats.recentNotes && stats.recentNotes.length > 0
             ? stats.recentNotes.map(n => `- Note: "${n.title}"\n  Content: ${n.content}`).join('\n')
@@ -63,7 +63,7 @@ const generateStudyAdvice = async (user, task) => {
     if (!genAI) return "Break this task into smaller manageable chunks and use the Pomodoro timer to stay focused.";
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
         const prompt = `Act as an elite Academic Strategist. A student named ${user.name || 'Student'} has an important task: "${task.title}".
         Objective: ${task.description || 'Complete the task successfully'}.
         Deadline: in 3 days.

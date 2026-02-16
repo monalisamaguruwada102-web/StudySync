@@ -586,12 +586,12 @@ const sendUnifiedEngagementReport = async (user, data) => {
                                 <p style="margin: 0; color: white; font-size: 18px; font-weight: 600;">${flashcard.question}</p>
                             </div>
                             ${srCount > 0 ? `<p style="color: #6ee7b7; font-size: 12px; font-weight: 600;">⚠️ ${srCount} other cards due for review!</p>` : ''}
-                            <a href="https://www.joshwebs.co.zw/study/flashcards" style="display: inline-block; margin-top: 10px; color: #10b981; text-decoration: none; font-size: 14px; font-weight: 700;">REVEAL ANSWER →</a>
+                            <a href="https://www.joshwebs.co.zw/study/flashcards?id=${flashcard.id}" style="display: inline-block; margin-top: 10px; color: #10b981; text-decoration: none; font-size: 14px; font-weight: 700;">REVEAL ANSWER →</a>
                         </div>
                     ` : ''}
 
                     <div style="text-align: center; margin-top: 20px;">
-                        <a href="https://www.joshwebs.co.zw/study" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 16px 45px; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 16px; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);">ENTER STUDY COMMAND CENTER</a>
+                        <a href="https://www.joshwebs.co.zw/study/" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 16px 45px; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 16px; box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);">ENTER STUDY COMMAND CENTER</a>
                     </div>
                 </div>
 
