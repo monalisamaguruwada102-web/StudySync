@@ -34,7 +34,9 @@ app.get('/api/version', (req, res) => res.json({ version: SYSTEM_VERSION }));
 
 // Serve uploads folder statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use(express.static(path.join(__dirname, '../dist')));
+
+// Serve frontend assets under /study prefix
+app.use('/study', express.static(path.join(__dirname, '../dist')));
 
 const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'study-secret-key';
@@ -2185,7 +2187,12 @@ const syncLocalDataToCloud = async () => {
     }
 };
 
-// Final 404 handler
+// SPA Fallback: Serve index.html for all /study/* routes
+app.get('/study/*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
+
+// Final 404 handler (for non-/study routes)
 app.use((req, res) => {
     res.status(404).send('Not Found');
 });
