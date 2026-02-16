@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>StudySync Deployment Debugger</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+            background: #0f172a;
+            color: white;
+        }
+
+        .success {
+            color: #4ade80;
+        }
+
+        .error {
+            color: #f87171;
+        }
+
+        code {
+            background: #1e293b;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        .box {
+            border: 1px solid #334155;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🛰️ Deployment Debugger</h1>
+
+    <div class="box">
+        <h3>Current URL Info</h3>
+        <p>Current Path: <code id="path"></code></p>
+        <p>Expected Subpath: <code>/study/</code></p>
+    </div>
+
+    <div class="box">
+        <h3>Asset Connectivity Check</h3>
+        <ul id="results">
+            <li>Checking core files...</li>
+        </ul>
+    </div>
+
+    <div class="box">
+        <h3>Instructions</h3>
+        <p>If you see <span class="error">404</span> errors above, it means the files are not correctly placed in the
+            <code>/study/</code> folder on your server.</p>
+        <p>Ensure the <code>assets</code> folder and <code>index.html</code> are directly inside the <code>study</code>
+            folder.</p>
+    </div>
+
+    <script>
+        document.getElementById('path').innerText = window.location.pathname;
+
+        const assets = [
+            'icon.png',
+            'manifest.json',
+            'sw.js',
+            '.htaccess'
+        ];
+
+        const list = document.getElementById('results');
+        list.innerHTML = '';
+
+        assets.forEach(asset => {
+            const li = document.createElement('li');
+            li.innerHTML = `Checking <code>${asset}</code>... `;
+
+            fetch(asset)
+                .then(r => {
+                    if (r.ok) {
+                        li.innerHTML += `<span class="success">OK (200)</span>`;
+                    } else {
+                        li.innerHTML += `<span class="error">FAILED (${r.status})</span>`;
+                    }
+                })
+                .catch(e => {
+                    li.innerHTML += `<span class="error">NETWORK ERROR</span>`;
+                });
+            list.appendChild(li);
+        });
+    </script>
+</body>
+
+</html>
