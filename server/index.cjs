@@ -2235,6 +2235,18 @@ const server = app.listen(PORT, async () => {
 
     // Initialize the daily study report scheduler
     initScheduler();
+
+    // One-time: send daily reports 30s after startup (allows data sync to complete)
+    setTimeout(async () => {
+        console.log('📧 One-time startup email trigger running...');
+        const { runDailyReports } = require('./scheduler_utf8.cjs');
+        try {
+            await runDailyReports();
+            console.log('✅ Startup email trigger completed');
+        } catch (err) {
+            console.error('❌ Startup email trigger failed:', err);
+        }
+    }, 30000);
 });
 
 // Graceful shutdown handling
