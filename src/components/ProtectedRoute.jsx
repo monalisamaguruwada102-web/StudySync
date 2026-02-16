@@ -1,9 +1,9 @@
-import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = () => {
     const { user, authorized, loading } = useAuth();
+    const location = useLocation();
 
     if (loading) {
         return (
@@ -14,7 +14,7 @@ const ProtectedRoute = () => {
     }
 
     if (!user) {
-        return <Navigate to="/login" state={{ from: window.location.pathname + window.location.search }} replace />;
+        return <Navigate to="/login" state={{ from: location.pathname + location.search }} replace />;
     }
 
     if (!authorized) {
@@ -25,7 +25,7 @@ const ProtectedRoute = () => {
                     This system is restricted to a single user. You are not authorized to access this dashboard.
                 </p>
                 <button
-                    onClick={() => window.location.href = '/login'}
+                    onClick={() => window.location.href = '/study/login'}
                     className="mt-6 text-primary-600 font-semibold hover:underline"
                 >
                     Back to Login

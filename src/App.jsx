@@ -47,7 +47,7 @@ function App() {
       <AuthProvider>
         <TimerProvider>
           <NotificationProvider>
-            <Router>
+            <Router basename="/study">
               {/* Global Background */}
               <BackgroundSlideshow />
 
