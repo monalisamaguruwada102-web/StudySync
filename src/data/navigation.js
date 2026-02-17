@@ -17,7 +17,11 @@ import {
     Database,
     Star,
     Youtube,
-    MessageCircle
+    MessageCircle,
+    Info,
+    Mail,
+    Shield,
+    Newspaper
 } from 'lucide-react';
 
 export const navGroups = [
@@ -53,6 +57,15 @@ export const navGroups = [
         title: "Visual Map",
         items: [
             { icon: Database, label: 'Knowledge Graph', path: '/knowledge-graph', gradient: 'from-cyan-500 to-blue-500' },
+        ]
+    },
+    {
+        title: "Resources & Info",
+        items: [
+            { icon: Newspaper, label: 'Articles', path: '/articles', gradient: 'from-orange-500 to-pink-500' },
+            { icon: Info, label: 'About', path: '/about', gradient: 'from-blue-400 to-indigo-500' },
+            { icon: Mail, label: 'Contact', path: '/contact', gradient: 'from-emerald-400 to-teal-500' },
+            { icon: Shield, label: 'Privacy', path: '/privacy', gradient: 'from-slate-600 to-slate-800' },
         ]
     },
     {

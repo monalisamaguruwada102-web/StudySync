@@ -31,6 +31,11 @@ const Tutorials = React.lazy(() => import('./pages/Tutorials'));
 const Chat = React.lazy(() => import('./pages/Chat'));
 const PublicViewer = React.lazy(() => import('./pages/PublicViewer'));
 const KnowledgeGraph = React.lazy(() => import('./pages/KnowledgeGraph'));
+const About = React.lazy(() => import('./pages/About'));
+const Contact = React.lazy(() => import('./pages/Contact'));
+const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
+const Articles = React.lazy(() => import('./pages/Articles'));
+const ArticleDetail = React.lazy(() => import('./pages/ArticleDetail'));
 
 // Loading Screen Component
 const LoadingScreen = () => (
@@ -84,6 +89,11 @@ function App() {
                       <Route path="/settings" element={<Settings />} />
                       <Route path="/focus" element={<DeepFocus />} />
                       <Route path="/chat" element={<Chat />} />
+                      <Route path="/about" element={<About />} />
+                      <Route path="/contact" element={<Contact />} />
+                      <Route path="/privacy" element={<PrivacyPolicy />} />
+                      <Route path="/articles" element={<Articles />} />
+                      <Route path="/articles/:id" element={<ArticleDetail />} />
                       {/* Analytics link points to dashboard as it contains the main charts */}
                       <Route path="/analytics" element={<Dashboard />} />
                     </Route>
