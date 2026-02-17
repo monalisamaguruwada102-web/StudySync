@@ -316,9 +316,9 @@ const runWeeklyRetrospectives = async () => {
  * Initializes the scheduler.
  */
 const initScheduler = () => {
-    // Schedule for 08:00 every day (Africa/Harare - CAT)
-    cron.schedule('00 08 * * *', () => {
-        console.log('⏰ 8:00 AM (CAT) - Triggering daily study reports...');
+    // Schedule for 17:00 every day (Africa/Harare - CAT)
+    cron.schedule('00 17 * * *', () => {
+        console.log('⏰ 5:00 PM (CAT) - Triggering daily study reports...');
         runDailyReports();
     }, {
         scheduled: true,
@@ -339,7 +339,7 @@ const initScheduler = () => {
         runWeeklyRetrospectives();
     });
 
-    console.log('📅 Scheduler initialized: Daily reports set for 08:00 AM');
+    console.log('📅 Scheduler initialized: Daily reports set for 05:00 PM');
 };
 
 module.exports = { initScheduler, runDailyReports, runWeeklyTutorials, runWeeklyRetrospectives, generatePrediction };
