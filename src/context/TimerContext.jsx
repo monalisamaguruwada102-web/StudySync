@@ -124,8 +124,10 @@ export const TimerProvider = ({ children }) => {
         let worker = null;
 
         if (isRunning && timeLeft > 0) {
-            // Instantiate worker
-            worker = new Worker('/timer.worker.js');
+            // Instantiate worker - Using absolute path relative to basename
+            // Since the app is served at /study, and public assets are at root,
+            // we need to ensure the worker is found correctly.
+            worker = new Worker('/study/timer.worker.js');
 
             worker.onmessage = (e) => {
                 if (e.data === 'TICK') {
@@ -145,7 +147,7 @@ export const TimerProvider = ({ children }) => {
                 worker.terminate();
             }
         };
-    }, [isRunning]); // Re-create worker only when running state changes (simplified)
+    }, [isRunning]); // Re-create worker only when running state changes
 
     // Watch for 0 to stop
     useEffect(() => {
