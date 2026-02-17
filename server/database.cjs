@@ -234,15 +234,19 @@ const db = {
         const user = data.users.find(u => u.id === userId);
         if (!user) return null;
 
+        // Keep xp as a total running value for consistency with syncService
         user.xp = (user.xp || 0) + amount;
 
-        // Level up logic (every level requires level * 1000 XP)
+        // Level up logic (Linear: 1000 XP per level, matching live calculation)
+        const oldLevel = user.level || 1;
+        const newLevel = Math.floor(user.xp / 1000) + 1;
+
         let levelUp = false;
-        while (user.xp >= user.level * 1000) {
-            user.xp -= user.level * 1000;
-            user.level += 1;
+        if (newLevel > oldLevel) {
+            user.level = newLevel;
             levelUp = true;
-            // Add a leveling badge if not exists
+
+            // Add a leveling badge
             const levelBadge = `Level ${user.level} Pro`;
             if (!user.badges.includes(levelBadge)) {
                 user.badges.push(levelBadge);

@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const path = require('path');
@@ -21,6 +23,30 @@ if (!GEMINI_API_KEY) {
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
 const app = express();
+
+// --- SECURITY MIDDLEWARE ---
+app.use(helmet()); // Set security headers
+
+// General Rate Limiter
+const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+app.use('/api/', generalLimiter);
+
+// Auth Rate Limiter (More restrictive)
+const authLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 10, // Limit each IP to 10 requests per hour for auth
+    message: 'Too many auth attempts from this IP, please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+app.use('/api/auth/', authLimiter);
+
 app.set('trust proxy', 1);
 app.use(cookieParser());
 app.use(express.json());
@@ -1386,9 +1412,9 @@ genericCollections.forEach(collection => {
         if (collection === 'studyLogs') {
             xpGained = Math.round(parseFloat(req.body.hours || 0) * 100) || 50;
         } else if (collection === 'tasks' && item.status === 'Completed') {
-            xpGained = 30;
+            xpGained = 150; // Increased to match syncService live calculation
         } else if (collection === 'pomodoroSessions') {
-            xpGained = 40;
+            xpGained = Math.round(parseFloat(req.body.duration || 0) * 100) || 50;
         }
 
         if (xpGained > 0) {
@@ -1442,7 +1468,7 @@ genericCollections.forEach(collection => {
 
         // XP Logic for Updates (specifically Tasks)
         if (collection === 'tasks' && updates.status === 'Completed' && existingItem && existingItem.status !== 'Completed') {
-            const xpGained = 30; // Same as creation reward
+            const xpGained = 150; // Matched with creation and syncService
             const xpResult = db.addXP(req.user.id, xpGained);
             try {
                 // Fetch full user to get latest XP/Level

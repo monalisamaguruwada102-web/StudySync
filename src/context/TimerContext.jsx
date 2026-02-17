@@ -171,14 +171,29 @@ export const TimerProvider = ({ children }) => {
             setSessionsCompleted(prev => prev + 1);
 
             try {
+                // 1. Log the session
                 await pomodoroService.add({
                     taskId: selectedTask?.id || null,
                     moduleId: selectedTask?.moduleId || null,
-                    duration: 1.0, // Recorded in hours for consistency with analytics
+                    duration: FOCUS_TIME / 3600, // Recorded in hours for consistency with analytics
                     completedAt: new Date().toISOString()
                 });
+
+                // 2. Automation: Mark task as completed if one was selected
+                if (selectedTask && selectedTask.id) {
+                    await taskService.update(selectedTask.id, {
+                        status: 'Completed',
+                        completedAt: new Date().toISOString()
+                    });
+                }
+
+                // 3. Trigger a sync/refresh of user data to update XP/Level
+                api.get('/user/profile').then(res => {
+                    // This will refresh local state if needed, but the server handles XP gain on log/task update
+                }).catch(e => console.error('Failed to refresh profile after session:', e));
+
             } catch (error) {
-                console.error('Failed to log session:', error);
+                console.error('Failed to log session or update task:', error);
             }
 
             setIsBreak(true);
@@ -226,7 +241,7 @@ export const TimerProvider = ({ children }) => {
     const formatTime = useCallback((seconds) => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
-        return `${mins.toString().padStart(2, '0')}.${secs.toString().padStart(2, '0')}`;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }, []);
 
     const value = {

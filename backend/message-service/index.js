@@ -1,10 +1,24 @@
 const express = require('express');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const mongoose = require('mongoose');
 const { Kafka } = require('kafkajs');
 const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
 
 const app = express();
+app.use(helmet());
+
+// Message Service Rate Limiter
+const messageLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 200, // 200 requests per 15 minutes
+    message: { error: 'Too many requests from this IP, please try again later.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+app.use(messageLimiter);
+
 app.use(express.json());
 
 const PORT = process.env.PORT || 8003;

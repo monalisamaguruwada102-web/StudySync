@@ -457,6 +457,7 @@ const DeepFocus = () => {
                             <button
                                 onClick={reset}
                                 className="p-4 bg-white/5 hover:bg-white/10 rounded-full transition-all border border-white/5 hover:border-white/20 active:scale-95 text-slate-400"
+                                title="Reset Timer"
                             >
                                 <RotateCcw size={20} />
                             </button>
@@ -476,8 +477,24 @@ const DeepFocus = () => {
                                 className="p-4 bg-white/5 hover:bg-white/10 rounded-full transition-all border border-white/5 hover:border-white/20 active:scale-95 text-slate-400"
                                 title="Skip to break"
                             >
-                                <CheckCircle size={20} />
+                                {isBreak ? <Check size={20} /> : <CheckCircle size={20} />}
                             </button>
+
+                            {selectedTask && !isBreak && (
+                                <motion.button
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    onClick={() => {
+                                        // Trigger automation via TimerContext's handleSessionComplete mechanism
+                                        // or a direct call if we expose it, but for now we'll just stop and finish.
+                                        skipToBreak();
+                                    }}
+                                    className="p-4 bg-green-500/10 hover:bg-green-500/20 text-green-400 rounded-full transition-all border border-green-500/20 active:scale-95"
+                                    title="Finish Task Now"
+                                >
+                                    <Sparkles size={20} />
+                                </motion.button>
+                            )}
                         </div>
                     )}
 
@@ -530,8 +547,8 @@ const DeepFocus = () => {
                                     key={task.id}
                                     onClick={() => setSelectedTask(task)}
                                     className={`w-full p-4 rounded-xl text-left transition-all border group ${selectedTask?.id === task.id
-                                            ? 'bg-indigo-500/20 border-indigo-500/50'
-                                            : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'
+                                        ? 'bg-indigo-500/20 border-indigo-500/50'
+                                        : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'
                                         }`}
                                 >
                                     <div className="flex items-start justify-between mb-2">
@@ -546,7 +563,7 @@ const DeepFocus = () => {
                                     </div>
                                     <div className="flex items-center gap-2 text-[10px] text-slate-500">
                                         <div className={`w-1.5 h-1.5 rounded-full ${task.priority === 'High' ? 'bg-red-500' :
-                                                task.priority === 'Medium' ? 'bg-amber-500' : 'bg-blue-500'
+                                            task.priority === 'Medium' ? 'bg-amber-500' : 'bg-blue-500'
                                             }`} />
                                         <span className="uppercase tracking-wider">{task.priority} Priority</span>
                                     </div>

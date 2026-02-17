@@ -8,7 +8,9 @@ const transporter = nodemailer.createTransport({
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS
-    }
+    },
+    // Force IPv4 to avoid ENETUNREACH errors on some systems (common with Windows/Gmail)
+    family: 4
 });
 
 /**

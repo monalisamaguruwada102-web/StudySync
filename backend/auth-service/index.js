@@ -1,11 +1,25 @@
 const express = require('express');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
 const app = express();
+app.use(helmet());
 app.use(express.json());
+
+// Auth Rate Limiter
+const authLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 15, // 15 attempts per hour
+    message: { error: 'Too many auth attempts from this IP, please try again later.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+app.use('/login', authLimiter);
+app.use('/register', authLimiter);
 
 const PORT = process.env.PORT || 8001;
 

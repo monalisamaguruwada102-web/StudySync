@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const jwt = require('jsonwebtoken');
@@ -13,6 +14,17 @@ const PORT = process.env.PORT || 8000;
 app.use(helmet());
 app.use(cors());
 app.use(morgan('dev'));
+
+// Rate Limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 500, // 500 requests per 15 mins for the gateway
+    message: { error: 'Too many requests from this IP, please try again later.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+app.use(limiter);
+
 app.use(express.json());
 
 // Auth Middleware for Gateway

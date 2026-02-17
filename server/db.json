@@ -434,6 +434,28 @@
       "subtasks": [],
       "updatedAt": "2026-02-08T00:13:26.229+00:00",
       "supabaseId": "4fb8c345-8cfe-498f-bb5c-16b4c52b4ca4"
+    },
+    {
+      "title": "Test Task",
+      "status": "Pending",
+      "userId": "test-user-1771372002753",
+      "id": "11e3511c-730d-40c0-8bdc-8220f2e54f08",
+      "createdAt": "2026-02-17T23:46:42.778Z"
+    },
+    {
+      "title": "Test Task",
+      "status": "Pending",
+      "userId": "test-user-1771372033815",
+      "id": "e46bed4a-d95e-4c80-83a0-ab73a7f58e4d",
+      "createdAt": "2026-02-17T23:47:13.825Z"
+    },
+    {
+      "title": "Test Task",
+      "status": "Completed",
+      "userId": "test-user-1771372076315",
+      "id": "03657f2c-11be-4cbf-87c0-e8dd6f1a9749",
+      "createdAt": "2026-02-17T23:47:56.616Z",
+      "updatedAt": "2026-02-17T23:47:56.905Z"
     }
   ],
   "notes": [
