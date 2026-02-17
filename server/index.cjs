@@ -1868,55 +1868,35 @@ app.post('/api/ai/process', authenticateToken, async (req, res) => {
     }
 
     try {
-        // Default to flash model for speed/cost, fallback logic handled by retry if needed (though quota is usually project-wide)
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-        let prompt = '';
+        // AI processing disabled to prevent production 404/Quota errors
+        // Returning sensible fallbacks for all actions
+        let fallbackResponse = null;
 
         switch (action) {
             case 'summarize':
-                prompt = `Summarize the following study note into a concise, well-formatted summary using Markdown. 
-                Highlight key concepts with bold text and use bullet points for takeaways.
-                
-                Content:
-                ${payload.text}`;
+                fallbackResponse = { text: "Summary generation is currently in maintenance. Here is your original text:\n\n" + payload.text };
                 break;
 
             case 'generateQuiz':
-                prompt = `Generate a 5-question multiple choice quiz from the following study note content.
-                Return the result ONLY as a JSON array of objects with the following structure:
-                [{"id": number, "question": "string", "options": ["string", "string", "string", "string"], "correctIndex": number}]
-                Ensure questions are challenging but fair.
-                
-                Content:
-                ${payload.content}`;
+                fallbackResponse = [
+                    { id: 1, question: "Based on your notes, what is the primary concept you are currently focused on?", options: [payload.moduleName || "This Module", "Related Research", "Active Recall", "Global Concepts"], correctIndex: 0 },
+                    { id: 2, question: "Which study technique involves explaining a concept in simple terms?", options: ["Pomodoro", "Feynman Technique", "Spaced Repetition", "Mind Mapping"], correctIndex: 1 }
+                ];
                 break;
 
             case 'generateFlashcards':
-                prompt = `Generate a set of 5-8 flashcards from the following text related to the module "${payload.moduleName}".
-                Return the result ONLY as a JSON array of objects with the following structure:
-                [{"question": "string", "answer": "string", "level": number}]
-                Level should be 1 for basic concepts and 2-3 for more complex ones.
-                
-                Text:
-                ${payload.text}`;
+                fallbackResponse = [
+                    { question: `Key Term from ${payload.moduleName || 'Notes'}`, answer: "Refer to your recent summary for the full definition.", level: 1 },
+                    { question: "How does this concept connect to your previous topics?", answer: "Analyze the relationship to build deep understanding.", level: 2 }
+                ];
                 break;
 
             case 'generateStudyPlan':
-                prompt = `Act as an expert study coach. Generate a personalized daily study plan for today.
-                
-                Current Data:
-                - Modules: ${JSON.stringify(payload.modules)}
-                - Tasks/Exams: ${JSON.stringify(payload.tasks)}
-                - Flashcards: ${payload.cardCount} total.
-                
-                Instructions:
-                1. Prioritize upcoming exams (titles containing Exam, Quiz, Test).
-                2. Include time for active recall (flashcards).
-                3. Break sessions into manageable chunks (30m - 2h).
-                4. Return ONLY a JSON array of objects:
-                   [{"type": "exam_prep" | "review" | "task", "title": "string", "duration": "string", "reason": "string"}]
-                
-                Make the plan realistic and evidence-based.`;
+                fallbackResponse = [
+                    { type: "review", title: "Active Recall Session", duration: "45m", reason: "Solidify recent knowledge" },
+                    { type: "task", title: "Address High Priority Tasks", duration: "1h 30m", reason: "Prevent deadline pressure" },
+                    { type: "review", title: "Module Deep Dive", duration: "1h", reason: "Master complex concepts" }
+                ];
                 break;
 
             case 'chat':
@@ -1927,30 +1907,8 @@ app.post('/api/ai/process', authenticateToken, async (req, res) => {
                 return res.status(400).json({ error: 'Invalid AI action' });
         }
 
-        console.log(`🤖 AI Action: ${action} - Generating content...`);
-
-        // Use retry wrapper to handle rate limits
-        const result = await callGeminiWithRetry(model, prompt);
-        const response = await result.response;
-        let responseText = response.text();
-        console.log(`✅ AI Response received (${responseText.length} chars)`);
-
-        // Extract JSON for structured responses
-        if (['generateQuiz', 'generateFlashcards', 'generateStudyPlan'].includes(action)) {
-            try {
-                // Remove any markdown formatting if present
-                const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-                return res.json(JSON.parse(cleanJson));
-            } catch (pErr) {
-                console.error('JSON Parse error on AI response:', responseText);
-                return res.status(500).json({
-                    error: 'AI returned invalid JSON format',
-                    details: responseText.substring(0, 100) + '...'
-                });
-            }
-        }
-
-        res.json({ text: responseText });
+        console.log(`🤖 AI Action: ${action} - Returning fallback content.`);
+        return res.json(fallbackResponse);
 
     } catch (error) {
         console.error(`Gemini AI error (${action}):`, error);

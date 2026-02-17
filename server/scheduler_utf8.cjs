@@ -9,76 +9,16 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
 const generatePrediction = async (user, stats) => {
-    if (!genAI) return "Keep up the great work! Consistency is key to mastering your modules.";
-
-    try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-        const noteContext = stats.recentNotes && stats.recentNotes.length > 0
-            ? stats.recentNotes.map(n => `- Note: "${n.title}"\n  Content: ${n.content}`).join('\n')
-            : "No recent notes available.";
-
-        const taskContext = stats.pendingTasksDetails && stats.pendingTasksDetails.length > 0
-            ? stats.pendingTasksDetails.map(t => `- Task: "${t.title}"\n  Objective: ${t.description}`).join('\n')
-            : "No pending tasks available.";
-
-        const prompt = `Act as an elite Academic Strategist and Study Coach from the "JOSHWEBS STUDY ASSISTANCE SYSTEM".
-        
-        Analyze the following data for ${user.name || 'Student'} (Academic Level ${user.level || 1}, XP: ${user.xp || 0}):
-        
-        PERFORMANCE DATA (Last 24h):
-        - Hours Studied: ${stats.previousDayHours.toFixed(1)}h
-        - Momentum: ${stats.streak} day streak
-        - Output: ${stats.tasksCompleted} tasks completed
-        - Active Focus Areas: ${stats.activeModules.join(', ')}
-        
-        CONTENT CONTEXT:
-        Recent Note Summaries:
-        ${noteContext}
-        
-        Upcoming Deadlines & Objectives:
-        ${taskContext}
-        
-        YOUR TASK:
-        Perform a REAL, substantial analysis. Do not provide generic motivation. 
-        1. Identify conceptual overlaps or gaps based on their notes and upcoming tasks.
-        2. Provide a specific, data-driven "Strategic Prediction" for their performance today.
-        3. Give 1-2 pieces of advanced study advice tailored to their specific content (e.g., specific active recall techniques for their topics).
-        
-        Keep the response concise (approx. 4-5 sentences), authoritative, yet highly supportive. Focus on REAL intelligence.`;
-
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        return response.text().trim();
-    } catch (error) {
-        console.error('AI Prediction error:', error);
-        return "Continue your momentum! You've been focusing on " + (stats.activeModules.join(', ') || 'your core subjects') + " recently. Today, try connecting your recent notes with your pending tasks to deepen your understanding. You're on track for a productive day.";
-    }
+    // AI Analysis disabled to prevent production errors
+    return "Continue your momentum! You've been focusing on " + (stats.activeModules.join(', ') || 'your core subjects') + " recently. Today, try connecting your recent notes with your pending tasks to deepen your understanding. You're on track for a productive day.";
 };
 
 /**
  * Generates tailored study advice for a specific high-priority task.
  */
 const generateStudyAdvice = async (user, task) => {
-    if (!genAI) return "Break this task into smaller manageable chunks and use the Pomodoro timer to stay focused.";
-
-    try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const prompt = `Act as an elite Academic Strategist. A student named ${user.name || 'Student'} has an important task: "${task.title}".
-        Objective: ${task.description || 'Complete the task successfully'}.
-        Deadline: in 3 days.
-        
-        Provide 2 sentences of highly specific, high-leverage study advice for this task. 
-        Focus on advanced techniques like Active Recall, Feynman Technique, or specific resource organization. 
-        Be professional, intense, and encouraging.`;
-
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        return response.text().trim();
-    } catch (error) {
-        console.error('AI Advice error:', error);
-        return "Focus on the core concepts of this task and try explaining them to someone else to solidify your understanding.";
-    }
+    // AI Advice disabled to prevent production errors
+    return `Focus on the core concepts of "${task.title}" and try explaining them to someone else (Feynman Technique) to solidify your understanding before the deadline.`;
 };
 
 /**
