@@ -62,6 +62,7 @@ function App() {
                     {/* Public Sharing Routes */}
                     <Route path="/share/tutorials/:id" element={<PublicViewer />} />
                     <Route path="/share/flashcards/:id" element={<PublicViewer />} />
+                    <Route path="/share/notes/:id" element={<PublicViewer />} />
 
                     <Route element={<ProtectedRoute />}>
                       <Route path="/" element={<Dashboard />} />

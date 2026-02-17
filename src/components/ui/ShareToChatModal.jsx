@@ -21,7 +21,11 @@ const ShareToChatModal = ({ isOpen, onClose, resource }) => {
     const handleShare = async (convId) => {
         setSharingId(convId);
         try {
-            await shareResource(convId, resource);
+            const resourceWithId = {
+                ...resource,
+                resourceId: resource.id // Ensure ID consistency for Chat.jsx
+            };
+            await shareResource(convId, resourceWithId);
             setSharedIds(prev => new Set(prev).add(convId));
             setTimeout(() => {
                 setSharingId(null);

@@ -874,11 +874,12 @@ function Chat() {
         setSelectedResourceData(null);
         try {
             let endpoint = '';
+            const resourceId = resource.resourceId || resource.id;
             switch (resource.type) {
                 // Use generic endpoints, not shared-specific ones which don't exist
-                case 'note': endpoint = `/notes/${resource.resourceId}`; break;
-                case 'flashcard': endpoint = `/flashcardDecks/${resource.resourceId}`; break;
-                case 'tutorial': endpoint = `/tutorials/${resource.resourceId}`; break;
+                case 'note': endpoint = `/notes/${resourceId}`; break;
+                case 'flashcard': endpoint = `/flashcardDecks/${resourceId}`; break;
+                case 'tutorial': endpoint = `/tutorials/${resourceId}`; break;
                 default: throw new Error('Unknown resource type');
             }
             const response = await api.get(endpoint);

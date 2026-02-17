@@ -28,6 +28,7 @@ const PublicViewer = () => {
                     const pathParts = window.location.pathname.split('/');
                     if (pathParts.includes('tutorials')) targetCollection = 'tutorials';
                     else if (pathParts.includes('flashcards')) targetCollection = 'flashcardDecks';
+                    else if (pathParts.includes('notes')) targetCollection = 'notes';
                     targetId = pathParts[pathParts.length - 1];
                 }
 
@@ -160,6 +161,65 @@ const PublicViewer = () => {
         );
     };
 
+    const renderNote = () => {
+        return (
+            <div className="max-w-3xl mx-auto w-full">
+                <Card className="p-8 md:p-12 border-none shadow-2xl bg-white dark:bg-slate-800/50 rounded-[2.5rem] relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/5 rounded-full -ml-16 -mb-16 blur-3xl"></div>
+
+                    <div className="flex items-center gap-2 mb-8">
+                        <div className="px-4 py-1.5 bg-primary-50 dark:bg-primary-900/20 rounded-full text-[10px] uppercase font-black tracking-[0.2em] text-primary-600 dark:text-primary-400 border border-primary-100 dark:border-primary-800/50">
+                            Shared Note
+                        </div>
+                    </div>
+
+                    <h1 className="text-4xl md:text-5xl font-black text-slate-800 dark:text-white mb-8 tracking-tighter leading-tight">
+                        {item.title}
+                    </h1>
+
+                    <div className="text-slate-600 dark:text-slate-300 text-lg leading-relaxed whitespace-pre-wrap mb-10 prose dark:prose-invert max-w-none">
+                        {item.content}
+                    </div>
+
+                    {item.resourceLink && (
+                        <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-700/50">
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Referenced Material</p>
+                            <a
+                                href={item.resourceLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl group transition-all hover:bg-primary-50 dark:hover:bg-primary-900/20 border border-transparent hover:border-primary-200 dark:hover:border-primary-800"
+                            >
+                                <div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center text-primary-600 group-hover:scale-110 transition-transform">
+                                    <ExternalLink size={24} />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{item.resourceLink}</p>
+                                    <p className="text-xs text-slate-400">Click to open external resource</p>
+                                </div>
+                            </a>
+                        </div>
+                    )}
+
+                    {item.pdfPath && (
+                        <div className="mt-6">
+                            <a
+                                href={item.pdfPath}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600 dark:text-emerald-400 rounded-2xl font-bold hover:bg-emerald-100 transition-colors border border-emerald-100 dark:border-emerald-800/50"
+                            >
+                                <FileText size={20} />
+                                <span>Download PDF Resource</span>
+                            </a>
+                        </div>
+                    )}
+                </Card>
+            </div>
+        );
+    };
+
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pb-20">
             {/* Header */}
@@ -178,7 +238,7 @@ const PublicViewer = () => {
             </header>
 
             <main className="max-w-7xl mx-auto px-6 py-12">
-                {item.cards ? renderFlashcards() : renderTutorial()}
+                {item.cards ? renderFlashcards() : (item.content ? renderNote() : renderTutorial())}
             </main>
         </div>
     );

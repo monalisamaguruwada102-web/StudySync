@@ -243,7 +243,7 @@ const Notes = () => {
     };
 
     const handleCopyExternalLink = (note) => {
-        const url = `${window.location.origin}/notes/shared/${note.id}`;
+        const url = `${window.location.origin}/study/share/notes/${note.id}`;
         const shareText = `Check out this note on StudySync: ${note.title}\n${url}`;
         navigator.clipboard.writeText(shareText);
         showToast('External link copied to clipboard!', 'success');
