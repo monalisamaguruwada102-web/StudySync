@@ -612,6 +612,105 @@ const sendUnifiedEngagementReport = async (user, data) => {
     }
 };
 
+/**
+ * Sends an email recovery notification to a user.
+ */
+const sendEmailRecoveryNotification = async (email) => {
+    const mailOptions = {
+        from: process.env.SMTP_FROM || '"StudySync Support" <support@studysync.app>',
+        to: email,
+        subject: `Your StudySync Account Access: Email Recovery 🔐`,
+        html: `
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #0f172a; color: #f8fafc; border-radius: 12px; overflow: hidden; border: 1px solid #1e293b;">
+                <div style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); padding: 30px; text-align: center;">
+                    <h1 style="margin: 0; font-size: 24px; color: white;">Account Support</h1>
+                </div>
+                <div style="padding: 30px;">
+                    <h2 style="color: white; margin-top: 0;">Email Recovery Inquiry</h2>
+                    <p style="color: #cbd5e1; line-height: 1.6;">
+                        Hello, we received a request regarding your account access. Your correct registered email for StudySync is:
+                    </p>
+                    <div style="background-color: #1e293b; padding: 20px; border-radius: 8px; border: 1px dashed #6366f1; text-align: center; margin: 20px 0;">
+                        <strong style="font-size: 20px; color: #818cf8;">${email}</strong>
+                    </div>
+                    <p style="color: #94a3b8; font-size: 14px;">
+                        You can use this email to log in and sync your study data. If you have any trouble with your password, please use the "Forgot Password" link on the login page.
+                    </p>
+                </div>
+                <div style="background-color: #020617; padding: 20px; text-align: center;">
+                    <p style="margin: 0; font-size: 12px; color: #475569;">&copy; 2026 StudySync Support. Excellence through Consistency.</p>
+                </div>
+            </div>
+        `
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log(`✅ Recovery email sent to ${email}`);
+    } catch (error) {
+        console.error(`❌ Failed to send recovery email to ${email}:`, error);
+    }
+};
+
+/**
+ * Sends a service restoration notification to a user.
+ */
+const sendRestorationNotification = async (user) => {
+    const email = user.email;
+    if (!email) return;
+
+    const mailOptions = {
+        from: process.env.SMTP_FROM || '"StudySync" <no-reply@studysync.app>',
+        to: email,
+        subject: `We're Back! Services Restored & App Working 🚀`,
+        html: `
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #0f172a; color: #f8fafc; border-radius: 12px; overflow: hidden; border: 1px solid #1e293b;">
+                <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 30px; text-align: center;">
+                    <h1 style="margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.025em; color: #ffffff;">Services Restored</h1>
+                    <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 16px; color: #e0e7ff;">The JOSHWEBS STUDY SYSTEM is now fully operational</p>
+                </div>
+                
+                <div style="padding: 30px;">
+                    <p style="font-size: 18px; line-height: 1.7; color: #ffffff; margin-bottom: 20px;">
+                        Hello <strong>${user.name || 'Student'}</strong>,
+                    </p>
+                    <p style="font-size: 16px; line-height: 1.7; color: #cbd5e1; margin-bottom: 30px;">
+                        We are pleased to inform you that we have restored all services. The app is now working perfectly, and all systems (including your study timer and AI fallbacks) are stable and ready for your next study session.
+                    </p>
+
+                    <div style="background-color: #1e293b; padding: 25px; border-radius: 12px; border: 1px solid #10b98133; margin-bottom: 35px;">
+                        <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #34d399; text-transform: uppercase; letter-spacing: 0.05em;">What was fixed:</h4>
+                        <ul style="margin: 0; padding-left: 20px; color: #94a3b8; font-size: 14px; line-height: 1.8;">
+                            <li>Production Timer Synchronization issues</li>
+                            <li>Background Report AI Engine 404 errors</li>
+                            <li>System Stability & Performance Optimizations</li>
+                        </ul>
+                    </div>
+
+                    <p style="font-size: 14px; color: #94a3b8; margin-bottom: 30px;">
+                        Thank you for your patience while we optimized the system for your academic success.
+                    </p>
+
+                    <div style="text-align: center; margin-top: 20px;">
+                        <a href="https://www.joshwebs.co.zw/study" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 16px 45px; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 16px; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);">BACK TO STUDYING</a>
+                    </div>
+                </div>
+
+                <div style="background-color: #020617; padding: 30px; text-align: center; border-top: 1px solid #1e293b;">
+                    <p style="margin: 0; font-size: 12px; color: #475569;">&copy; 2026 JOSHWEBS STUDY ASSISTANCE SYSTEM. Excellence through Consistency.</p>
+                </div>
+            </div>
+        `
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`✅ Restoration email sent to ${email}: ${info.messageId}`);
+    } catch (error) {
+        console.error(`❌ Failed to send restoration email to ${email}:`, error);
+    }
+};
+
 module.exports = {
     sendStudyReport,
     sendTutorialGuide,
@@ -619,5 +718,7 @@ module.exports = {
     sendDeadlineAlert,
     sendMilestoneReward,
     sendWeeklyRetrospective,
-    sendUnifiedEngagementReport
+    sendUnifiedEngagementReport,
+    sendRestorationNotification,
+    sendEmailRecoveryNotification
 };
