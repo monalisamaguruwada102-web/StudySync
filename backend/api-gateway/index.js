@@ -11,7 +11,15 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+            "connect-src": ["'self'", "https://*.supabase.co", "wss://*.supabase.co"],
+        },
+    },
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(cors());
 app.use(morgan('dev'));
 

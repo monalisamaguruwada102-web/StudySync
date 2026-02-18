@@ -25,7 +25,39 @@ const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 const app = express();
 
 // --- SECURITY MIDDLEWARE ---
-app.use(helmet()); // Set security headers
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            "default-src": ["'self'", "https://*.supabase.co", "wss://*.supabase.co"],
+            "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://pagead2.googlesyndication.com", "https://www.googletagmanager.com", "https://www.google-analytics.com"],
+            "connect-src": [
+                "'self'",
+                "https://*.supabase.co",
+                "wss://*.supabase.co",
+                "https://*.google-analytics.com",
+                "https://*.doubleclick.net",
+                "https://www.joshwebs.co.zw",
+                "https://joshwebs.co.zw",
+                "blob:"
+            ],
+            "img-src": ["'self'", "data:", "blob:", "https://*.supabase.co", "https://pagead2.googlesyndication.com", "https://www.google-analytics.com"],
+            "frame-src": [
+                "'self'",
+                "https://googleads.g.doubleclick.net",
+                "https://tpc.googlesyndication.com",
+                "https://www.google.com"
+            ],
+            "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            "font-src": ["'self'", "https://fonts.gstatic.com"],
+            "manifest-src": ["'self'"],
+            "media-src": ["'self'", "https://*.supabase.co", "blob:"],
+            "object-src": ["'none'"],
+            "upgrade-insecure-requests": [],
+        },
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
 // General Rate Limiter
 const generalLimiter = rateLimit({
