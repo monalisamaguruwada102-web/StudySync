@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Clock, Calendar, User, Share2, Sparkles, BookOpen, Quote } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { ArrowLeft, Clock, Calendar, Share2, Quote, ArrowRight } from 'lucide-react';
 import { articles } from '../data/articles';
 
 const ArticleDetail = () => {
@@ -16,92 +16,100 @@ const ArticleDetail = () => {
 
     if (!article) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center p-4">
-                <h1 className="text-2xl font-black text-slate-900 dark:text-white mb-4 text-center">Article Not Found</h1>
-                <Link to="/articles" className="text-primary-500 font-bold hover:underline">Back to Archive</Link>
+            <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
+                <h1 className="text-3xl font-black text-black mb-4 text-center">Archive Entry Missing</h1>
+                <button
+                    onClick={() => navigate('/articles')}
+                    className="text-black font-black uppercase tracking-widest border-b-2 border-black pb-1 hover:text-slate-600 hover:border-slate-600 transition-colors"
+                >
+                    Return to Library
+                </button>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen pt-24 pb-24 px-4 lg:px-8">
-            <div className="max-w-4xl mx-auto">
+        <div className="min-h-screen bg-white dark:bg-slate-950 pt-32 pb-32 px-4 lg:px-8">
+            <div className="max-w-3xl mx-auto">
 
                 {/* Back Button */}
                 <motion.button
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     onClick={() => navigate('/articles')}
-                    className="flex items-center gap-2 text-slate-400 hover:text-primary-500 transition-colors text-xs font-black uppercase tracking-widest mb-12"
+                    className="group flex items-center gap-1.5 text-slate-400 hover:text-black dark:hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.2em] mb-20"
                 >
-                    <ArrowLeft size={16} />
-                    Back to Knowledge Hub
+                    <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+                    Archive Directory
                 </motion.button>
 
                 <article className="relative">
-                    {/* Floating Info */}
-                    <div className="flex flex-wrap items-center gap-6 mb-8">
-                        <div className="px-4 py-1.5 bg-primary-500/10 rounded-full text-xs font-black text-primary-500 uppercase tracking-widest">
+                    {/* Header Info */}
+                    <div className="flex flex-wrap items-center gap-8 mb-12 pb-12 border-b border-slate-100 dark:border-slate-900">
+                        <div className="text-[10px] font-black text-black dark:text-white uppercase tracking-[0.2em]">
                             {article.category}
                         </div>
-                        <div className="flex items-center gap-2 text-slate-400 text-[11px] font-bold">
-                            <Clock size={14} className="text-primary-500/50" />
-                            {article.readTime} reading time
+                        <div className="flex items-center gap-2 text-slate-400 text-[10px] font-black uppercase tracking-widest">
+                            <Clock size={12} />
+                            {article.readTime}
                         </div>
-                        <div className="flex items-center gap-2 text-slate-400 text-[11px] font-bold">
-                            <Calendar size={14} className="text-primary-500/50" />
-                            {new Date(article.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                        <div className="flex items-center gap-2 text-slate-400 text-[10px] font-black uppercase tracking-widest">
+                            <Calendar size={12} />
+                            {new Date(article.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </div>
                     </div>
 
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-4xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.1] mb-12"
+                        transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
+                        className="text-5xl lg:text-7xl font-black text-black dark:text-white tracking-tighter leading-[0.95] mb-20"
                     >
                         {article.title}
                     </motion.h1>
 
-                    {/* Meta/Author Card */}
+                    {/* Author Meta */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="flex items-center justify-between p-6 bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-[2rem] mb-12"
+                        className="flex items-center justify-between mb-24"
                     >
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-primary-600 to-purple-600 rounded-2xl flex items-center justify-center text-white font-black shadow-lg shadow-primary-500/20">
+                        <div className="flex items-center gap-5">
+                            <div className="w-14 h-14 bg-black dark:bg-white flex items-center justify-center text-white dark:text-black text-xl font-black">
                                 {article.author[0]}
                             </div>
                             <div>
-                                <p className="text-xs font-black uppercase tracking-widest text-primary-500 mb-0.5">Author</p>
-                                <p className="text-lg font-black text-slate-900 dark:text-white leading-none">{article.author}</p>
+                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1" >Written By</p>
+                                <p className="text-xl font-black text-black dark:text-white leading-none">{article.author}</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <button className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-primary-500 transition-all">
-                                <Share2 size={18} />
-                            </button>
-                        </div>
+                        <button
+                            className="p-4 rounded-none border border-slate-200 dark:border-slate-800 text-slate-400 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white transition-all group"
+                            title="Share Insights"
+                        >
+                            <Share2 size={20} className="group-hover:scale-110 transition-transform" />
+                        </button>
                     </motion.div>
 
                     {/* Content */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ delay: 0.2 }}
-                        className="prose prose-lg dark:prose-invert max-w-none 
-                                   prose-headings:font-black prose-headings:tracking-tight 
-                                   prose-p:text-slate-600 dark:prose-p:text-slate-300 
-                                   prose-strong:text-slate-900 dark:prose-strong:text-white
-                                   prose-a:text-primary-500"
+                        transition={{ delay: 0.3 }}
+                        className="prose prose-xl prose-slate dark:prose-invert max-w-none 
+                                   prose-headings:text-black dark:prose-headings:text-white prose-headings:font-black prose-headings:tracking-tighter 
+                                   prose-p:text-slate-700 dark:prose-p:text-slate-300 prose-p:leading-[1.8] prose-p:font-medium
+                                   prose-strong:text-black dark:prose-strong:text-white prose-strong:font-black
+                                   prose-blockquote:border-l-4 prose-blockquote:border-black dark:prose-blockquote:border-white prose-blockquote:bg-slate-50 dark:prose-blockquote:bg-slate-900/50 prose-blockquote:py-4 prose-blockquote:px-8 prose-blockquote:font-serif prose-blockquote:italic
+                                   prose-li:text-slate-700 dark:prose-li:text-slate-300
+                                   prose-code:text-black dark:prose-code:text-white prose-code:bg-slate-100 dark:prose-code:bg-slate-900"
                     >
                         <ReactMarkdown
                             components={{
                                 blockquote: ({ children }) => (
-                                    <div className="my-12 p-8 bg-primary-500/5 border-l-4 border-primary-500 rounded-r-3xl relative overflow-hidden italic text-xl">
-                                        <Quote size={48} className="absolute -top-4 -right-4 text-primary-500/10" />
+                                    <blockquote className="my-16 font-serif italic text-3xl leading-relaxed text-slate-900 dark:text-slate-100">
                                         {children}
-                                    </div>
+                                    </blockquote>
                                 )
                             }}
                         >
@@ -109,31 +117,21 @@ const ArticleDetail = () => {
                         </ReactMarkdown>
                     </motion.div>
 
-                    {/* Footer / Read More Section */}
-                    <div className="mt-24 pt-12 border-t border-slate-200 dark:border-slate-800">
-                        <div className="flex items-center justify-between mb-8">
-                            <h3 className="text-2xl font-black text-slate-900 dark:text-white">More Resources</h3>
-                            <Link to="/articles" className="text-xs font-black uppercase tracking-widest text-primary-500 hover:underline">View All</Link>
+                    {/* Footer */}
+                    <div className="mt-32 pt-16 border-t-2 border-black dark:border-white flex flex-col md:flex-row md:items-center justify-between gap-8">
+                        <div>
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 mb-2">More from</p>
+                            <h3 className="text-3xl font-black text-black dark:text-white tracking-widest uppercase">The Library</h3>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {articles.filter(a => a.id !== id).slice(0, 2).map(a => (
-                                <Link key={a.id} to={`/articles/${a.id}`} className="group p-6 bg-white/20 dark:bg-slate-900/40 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-3xl hover:bg-white/30 dark:hover:bg-slate-900/60 transition-all">
-                                    <h4 className="font-black text-slate-900 dark:text-white group-hover:text-primary-500 transition-colors mb-2">{a.title}</h4>
-                                    <div className="flex items-center gap-3 text-[10px] uppercase font-black tracking-widest text-slate-400">
-                                        <span>{a.category}</span>
-                                        <span>•</span>
-                                        <span>{a.readTime} read</span>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
+                        <button
+                            onClick={() => navigate('/articles')}
+                            className="inline-flex items-center gap-4 bg-black text-white dark:bg-white dark:text-black px-10 py-5 text-xs font-black uppercase tracking-[0.2em] hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors"
+                        >
+                            Browse All Articles
+                            <ArrowRight size={18} />
+                        </button>
                     </div>
                 </article>
-
-                {/* Decorative Sparkles */}
-                <div className="fixed top-1/4 -right-12 opacity-[0.03] pointer-events-none">
-                    <Sparkles size={400} />
-                </div>
             </div>
         </div>
     );
