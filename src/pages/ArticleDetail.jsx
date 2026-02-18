@@ -32,16 +32,28 @@ const ArticleDetail = () => {
         <div className="min-h-screen bg-white dark:bg-slate-950 pt-32 pb-32 px-4 lg:px-8">
             <div className="max-w-3xl mx-auto">
 
-                {/* Back Button */}
-                <motion.button
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    onClick={() => navigate('/articles')}
-                    className="group flex items-center gap-1.5 text-slate-400 hover:text-black dark:hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.2em] mb-20"
-                >
-                    <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
-                    Archive Directory
-                </motion.button>
+                {/* Back Link */}
+                <div className="flex items-center gap-6 mb-20">
+                    <motion.button
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        onClick={() => navigate('/dashboard')}
+                        className="group flex items-center gap-1.5 text-slate-400 hover:text-black dark:hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.2em]"
+                    >
+                        <LayoutDashboard size={14} className="group-hover:scale-110 transition-transform" />
+                        Dashboard
+                    </motion.button>
+                    <div className="w-[2px] h-4 bg-slate-100 dark:bg-slate-900" />
+                    <motion.button
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        onClick={() => navigate('/articles')}
+                        className="group flex items-center gap-1.5 text-slate-400 hover:text-black dark:hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.2em]"
+                    >
+                        <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" />
+                        Archive Directory
+                    </motion.button>
+                </div>
 
                 <article className="relative">
                     {/* Header Info */}

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Send, MessageSquare, Clock, Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Mail, Phone, MapPin, Send, MessageSquare, Clock, Globe, LayoutDashboard } from 'lucide-react';
 
 const Contact = () => {
+    const navigate = useNavigate();
     const [status, setStatus] = useState(null);
 
     const handleSubmit = (e) => {
@@ -14,6 +14,17 @@ const Contact = () => {
     return (
         <div className="min-h-screen pt-24 pb-12 px-4 lg:px-8">
             <div className="max-w-6xl mx-auto">
+                {/* Navigation */}
+                <motion.button
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    onClick={() => navigate('/dashboard')}
+                    className="group mb-8 flex items-center gap-2 text-slate-400 hover:text-primary-500 transition-colors text-[10px] font-black uppercase tracking-[0.2em]"
+                >
+                    <LayoutDashboard size={14} className="group-hover:scale-110 transition-transform" />
+                    Dashboard
+                </motion.button>
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
 
                     {/* Contact Info Side */}
@@ -117,8 +128,8 @@ const Contact = () => {
                                 whileTap={{ scale: 0.98 }}
                                 disabled={status === 'sending'}
                                 className={`w-full py-5 rounded-3xl flex items-center justify-center gap-3 font-black uppercase tracking-widest transition-all shadow-xl ${status === 'sent'
-                                        ? 'bg-emerald-500 text-white shadow-emerald-500/30'
-                                        : 'bg-primary-600 hover:bg-primary-500 text-white shadow-primary-500/30'
+                                    ? 'bg-emerald-500 text-white shadow-emerald-500/30'
+                                    : 'bg-primary-600 hover:bg-primary-500 text-white shadow-primary-500/30'
                                     }`}
                             >
                                 {status === 'sending' ? (

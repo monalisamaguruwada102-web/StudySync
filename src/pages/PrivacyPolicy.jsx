@@ -1,8 +1,8 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { ShieldAlert, Eye, Lock, Globe, Server, UserCheck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ShieldAlert, Eye, Lock, Globe, Server, UserCheck, LayoutDashboard } from 'lucide-react';
 
 const PrivacyPolicy = () => {
+    const navigate = useNavigate();
     const lastUpdated = "February 17, 2026";
 
     const sections = [
@@ -31,6 +31,17 @@ const PrivacyPolicy = () => {
     return (
         <div className="min-h-screen pt-24 pb-12 px-4 lg:px-8">
             <div className="max-w-4xl mx-auto">
+                {/* Navigation */}
+                <motion.button
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    onClick={() => navigate('/dashboard')}
+                    className="group mb-8 flex items-center gap-2 text-slate-400 hover:text-emerald-500 transition-colors text-[10px] font-black uppercase tracking-[0.2em]"
+                >
+                    <LayoutDashboard size={14} className="group-hover:scale-110 transition-transform" />
+                    Dashboard
+                </motion.button>
+
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}

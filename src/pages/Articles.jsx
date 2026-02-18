@@ -5,6 +5,7 @@ import { BookOpen, Search, ArrowRight, Clock, Tag, Sparkles } from 'lucide-react
 import { articles } from '../data/articles';
 
 const Articles = () => {
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
 
@@ -24,14 +25,26 @@ const Articles = () => {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-12 mb-20">
                     <div className="max-w-2xl">
-                        <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="inline-flex items-center gap-2 px-0 py-1 border-b-2 border-black dark:border-white text-[10px] font-black text-black dark:text-white uppercase tracking-[0.2em] mb-6"
-                        >
-                            <BookOpen size={14} />
-                            Editorial Knowledge
-                        </motion.div>
+                        <div className="flex items-center gap-6 mb-6">
+                            <motion.button
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                onClick={() => navigate('/dashboard')}
+                                className="group flex items-center gap-2 text-slate-400 hover:text-black dark:hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.2em]"
+                            >
+                                <LayoutDashboard size={14} />
+                                Dashboard
+                            </motion.button>
+                            <div className="w-[2px] h-4 bg-slate-200 dark:bg-slate-800" />
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="inline-flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]"
+                            >
+                                <BookOpen size={14} />
+                                Editorial Knowledge
+                            </motion.div>
+                        </div>
                         <h1 className="text-5xl lg:text-7xl font-black text-black dark:text-white tracking-tighter leading-none mb-6 text-stroke">
                             The <span className="italic font-serif">Library</span>
                         </h1>
