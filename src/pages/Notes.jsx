@@ -18,7 +18,16 @@ import {
     ExternalLink,
     Lock,
     Globe,
-    LayoutDashboard
+    LayoutDashboard,
+    Book,
+    StickyNote,
+    Mic,
+    MicOff,
+    Share2,
+    Link,
+    BrainCircuit,
+    Wand2,
+    Play
 } from 'lucide-react';
 import aiService from '../services/aiService';
 import { supabase } from '../services/supabase';
