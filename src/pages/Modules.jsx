@@ -253,6 +253,7 @@ const Modules = () => {
                         />
                     </form>
                 </Modal>
+            </div>
         </Layout>
     );
 };
