@@ -1,4 +1,3 @@
-```javascript
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, BookOpen, Clock, ArrowRight, BookMarked, LayoutDashboard } from 'lucide-react';
@@ -27,14 +26,14 @@ const Articles = () => {
                     <div className="max-w-2xl">
                         {/* Navigation */}
                         <motion.button
-                             initial={{ opacity: 0, x: -10 }}
-                             animate={{ opacity: 1, x: 0 }}
-                             onClick={() => navigate('/dashboard')}
-                             className="group mb-8 flex items-center gap-2 text-slate-400 hover:text-rose-700 dark:hover:text-rose-500 transition-colors text-[10px] font-black uppercase tracking-[0.2em]"
-                         >
-                             <LayoutDashboard size={14} className="group-hover:scale-110 transition-transform" />
-                             Dashboard
-                         </motion.button>
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            onClick={() => navigate('/dashboard')}
+                            className="group mb-8 flex items-center gap-2 text-slate-400 hover:text-rose-700 dark:hover:text-rose-500 transition-colors text-[10px] font-black uppercase tracking-[0.2em]"
+                        >
+                            <LayoutDashboard size={14} className="group-hover:scale-110 transition-transform" />
+                            Dashboard
+                        </motion.button>
 
                         <motion.div
                             initial={{ opacity: 0, y: -10 }}
@@ -70,11 +69,10 @@ const Articles = () => {
                         <button
                             key={category}
                             onClick={() => setSelectedCategory(category)}
-                            className={`px - 6 py - 3 text - xs font - black uppercase tracking - widest transition - all ${
-    selectedCategory === category
-    ? 'bg-rose-700 text-white'
-    : 'bg-slate-100 dark:bg-slate-900 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'
-} `}
+                            className={`px-6 py-3 text-xs font-black uppercase tracking-widest transition-all ${selectedCategory === category
+                                    ? 'bg-rose-700 text-white'
+                                    : 'bg-slate-100 dark:bg-slate-900 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'
+                                } `}
                         >
                             {category}
                         </button>
@@ -94,7 +92,7 @@ const Articles = () => {
                                 transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1], delay: idx * 0.05 }}
                                 className="group"
                             >
-                                <Link to={`/ articles / ${ article.id } `} className="block h-full group">
+                                <Link to={`/articles/${article.id}`} className="block h-full group">
                                     <div className="h-full flex flex-col pt-8 pb-12 border-t-4 border-slate-100 dark:border-slate-900 group-hover:border-rose-700 dark:group-hover:border-rose-600 transition-all duration-500">
                                         <div className="flex justify-between items-start mb-6">
                                             <span className="text-[10px] font-black text-rose-700 dark:text-rose-500 uppercase tracking-[0.2em]">{article.category}</span>
