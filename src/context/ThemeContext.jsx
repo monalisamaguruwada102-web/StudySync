@@ -37,7 +37,7 @@ export const ThemeProvider = ({ children }) => {
         }
 
         // Only save to cloud if we are authenticated
-        api.post('/user/settings', {
+        api.post('/user/profile', {
             theme,
             dark_mode: isDarkMode
         }).catch(err => {

@@ -213,6 +213,11 @@ const Dashboard = () => {
         ],
     };
 
+    const levelProgress = useMemo(() => {
+        if (!user?.xp) return 0;
+        return (user.xp % 1000) / 10;
+    }, [user?.xp]);
+
     return (
         <Layout title="Dashboard">
             <DashboardHeader user={user} />
@@ -248,12 +253,12 @@ const Dashboard = () => {
                         <div className="flex flex-col gap-3 min-w-[180px]">
                             <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
                                 <span className="text-slate-400">Progress to Level {(user?.level || 1) + 1}</span>
-                                <span className="text-primary-500">65%</span>
+                                <span className="text-primary-500">{levelProgress.toFixed(0)}%</span>
                             </div>
                             <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
                                 <motion.div
                                     initial={{ width: 0 }}
-                                    animate={{ width: '65%' }}
+                                    animate={{ width: `${levelProgress}%` }}
                                     className={`h-full bg-gradient-to-r ${league.gradient || 'from-primary-500 to-primary-400'} shadow-[0_0_20px_rgba(99,102,241,0.5)]`}
                                 />
                             </div>
@@ -330,7 +335,7 @@ const Dashboard = () => {
                     <Card title="Focus DNA" HeaderAction={<Brain size={18} className="text-purple-500" />}>
                         <div className="h-64 relative">
                             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white/5 pointer-events-none rounded-full" />
-                            <FocusRadar />
+                            <FocusRadar stats={stats} />
                         </div>
                         <div className="mt-4 text-center">
                             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Analysis based on study patterns</p>

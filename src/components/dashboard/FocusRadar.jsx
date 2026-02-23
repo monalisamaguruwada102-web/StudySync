@@ -20,18 +20,42 @@ ChartJS.register(
     Legend
 );
 
-const FocusRadar = () => {
+const FocusRadar = ({ stats }) => {
     const { isDarkMode } = useTheme();
 
-    // Mock data based on "psychological profile" of study habits
-    // In a real implementation, calculating these from logs would be complex logic
+    // Calculate metrics based on study habits
+    const calculatedData = useMemo(() => {
+        if (!stats) return [0, 0, 0, 0, 0, 0];
+
+        // 1. Memory: Flashcard activity (mocked as 50 if no data, increases with logged hours)
+        const memory = Math.min(100, 40 + (stats.totalHours * 2));
+
+        // 2. Logic: Task completion vs total
+        const totalTasks = (stats.pendingTasks || 0) + (stats.completedTasks || 0);
+        const logic = totalTasks > 0 ? (stats.completedTasks / totalTasks) * 100 : 0;
+
+        // 3. Focus: Streak consistency
+        const focus = Math.min(100, (stats.streak || 0) * 15);
+
+        // 4. Speed: Task completion rate (Completed tasks relative to total hours)
+        const speed = stats.totalHours > 0 ? Math.min(100, (stats.completedTasks / stats.totalHours) * 20) : 0;
+
+        // 5. Visual: Module diversity
+        const visual = Math.min(100, (stats.activeModules || 0) * 20);
+
+        // 6. Creativity: Diverse study patterns (Total hours across different modules)
+        const creativity = Math.min(100, (stats.totalHours / 2) + (stats.activeModules * 5));
+
+        return [memory, logic, focus, speed, visual, creativity];
+    }, [stats]);
+
     const data = useMemo(() => {
         return {
             labels: ['Memory', 'Logic', 'Focus', 'Speed', 'Visual', 'Creativity'],
             datasets: [
                 {
                     label: 'Current Stats',
-                    data: [85, 70, 90, 65, 80, 55], // Example values
+                    data: calculatedData,
                     backgroundColor: isDarkMode ? 'rgba(99, 102, 241, 0.2)' : 'rgba(99, 102, 241, 0.2)',
                     borderColor: isDarkMode ? '#818cf8' : '#6366f1',
                     borderWidth: 2,
@@ -51,7 +75,7 @@ const FocusRadar = () => {
                 },
             ],
         };
-    }, [isDarkMode]);
+    }, [isDarkMode, calculatedData]);
 
     const options = useMemo(() => {
         const textColor = isDarkMode ? '#94a3b8' : '#64748b';

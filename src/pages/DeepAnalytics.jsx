@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import Card from '../components/ui/Card';
 import { useFirestore } from '../hooks/useFirestore';
@@ -20,7 +21,8 @@ import {
     TrendingUp,
     Map,
     Trophy,
-    Boxes
+    Boxes,
+    LayoutDashboard
 } from 'lucide-react';
 import { getModuleColor } from '../utils/colors';
 import ForceGraph2D from 'react-force-graph-2d';
@@ -28,6 +30,7 @@ import { Doughnut } from 'react-chartjs-2';
 import { motion } from 'framer-motion';
 
 const DeepAnalytics = () => {
+    const navigate = useNavigate();
     const { data: modules } = useFirestore(moduleService.getAll);
     const { data: notes } = useFirestore(noteService.getAll);
     const { data: flashcards } = useFirestore(flashcardService.getAll);
@@ -107,6 +110,16 @@ const DeepAnalytics = () => {
     return (
         <Layout title="Deep Work Analytics">
             <div className="max-w-7xl mx-auto space-y-8">
+                {/* Navigation */}
+                <motion.button
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    onClick={() => navigate('/')}
+                    className="group mb-4 flex items-center gap-2 text-slate-400 hover:text-primary-500 transition-colors text-[10px] font-black uppercase tracking-[0.2em]"
+                >
+                    <LayoutDashboard size={14} className="group-hover:scale-110 transition-transform" />
+                    Dashboard
+                </motion.button>
                 {/* Header Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <Card className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-none shadow-2xl relative overflow-hidden group">

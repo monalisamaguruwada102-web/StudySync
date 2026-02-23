@@ -7,7 +7,19 @@ import Modal from '../components/ui/Modal';
 import QuizModal from '../components/ui/QuizModal';
 import { useFirestore } from '../hooks/useFirestore';
 import { noteService, moduleService } from '../services/firestoreService';
-import { Plus, StickyNote, Trash2, Book, ExternalLink, FileText, Code, Play, Sparkles, Wand2, Mic, MicOff, BrainCircuit, Share2, Link } from 'lucide-react';
+import {
+    Plus,
+    Search,
+    FileText,
+    FolderPlus,
+    MoreVertical,
+    Trash2,
+    Edit2,
+    ExternalLink,
+    Lock,
+    Globe,
+    LayoutDashboard
+} from 'lucide-react';
 import aiService from '../services/aiService';
 import { supabase } from '../services/supabase';
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
@@ -15,12 +27,12 @@ import ShareToChatModal from '../components/ui/ShareToChatModal';
 import { useNotification } from '../context/NotificationContext';
 
 const Notes = () => {
+    const navigate = useNavigate();
     const { showToast, confirm } = useNotification();
     const { data: notes, loading, refresh } = useFirestore(noteService.getAll);
     const { data: modules } = useFirestore(moduleService.getAll);
     const [searchParams] = useSearchParams();
     const { id: pathId } = useParams();
-    const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showShareModal, setShowShareModal] = useState(false);
     const [noteToShare, setNoteToShare] = useState(null);

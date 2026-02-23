@@ -25,8 +25,9 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
     };
 
-    const updateUser = (updates) => {
+    const updateUser = async (updates) => {
         setUser(prev => prev ? { ...prev, ...updates } : null);
+        await updateProfile(updates);
     };
 
     useEffect(() => {

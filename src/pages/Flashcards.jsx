@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -8,7 +8,7 @@ import Modal from '../components/ui/Modal';
 import { useFirestore } from '../hooks/useFirestore';
 import { flashcardDeckService, flashcardService, moduleService } from '../services/firestoreService';
 import api from '../services/api';
-import { Plus, Book, Brain, ChevronRight, ChevronLeft, RotateCcw, Check, X, Layers, Play, Sparkles, Globe } from 'lucide-react';
+import { Plus, Book, Brain, ChevronRight, ChevronLeft, RotateCcw, Check, X, Layers, Play, Sparkles, Globe, Trash2, Edit2, BookOpen, LayoutDashboard } from 'lucide-react';
 import aiService from '../services/aiService';
 import { useNotification } from '../context/NotificationContext';
 
@@ -169,8 +169,17 @@ const Flashcards = () => {
     if (isStudyMode && selectedDeck) {
         const currentCard = studyCards[currentIndex];
         return (
-            <Layout title={`Studying: ${selectedDeck.name}`}>
-                <div className="max-w-2xl mx-auto py-12">
+            <Layout title="Active Recall">
+                <div className="max-w-7xl mx-auto space-y-8">
+                    <motion.button
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        onClick={() => navigate('/')}
+                        className="group mb-4 flex items-center gap-2 text-slate-400 hover:text-primary-500 transition-colors text-[10px] font-black uppercase tracking-[0.2em]"
+                    >
+                        <LayoutDashboard size={14} className="group-hover:scale-110 transition-transform" />
+                        Dashboard
+                    </motion.button>
                     <div className="flex justify-between items-center mb-8">
                         <Button variant="ghost" onClick={() => setIsStudyMode(false)} className="flex items-center gap-2">
                             <ChevronLeft size={20} />

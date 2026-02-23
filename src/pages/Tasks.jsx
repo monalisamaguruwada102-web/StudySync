@@ -6,12 +6,15 @@ import Input from '../components/ui/Input';
 import Modal from '../components/ui/Modal';
 import { useFirestore } from '../hooks/useFirestore';
 import { taskService, moduleService } from '../services/firestoreService';
-import { Plus, CheckCircle, Circle, AlertCircle, Trash2, Calendar, Book, Database, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, CheckCircle, Circle, AlertCircle, Trash2, Calendar, Book, Database, Loader2, LayoutDashboard } from 'lucide-react';
 import { isBefore, parseISO, startOfDay } from 'date-fns';
 import api from '../services/api';
 import { useNotification } from '../context/NotificationContext';
+import { motion } from 'framer-motion';
 
 const Tasks = () => {
+    const navigate = useNavigate();
     const { showToast, confirm } = useNotification();
     const { data: tasks, loading, refresh } = useFirestore(taskService.getAll);
     const { data: modules } = useFirestore(moduleService.getAll);
@@ -90,7 +93,16 @@ const Tasks = () => {
 
     return (
         <Layout title="Task Tracker">
-            <div className="flex justify-between items-center mb-8">
+            <div className="max-w-7xl mx-auto space-y-8">
+                <motion.button
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    onClick={() => navigate('/')}
+                    className="group mb-4 flex items-center gap-2 text-slate-400 hover:text-primary-500 transition-colors text-[10px] font-black uppercase tracking-[0.2em]"
+                >
+                    <LayoutDashboard size={14} className="group-hover:scale-110 transition-transform" />
+                    Dashboard
+                </motion.button>
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Tasks & Assignments</h1>
                     <p className="text-slate-500 dark:text-slate-400">Stay on top of your deadlines and deliverables.</p>

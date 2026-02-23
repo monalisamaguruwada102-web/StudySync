@@ -21,8 +21,8 @@ export const useGamification = (stats) => {
             const totalXP = hoursXP + tasksXP + streakXP;
             const currentLevel = Math.floor(totalXP / 1000) + 1;
 
-            // Update User if XP or Level changed
-            if (totalXP !== user.xp || currentLevel !== user.level) {
+            // Update User if XP, Level, or Streak changed
+            if (totalXP !== user.xp || currentLevel !== user.level || stats.streak !== user.streak) {
                 // Determine if level up occurred
                 if (currentLevel > (user.level || 1)) {
                     // Could trigger a level up animation/toast here if we had a toast context available
@@ -31,7 +31,8 @@ export const useGamification = (stats) => {
 
                 updateUser({
                     xp: totalXP,
-                    level: currentLevel
+                    level: currentLevel,
+                    streak: stats.streak
                 });
             }
 

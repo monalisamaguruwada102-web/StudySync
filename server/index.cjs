@@ -40,7 +40,7 @@ app.use(helmet({
                 "https://joshwebs.co.zw",
                 "blob:"
             ],
-            "img-src": ["'self'", "data:", "blob:", "https://*.supabase.co", "https://pagead2.googlesyndication.com", "https://www.google-analytics.com"],
+            "img-src": ["'self'", "data:", "blob:", "https://*.supabase.co", "https://pagead2.googlesyndication.com", "https://www.google-analytics.com", "https://thumbs.dreamstime.com"],
             "frame-src": [
                 "'self'",
                 "https://googleads.g.doubleclick.net",
@@ -594,6 +594,24 @@ app.get('/api/user/profile', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Error fetching profile:', error);
         res.status(500).json({ error: 'Failed to fetch profile' });
+    }
+});
+
+app.post('/api/user/profile', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const updates = req.body;
+
+        // Update local DB (cache)
+        db.update('users', userId, updates);
+
+        // Update Supabase (Primary & Fallback)
+        const updated = await supabasePersistence.upsertProfile({ id: userId, ...updates });
+
+        res.json({ success: true, user: updated });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        res.status(500).json({ error: 'Failed to update profile' });
     }
 });
 

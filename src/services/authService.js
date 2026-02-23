@@ -66,3 +66,12 @@ export const updateUserXP = async (amount) => {
         return null;
     }
 };
+export const updateProfile = async (updates) => {
+    try {
+        const response = await api.post('/user/profile', updates);
+        return response.data;
+    } catch (error) {
+        console.error('Failed to update profile:', error);
+        return null;
+    }
+};
