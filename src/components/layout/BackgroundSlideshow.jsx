@@ -19,11 +19,10 @@ const BackgroundSlideshow = () => {
 
     return (
         <div className="fixed inset-0 z-0 pointer-events-none">
-            {backgrounds.map((bg, index) => (
+            {backgrounds.map((bg, index) => index === bgIndex && (
                 <div
                     key={index}
-                    className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out ${index === bgIndex ? 'opacity-100' : 'opacity-0'
-                        }`}
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out opacity-100 animate-in fade-in"
                     style={{ backgroundImage: `url(${bg})` }}
                 />
             ))}

@@ -34,31 +34,35 @@ const initialState = {
 let writeQueue = Promise.resolve();
 let lastBackupTime = 0;
 const BACKUP_INTERVAL = 5 * 60 * 1000; // 5 minutes
+let cachedData = null;
 
 const readDB = () => {
     try {
+        if (cachedData) return cachedData;
+
         if (!fs.existsSync(DB_PATH)) {
             console.log('📝 Initializing new database...');
+            cachedData = JSON.parse(JSON.stringify(initialState));
             fs.writeFileSync(DB_PATH, JSON.stringify(initialState, null, 2));
-            return initialState;
+            return cachedData;
         }
         const data = fs.readFileSync(DB_PATH, 'utf8');
-        const parsed = JSON.parse(data);
+        cachedData = JSON.parse(data);
 
         // Ensure all collections from initialState exist (schema migration)
         let modified = false;
         Object.keys(initialState).forEach(key => {
-            if (parsed[key] === undefined) {
-                parsed[key] = initialState[key];
+            if (cachedData[key] === undefined) {
+                cachedData[key] = initialState[key];
                 modified = true;
             }
         });
 
         if (modified) {
-            fs.writeFileSync(DB_PATH, JSON.stringify(parsed, null, 2));
+            fs.writeFileSync(DB_PATH, JSON.stringify(cachedData, null, 2));
         }
 
-        return parsed;
+        return cachedData;
     } catch (error) {
         console.error('❌ Error reading database:', error.message);
         // Try to restore from latest backup
@@ -67,13 +71,16 @@ const readDB = () => {
             console.log('🔄 Attempting to restore from latest backup...');
             const latestBackup = path.join(BACKUP_DIR, backups[0]);
             const backupData = fs.readFileSync(latestBackup, 'utf8');
-            return JSON.parse(backupData);
+            cachedData = JSON.parse(backupData);
+            return cachedData;
         }
-        return initialState;
+        cachedData = JSON.parse(JSON.stringify(initialState));
+        return cachedData;
     }
 };
 
 const writeDB = (data) => {
+    cachedData = data;
     // Queue writes to prevent conflicts
     writeQueue = writeQueue.then(() => {
         return new Promise((resolve, reject) => {
