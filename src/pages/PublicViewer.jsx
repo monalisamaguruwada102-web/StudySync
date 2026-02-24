@@ -5,6 +5,7 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import { ExternalLink, Book, Layers, Play, VideoOff, AlertCircle } from 'lucide-react';
 import api from '../services/api';
+import LoadingReactor from '../components/ui/LoadingReactor';
 
 const PublicViewer = () => {
     const { collection, id } = useParams();
@@ -36,8 +37,15 @@ const PublicViewer = () => {
                 if (targetCollection === 'flashcards') targetCollection = 'flashcardDecks';
 
                 const response = await api.get(`/public/${targetCollection}/${targetId}`);
-                setItem(response.data);
-                document.title = `StudySync - ${response.data.title}`;
+                const data = response.data;
+
+                if (!data.isPublic) {
+                    setError('This content is marked as private by the owner.');
+                    return;
+                }
+
+                setItem(data);
+                document.title = `StudySync - ${data.title}`;
             } catch (err) {
                 console.error('Failed to load shared content:', err);
                 setError('Content not found or is private.');
@@ -51,8 +59,8 @@ const PublicViewer = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col items-center justify-center p-6">
+                <LoadingReactor size="lg" message="Accessing Secure Resource..." />
             </div>
         );
     }

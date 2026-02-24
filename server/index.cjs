@@ -1629,8 +1629,13 @@ app.get('/api/public/:collection/:id', async (req, res) => {
             url: item.url, // For tutorials
             videoId: item.videoId,
             moduleId: item.moduleId,
-            isPublic: item.isPublic || false
+            isPublic: item.isPublic === true || item.isPublic === 'true'
         };
+
+        // Security check: Only serve if explicitly public
+        if (!safeItem.isPublic) {
+            return res.status(403).json({ error: 'This content is private' });
+        }
 
         // If it's a flashcard deck, we MUST fetch the cards too
         if (collection === 'flashcardDecks') {
@@ -1674,7 +1679,8 @@ app.post('/api/public/:collection/:id/toggle', authenticateToken, async (req, re
     const supabaseTable = tableMap[collection];
     if (supabaseTable) {
         try {
-            await supabasePersistence.upsertToCollection(supabaseTable, { ...item, isPublic: newState });
+            // Ensure we use the correct ID string for the upsert
+            await supabasePersistence.upsertToCollection(supabaseTable, { ...item, isPublic: newState, id: id.toString() });
         } catch (e) { console.warn('Supabase sync failed for public toggle', e); }
     }
 

@@ -13,6 +13,7 @@ import HelpModal from '../components/dashboard/HelpModal';
 import KnowledgeGraph from '../components/analytics/KnowledgeGraph';
 import JourneyMap from '../components/dashboard/JourneyMap';
 import FocusRadar from '../components/dashboard/FocusRadar';
+import LoadingReactor from '../components/ui/LoadingReactor';
 import {
     Clock,
     Layers,
@@ -152,13 +153,15 @@ const DashboardHeader = ({ user }) => {
 const Dashboard = () => {
     const { isDarkMode } = useTheme();
     const { user } = useAuth();
-    const { data: modules } = useFirestore(moduleService.getAll);
-    const { data: logs } = useFirestore(studyLogService.getAll);
-    const { data: tasks } = useFirestore(taskService.getAll);
-    const { data: sessions } = useFirestore(pomodoroService.getAll);
+    const { data: modules, loading: loadingModules } = useFirestore(moduleService.getAll);
+    const { data: logs, loading: loadingLogs } = useFirestore(studyLogService.getAll);
+    const { data: tasks, loading: loadingTasks } = useFirestore(taskService.getAll);
+    const { data: sessions, loading: loadingSessions } = useFirestore(pomodoroService.getAll);
     const [isHelpOpen, setIsHelpOpen] = React.useState(false);
     const [cloudEvents, setCloudEvents] = React.useState([]);
     const [isSyncingCloud, setIsSyncingCloud] = React.useState(false);
+
+    const loading = loadingModules || loadingLogs || loadingTasks || loadingSessions;
 
     const fetchCloudEvents = async () => {
         try {
@@ -217,6 +220,30 @@ const Dashboard = () => {
         if (!user?.xp) return 0;
         return (user.xp % 1000) / 10;
     }, [user?.xp]);
+
+    if (loading) {
+        return (
+            <Layout>
+                <div className="min-h-[80vh] flex flex-col items-center justify-center p-6 space-y-8">
+                    <LoadingReactor size="lg" message="Synthesizing Academy Data..." />
+                    <div className="w-full max-w-md">
+                        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                            <span>Initializing Core Analytics</span>
+                            <span>Synchronizing...</span>
+                        </div>
+                        <div className="loading-bar-container">
+                            <motion.div
+                                className="loading-bar-fill"
+                                initial={{ width: "0%" }}
+                                animate={{ width: "100%" }}
+                                transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </Layout>
+        );
+    }
 
     return (
         <Layout title="Dashboard">
@@ -285,33 +312,33 @@ const Dashboard = () => {
                     icon={<Target className="text-white" />}
                     iconColor="bg-blue-500 shadow-blue-500/30"
                     label="Today's Goal"
+                    onClick={() => navigate('/logs')}
                     value={`${stats.todayHours.toFixed(1)} / ${(user?.settings?.dailyStudyTarget || 2)}h`}
                     trend="Daily progress"
-                    onClick={() => navigate('/logs')}
                 />
                 <StatCard
                     icon={<Clock className="text-white" />}
                     iconColor="bg-indigo-500 shadow-indigo-500/30"
                     label="Remaining Study"
+                    onClick={() => navigate('/modules')}
                     value={`${stats.totalRemaining.toFixed(1)}h`}
                     trend="To complete targets"
-                    onClick={() => navigate('/modules')}
                 />
                 <StatCard
                     icon={<Layers className="text-white" />}
                     iconColor="bg-purple-500 shadow-purple-500/30"
                     label="Active Modules"
+                    onClick={() => navigate('/modules')}
                     value={stats.activeModules}
                     trend="Currently enrolled"
-                    onClick={() => navigate('/modules')}
                 />
                 <StatCard
                     icon={<Award className="text-white" />}
                     iconColor="bg-pink-500 shadow-pink-500/30"
                     label="Study Streak"
+                    onClick={() => navigate('/logs')}
                     value={`${stats.streak} Days`}
                     trend="Keep it going!"
-                    onClick={() => navigate('/logs')}
                 />
             </div>
 

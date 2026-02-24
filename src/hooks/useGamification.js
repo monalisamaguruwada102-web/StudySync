@@ -71,10 +71,10 @@ export const useGamification = (stats) => {
                             setNewBadges(prev => [...prev, potentialBadge]);
 
                             // Then persist
-                            // const response = await api.post('/user/badges', { badge: potentialBadge });
-                            // if (response.data.success) {
-                            //    // verified by server
-                            // }
+                            const response = await api.post('/user/badges', { badge: potentialBadge });
+                            if (response.data.success) {
+                                console.log('✅ Badge persisted to server');
+                            }
                             // Since api might not be fully wired up for this mock, we rely on updateUser context
                         } catch (error) {
                             console.error('Failed to persist badge:', error);

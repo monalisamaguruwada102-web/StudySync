@@ -406,6 +406,12 @@
       "userId": "1769561085648",
       "updatedAt": "2026-02-09T15:51:53.688516+00:00",
       "supabaseId": "da761fd0-6f8d-4a45-89f0-75233d7657fc"
+    },
+    {
+      "task": "Performance Test",
+      "duration": 10,
+      "id": "129756aa-e07d-443a-90ee-83b24e1fe88f",
+      "createdAt": "2026-02-24T07:42:04.789Z"
     }
   ],
   "tasks": [
@@ -469,7 +475,8 @@
       "userId": "1769561085648",
       "createdAt": "2026-01-31T11:59:31.162372+00:00",
       "supabaseId": "c346fa14-1580-4331-a052-7480b99a27ff",
-      "updatedAt": "2026-02-06T20:08:41.194Z"
+      "updatedAt": "2026-02-06T20:08:41.194Z",
+      "isPublic": true
     },
     {
       "id": "ceec4a88-3c57-4fab-9387-c878194982a0",
@@ -604,7 +611,8 @@
       "userId": "1769561085648",
       "createdAt": "2026-01-29T19:59:49.535088+00:00",
       "supabaseId": "ded9f0b8-d466-4186-90ea-4f508f26692a",
-      "updatedAt": "2026-02-06T20:08:43.490Z"
+      "updatedAt": "2026-02-06T20:08:43.490Z",
+      "isPublic": true
     },
     {
       "id": "415ab09c-0c99-41da-92ca-b00188611bc2",
