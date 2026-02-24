@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import Card from '../components/ui/Card';
@@ -11,8 +11,10 @@ import api from '../services/api';
 import { Plus, Book, Brain, ChevronRight, ChevronLeft, RotateCcw, Check, X, Layers, Play, Sparkles, Globe, Trash2, Edit2, BookOpen, LayoutDashboard } from 'lucide-react';
 import aiService from '../services/aiService';
 import { useNotification } from '../context/NotificationContext';
+import { motion } from 'framer-motion';
 
 const Flashcards = () => {
+    const navigate = useNavigate();
     const { showToast } = useNotification();
     const { data: decks, refresh: refreshDecks } = useFirestore(flashcardDeckService.getAll);
     const { data: cards, refresh: refreshCards } = useFirestore(flashcardService.getAll);
