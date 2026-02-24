@@ -38,14 +38,31 @@ app.use(helmet({
                 "https://*.doubleclick.net",
                 "https://www.joshwebs.co.zw",
                 "https://joshwebs.co.zw",
+                "https://ep1.adtrafficquality.google",
                 "blob:"
             ],
-            "img-src": ["'self'", "data:", "blob:", "https://*.supabase.co", "https://pagead2.googlesyndication.com", "https://www.google-analytics.com", "https://thumbs.dreamstime.com"],
+            "img-src": [
+                "'self'",
+                "data:",
+                "blob:",
+                "https://*.supabase.co",
+                "https://pagead2.googlesyndication.com",
+                "https://www.google-analytics.com",
+                "https://thumbs.dreamstime.com",
+                "https://img.freepik.com",
+                "https://grainy-gradients.vercel.app",
+                "https://t4.ftcdn.net",
+                "https://*.ftcdn.net",
+                "https://media.istockphoto.com",
+                "https://img.youtube.com"
+            ],
             "frame-src": [
                 "'self'",
                 "https://googleads.g.doubleclick.net",
                 "https://tpc.googlesyndication.com",
-                "https://www.google.com"
+                "https://www.google.com",
+                "https://www.youtube.com",
+                "https://*.youtube.com"
             ],
             "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             "font-src": ["'self'", "https://fonts.gstatic.com"],
