@@ -1,4 +1,5 @@
 const express = require('express');
+require('dotenv').config();
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -15,7 +16,6 @@ const cookieParser = require('cookie-parser');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { initScheduler } = require('./scheduler_utf8.cjs');
 const emailService = require('./emailService.cjs');
-require('dotenv').config();
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 if (!GEMINI_API_KEY) {
@@ -240,8 +240,12 @@ app.post('/api/contact', async (req, res) => {
         await emailService.sendContactEmail({ name, email, inquiryType, message });
         res.json({ success: true, message: 'Your message has been sent successfully!' });
     } catch (error) {
-        console.error('Error in contact route:', error);
-        res.status(500).json({ error: 'Failed to send message. Please try again later.' });
+        console.error('❌ Error in contact route:', error);
+        res.status(500).json({
+            error: 'Failed to send message.',
+            details: error.message,
+            code: error.code || 'UNKNOWN_ERROR'
+        });
     }
 });
 

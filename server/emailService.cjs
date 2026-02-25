@@ -721,7 +721,7 @@ const sendContactEmail = async (contactData) => {
     const supportEmail = 'joshwebsinfor@gmail.com';
 
     const mailOptions = {
-        from: process.env.SMTP_FROM || '"StudySync Support" <support@studysync.app>',
+        from: process.env.SMTP_FROM || process.env.SMTP_USER || '"StudySync Support" <support@studysync.app>',
         to: supportEmail,
         replyTo: email,
         subject: `New Contact Inquiry: ${inquiryType} from ${name}`,
