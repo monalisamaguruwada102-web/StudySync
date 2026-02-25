@@ -51,7 +51,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                     
                     /* Desktop: Floating Glass Panel */
                     lg:h-[calc(100vh-2rem)] lg:my-4 lg:ml-4 lg:rounded-[2.5rem]
-                    lg:translate-x-0 lg:top-0 lg:left-0
+                    lg:top-0 lg:left-0
                     
                     /* Mobile: Full Screen Drawer */
                     h-[100dvh] top-0 left-0

@@ -17,7 +17,7 @@ const Layout = ({ children, title = 'Dashboard', hidePadding = false }) => {
             <BackgroundBubbles />
             <FloatingParticles count={15} />
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-            <div className="flex-1 lg:ml-80 flex flex-col min-h-screen relative z-10 transition-all duration-300 overflow-hidden">
+            <div className={`flex-1 ${isSidebarOpen ? 'lg:ml-80' : 'lg:ml-0'} flex flex-col min-h-screen relative z-10 transition-all duration-300 overflow-hidden`}>
                 <Header title={title} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
                 {/* Premium gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-br from-primary-50/30 via-transparent to-purple-50/20 dark:from-primary-900/5 dark:via-transparent dark:to-purple-900/10 pointer-events-none z-0" />

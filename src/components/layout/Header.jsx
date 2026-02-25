@@ -20,7 +20,7 @@ const Header = ({ title, toggleSidebar }) => {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={toggleSidebar}
-                        className="lg:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+                        className="p-2 -ml-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
                     >
                         <Menu size={24} />
                     </button>
