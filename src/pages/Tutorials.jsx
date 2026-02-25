@@ -39,8 +39,12 @@ const Tutorials = () => {
     // Extract YouTube video ID from URL (supports Shorts, watch, embed, and shortened URLs)
     const getYouTubeId = (url) => {
         if (!url) return null;
+        // Handle potential object if url is passed from a field that might be an object
+        const urlStr = typeof url === 'string' ? url : (url.url || url.youtubeUrl || '');
+        if (!urlStr) return null;
+
         const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|shorts\/)([^#&?]*).*/;
-        const match = url.match(regExp);
+        const match = urlStr.match(regExp);
         return (match && match[2].length === 11) ? match[2] : null;
     };
 
@@ -196,6 +200,9 @@ const Tutorials = () => {
                             className="px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 dark:text-slate-100"
                         >
                             <option value="">All Modules</option>
+                            {modules && modules.map(m => (
+                                <option key={m.id} value={m.id}>{m.name}</option>
+                            ))}
                         </select>
                     </div>
                 )}
@@ -222,7 +229,7 @@ const Tutorials = () => {
                                 <div className="aspect-video w-full bg-black">
                                     <iframe
                                         className="w-full h-full"
-                                        src={`https://www.youtube.com/embed/${sharedTutorial.videoId || getYouTubeId(sharedTutorial.url)}?autoplay=1&rel=0`}
+                                        src={`https://www.youtube.com/embed/${sharedTutorial.videoId || getYouTubeId(sharedTutorial.url || sharedTutorial.youtubeUrl)}?autoplay=1&rel=0`}
                                         title={sharedTutorial.title}
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                         allowFullScreen
@@ -257,7 +264,7 @@ const Tutorials = () => {
                         </div>
                     ) : (
                         filteredTutorials.map((tutorial) => {
-                            const videoId = tutorial.videoId || getYouTubeId(tutorial.url);
+                            const videoId = tutorial.videoId || getYouTubeId(tutorial.url || tutorial.youtubeUrl);
                             const isPlaying = playingId === tutorial.id;
 
                             return (
