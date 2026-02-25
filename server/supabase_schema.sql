@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS study_logs (
   module_id TEXT REFERENCES modules(id) ON DELETE CASCADE,
   hours NUMERIC NOT NULL,
   duration NUMERIC,
+  task TEXT,
   date DATE DEFAULT CURRENT_DATE,
   activity TEXT,
   created_at TIMESTAMPTZ DEFAULT now(),

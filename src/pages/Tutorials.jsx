@@ -229,7 +229,7 @@ const Tutorials = () => {
                                 <div className="aspect-video w-full bg-black">
                                     <iframe
                                         className="w-full h-full"
-                                        src={`https://www.youtube.com/embed/${sharedTutorial.videoId || getYouTubeId(sharedTutorial.url || sharedTutorial.youtubeUrl)}?autoplay=1&rel=0`}
+                                        src={`https://www.youtube.com/embed/${sharedTutorial.videoId || getYouTubeId(sharedTutorial.url || sharedTutorial.youtubeUrl)}?autoplay=1&rel=0&enablejsapi=1`}
                                         title={sharedTutorial.title}
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                         allowFullScreen
@@ -274,7 +274,7 @@ const Tutorials = () => {
                                         {isPlaying ? (
                                             <iframe
                                                 className="w-full h-full"
-                                                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&origin=${window.location.origin}`}
+                                                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&enablejsapi=1`}
                                                 title={tutorial.title}
                                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                                 allowFullScreen
