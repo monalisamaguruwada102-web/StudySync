@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useFirestore } from '../hooks/useFirestore';
-import { taskService } from '../services/firestoreService';
+import api from '../services/api';
 import { useTimer } from '../context/TimerContext';
 import Layout from '../components/layout/Layout';
 import {
@@ -97,7 +96,8 @@ const ParticleSystem = ({ theme, themes }) => {
 };
 
 const DeepFocus = () => {
-    const { data: tasks } = useFirestore(taskService.getAll);
+    const [tasks, setTasks] = useState([]);
+    const [loadingTasks, setLoadingTasks] = useState(true);
     const {
         timeLeft,
         isRunning,
@@ -138,7 +138,23 @@ const DeepFocus = () => {
         ambient: "https://open.spotify.com/embed/playlist/37i9dQZF1DWWvH96YI77Y6?utm_source=generator&theme=0"
     };
 
-    const pendingTasks = tasks.filter(t => t.status !== 'Completed');
+    const fetchTasks = useCallback(async () => {
+        try {
+            setLoadingTasks(true);
+            const response = await api.get('/tasks');
+            setTasks(response.data || []);
+        } catch (error) {
+            console.error('Failed to fetch tasks for Deep Focus:', error);
+        } finally {
+            setLoadingTasks(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchTasks();
+    }, [fetchTasks]);
+
+    const pendingTasks = (tasks || []).filter(t => t.status !== 'Completed');
 
     useEffect(() => {
         if (activeSound && !isMuted) {
@@ -386,6 +402,49 @@ const DeepFocus = () => {
                                 </span>
                             </motion.div>
                         )}
+
+                        {/* Task Selector Dropdown (Hidden in Ghost Mode) */}
+                        <AnimatePresence>
+                            {!isGhostMode && !isBreak && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    className="relative mb-8 z-[60]"
+                                >
+                                    <div className="flex flex-col items-center gap-3">
+                                        <div className="flex items-center gap-2 px-4 py-2 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
+                                            <List size={14} className="text-primary-400" />
+                                            <select
+                                                value={selectedTask?.id || ''}
+                                                onChange={(e) => {
+                                                    const task = pendingTasks.find(t => t.id === e.target.value);
+                                                    setSelectedTask(task || null);
+                                                }}
+                                                className="bg-transparent text-[11px] font-bold uppercase tracking-wider text-slate-200 outline-none cursor-pointer min-w-[200px]"
+                                            >
+                                                <option value="" className="bg-slate-900 text-slate-400">Select Mission Target...</option>
+                                                {pendingTasks.map(task => (
+                                                    <option key={task.id} value={task.id} className="bg-slate-900 text-slate-200">
+                                                        {task.title} ({task.priority})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        {selectedTask && (
+                                            <motion.div
+                                                initial={{ opacity: 0, scale: 0.9 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                className="flex items-center gap-2 px-3 py-1 bg-primary-500/20 rounded-full border border-primary-500/30"
+                                            >
+                                                <Check size={10} className="text-primary-400" />
+                                                <span className="text-[9px] font-black uppercase tracking-[0.1em] text-primary-400">Active Mission Locked</span>
+                                            </motion.div>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
                         {/* Timer Display */}
                         <div className="relative mb-12">
