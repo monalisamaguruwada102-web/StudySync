@@ -3,15 +3,42 @@ import { Mail, Phone, MapPin, Send, MessageSquare, Clock, Globe, LayoutDashboard
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import Layout from '../components/layout/Layout';
+import api from '../services/api';
 
 const Contact = () => {
     const navigate = useNavigate();
     const [status, setStatus] = useState(null);
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        inquiryType: 'General Information',
+        message: ''
+    });
 
-    const handleSubmit = (e) => {
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setStatus('sending');
-        setTimeout(() => setStatus('sent'), 1500);
+
+        try {
+            await api.post('/contact', formData);
+            setStatus('sent');
+            setFormData({
+                name: '',
+                email: '',
+                inquiryType: 'General Information',
+                message: ''
+            });
+            setTimeout(() => setStatus(null), 5000);
+        } catch (error) {
+            console.error('Submission error:', error);
+            setStatus('error');
+            setTimeout(() => setStatus(null), 5000);
+        }
     };
 
     return (
@@ -78,6 +105,9 @@ const Contact = () => {
                                         <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Full Name</label>
                                         <input
                                             type="text"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleChange}
                                             required
                                             placeholder="John Doe"
                                             className="w-full px-0 py-4 bg-transparent border-b-2 border-slate-200 dark:border-slate-800 focus:border-rose-700 dark:focus:border-rose-500 outline-none transition-all dark:text-white font-bold placeholder:text-slate-300"
@@ -87,6 +117,9 @@ const Contact = () => {
                                         <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Email Address</label>
                                         <input
                                             type="email"
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleChange}
                                             required
                                             placeholder="john@example.com"
                                             className="w-full px-0 py-4 bg-transparent border-b-2 border-slate-200 dark:border-slate-800 focus:border-rose-700 dark:focus:border-rose-500 outline-none transition-all dark:text-white font-bold placeholder:text-slate-300"
@@ -96,7 +129,12 @@ const Contact = () => {
 
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Inquiry Type</label>
-                                    <select className="w-full px-0 py-4 bg-transparent border-b-2 border-slate-200 dark:border-slate-800 focus:border-rose-700 dark:focus:border-rose-500 outline-none transition-all dark:text-white font-bold">
+                                    <select
+                                        name="inquiryType"
+                                        value={formData.inquiryType}
+                                        onChange={handleChange}
+                                        className="w-full px-0 py-4 bg-transparent border-b-2 border-slate-200 dark:border-slate-800 focus:border-rose-700 dark:focus:border-rose-500 outline-none transition-all dark:text-white font-bold"
+                                    >
                                         <option>General Information</option>
                                         <option>Technical Support</option>
                                         <option>Feedback/Suggestions</option>
@@ -108,6 +146,9 @@ const Contact = () => {
                                     <label className="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em]">Message</label>
                                     <textarea
                                         rows="4"
+                                        name="message"
+                                        value={formData.message}
+                                        onChange={handleChange}
                                         required
                                         placeholder="Tell us how we can help..."
                                         className="w-full px-0 py-4 bg-transparent border-b-2 border-slate-200 dark:border-slate-800 focus:border-rose-700 dark:focus:border-rose-500 outline-none transition-all dark:text-white font-bold placeholder:text-slate-300 resize-none"
@@ -127,6 +168,8 @@ const Contact = () => {
                                         <Clock className="animate-spin" size={16} />
                                     ) : status === 'sent' ? (
                                         <>Sent Successfully <Send size={16} /></>
+                                    ) : status === 'error' ? (
+                                        <>Error - Try Again <X size={16} /></>
                                     ) : (
                                         <>Send Message <Send size={16} /></>
                                     )}

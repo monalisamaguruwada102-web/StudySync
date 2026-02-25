@@ -713,6 +713,57 @@ const sendRestorationNotification = async (user) => {
     }
 };
 
+/**
+ * Sends a contact form submission to support.
+ */
+const sendContactEmail = async (contactData) => {
+    const { name, email, inquiryType, message } = contactData;
+    const supportEmail = 'joshwebsinfor@gmail.com';
+
+    const mailOptions = {
+        from: process.env.SMTP_FROM || '"StudySync Support" <support@studysync.app>',
+        to: supportEmail,
+        replyTo: email,
+        subject: `New Contact Inquiry: ${inquiryType} from ${name}`,
+        html: `
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #0f172a; color: #f8fafc; border-radius: 12px; overflow: hidden; border: 1px solid #1e293b;">
+                <div style="background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%); padding: 30px; text-align: center;">
+                    <h1 style="margin: 0; font-size: 24px; color: white;">New Contact Inquiry</h1>
+                </div>
+                <div style="padding: 30px;">
+                    <div style="background-color: #1e293b; padding: 20px; border-radius: 10px; border-left: 5px solid #f43f5e; margin-bottom: 25px;">
+                        <p style="margin: 0; color: #94a3b8; font-size: 13px; text-transform: uppercase;">From</p>
+                        <h2 style="margin: 5px 0 0 0; color: white; font-size: 18px;">${name} (${email})</h2>
+                    </div>
+
+                    <div style="margin-bottom: 25px;">
+                        <p style="margin: 0; color: #94a3b8; font-size: 13px; text-transform: uppercase;">Inquiry Type</p>
+                        <p style="margin: 5px 0 0 0; color: #f43f5e; font-weight: 700;">${inquiryType}</p>
+                    </div>
+
+                    <div style="margin-bottom: 25px;">
+                        <p style="margin: 0; color: #94a3b8; font-size: 13px; text-transform: uppercase;">Message</p>
+                        <p style="margin: 5px 0 0 0; color: #cbd5e1; line-height: 1.6; white-space: pre-wrap;">${message}</p>
+                    </div>
+
+                    <div style="border-top: 1px solid #1e293b; pt: 20px; text-align: center;">
+                        <p style="color: #64748b; font-size: 12px;">This message was sent from the StudySync Contact Form.</p>
+                    </div>
+                </div>
+            </div>
+        `
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`✅ Contact email sent to support: ${info.messageId}`);
+        return { success: true, messageId: info.messageId };
+    } catch (error) {
+        console.error(`❌ Failed to send contact email:`, error);
+        throw error;
+    }
+};
+
 module.exports = {
     sendStudyReport,
     sendTutorialGuide,
@@ -722,5 +773,6 @@ module.exports = {
     sendWeeklyRetrospective,
     sendUnifiedEngagementReport,
     sendRestorationNotification,
-    sendEmailRecoveryNotification
+    sendEmailRecoveryNotification,
+    sendContactEmail
 };

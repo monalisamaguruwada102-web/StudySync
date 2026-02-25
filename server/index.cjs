@@ -14,6 +14,7 @@ const axios = require('axios');
 const cookieParser = require('cookie-parser');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { initScheduler } = require('./scheduler_utf8.cjs');
+const emailService = require('./emailService.cjs');
 require('dotenv').config();
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -225,6 +226,23 @@ app.get('/api/health', (req, res) => {
         ai_configured: !!genAI,
         timestamp: new Date().toISOString()
     });
+});
+
+// --- CONTACT FORM ROUTE ---
+app.post('/api/contact', async (req, res) => {
+    try {
+        const { name, email, inquiryType, message } = req.body;
+
+        if (!name || !email || !message) {
+            return res.status(400).json({ error: 'Name, email, and message are required' });
+        }
+
+        await emailService.sendContactEmail({ name, email, inquiryType, message });
+        res.json({ success: true, message: 'Your message has been sent successfully!' });
+    } catch (error) {
+        console.error('Error in contact route:', error);
+        res.status(500).json({ error: 'Failed to send message. Please try again later.' });
+    }
 });
 
 // --- PRESENCE HEARTBEAT ---
