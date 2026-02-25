@@ -245,6 +245,25 @@ app.post('/api/contact', async (req, res) => {
     }
 });
 
+// --- ADMIN: TRIGGER AUTOMATED EMAILS ---
+app.post('/api/admin/trigger-automated-emails', async (req, res) => {
+    try {
+        console.log('📢 Admin manual trigger: Starting daily study reports...');
+        const { runDailyReports } = require('./scheduler_utf8.cjs');
+
+        // Run in background
+        runDailyReports();
+
+        res.json({
+            success: true,
+            message: 'Daily study report process started in the background.'
+        });
+    } catch (error) {
+        console.error('Error triggering automated emails:', error);
+        res.status(500).json({ error: 'Failed to trigger automated emails.' });
+    }
+});
+
 // --- PRESENCE HEARTBEAT ---
 app.post('/api/presence/heartbeat', authenticateToken, async (req, res) => {
     const timestamp = new Date().toISOString();

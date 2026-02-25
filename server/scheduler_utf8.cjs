@@ -8,8 +8,44 @@ require('dotenv').config();
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const genAI = GEMINI_API_KEY ? new GoogleGenerativeAI(GEMINI_API_KEY) : null;
 
+const tryGenerateContent = async (prompt) => {
+    if (!genAI) return null;
+    const models = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro", "gemini-pro"];
+
+    for (const modelName of models) {
+        try {
+            const model = genAI.getGenerativeModel({ model: modelName });
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text().trim();
+            if (text) {
+                console.log(`✅ AI generation successful with model: ${modelName}`);
+                return text;
+            }
+        } catch (e) {
+            console.warn(`⚠️ Model ${modelName} failed:`, e.message);
+            continue;
+        }
+    }
+    return null;
+};
+
 const generatePrediction = async (user, stats) => {
-    // AI Analysis disabled to prevent production errors
+    const prompt = `Analyze this student's study data and provide a brief, professional, and encouraging 2-sentence study prediction/advice for today.
+    Name: ${user.name || 'Student'}
+    Level: ${stats.level}
+    XP: ${stats.xp}
+    Yesterday's Hours: ${stats.previousDayHours}
+    Weekly Hours: ${stats.weeklyHours}
+    Current Streak: ${stats.streak}
+    Active Modules: ${stats.activeModules.join(', ')}
+    Pending Tasks: ${stats.pendingTasks.map(t => t.title).join(', ')}
+    
+    Focus on identifying their momentum and suggesting ONE specific action based on their modules or tasks.`;
+
+    const aiText = await tryGenerateContent(prompt);
+    if (aiText) return aiText;
+
     return "Continue your momentum! You've been focusing on " + (stats.activeModules.join(', ') || 'your core subjects') + " recently. Today, try connecting your recent notes with your pending tasks to deepen your understanding. You're on track for a productive day.";
 };
 
@@ -17,7 +53,15 @@ const generatePrediction = async (user, stats) => {
  * Generates tailored study advice for a specific high-priority task.
  */
 const generateStudyAdvice = async (user, task) => {
-    // AI Advice disabled to prevent production errors
+    const prompt = `Provide brief (1 sentence), high-impact study advice for a student working on this specific task: "${task.title}".
+    Description: ${task.description || 'No description provided.'}
+    Deadline: ${task.dueDate || 'Soon'}
+    
+    The advice should be specific to the subject if possible or use a proven study technique (like Feynman, Pomodoro, Active Recall).`;
+
+    const aiText = await tryGenerateContent(prompt);
+    if (aiText) return aiText;
+
     return `Focus on the core concepts of "${task.title}" and try explaining them to someone else (Feynman Technique) to solidify your understanding before the deadline.`;
 };
 

@@ -1,6 +1,7 @@
 
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const nodemailer = require('nodemailer');
-require('dotenv').config();
 const { runDailyReports } = require('./scheduler_utf8.cjs');
 const db = require('./database.cjs');
 
