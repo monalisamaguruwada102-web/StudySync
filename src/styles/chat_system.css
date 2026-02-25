@@ -146,7 +146,8 @@
 /* Base Layout Architecture */
 .chat-app-container {
     display: flex;
-    height: 100vh;
+    height: calc(100vh - 80px);
+    /* Fill remaining space from header */
     background-color: var(--chat-bg);
     color: var(--chat-text-primary);
     font-family: 'Inter', system-ui, -apple-system, sans-serif;

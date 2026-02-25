@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Send, Share2, Users, Plus, Search, X, Copy, Check, FileText, Brain, Youtube, ExternalLink, LayoutDashboard, CheckCheck, Play, ArrowDown, RefreshCw, Loader2, Clock, Sparkles, Reply, Bot, GraduationCap, Trophy } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { MessageCircle, Send, Share2, Users, Plus, Search, X, Copy, Check, FileText, Brain, Youtube, ExternalLink, LayoutDashboard, CheckCheck, Play, ArrowDown, RefreshCw, Loader2, Clock, Sparkles, Reply, Bot, GraduationCap, Trophy, BookOpen } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Layout from '../components/layout/Layout';
 import { format, isToday, isYesterday, formatDistanceToNow } from 'date-fns';
@@ -949,13 +949,27 @@ function Chat() {
 
 
     return (
-        <Layout title="Collaboration Hub">
+        <Layout title="Collaboration Hub" hidePadding={true}>
             <div className="chat-app-container">
                 {/* 1. Sidebar */}
                 <aside className={`chat-sidebar ${activeConversation ? 'hidden md:flex' : 'flex'}`}>
+                    {/* Navigation Integration */}
+                    <div className="px-6 pt-6 pb-2 border-b border-chat-border/50 bg-slate-50/50 dark:bg-slate-900/50">
+                        <div className="flex items-center gap-4 mb-4">
+                            <Link to="/dashboard" className="flex-1 flex items-center justify-center gap-2 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-primary-500 hover:border-primary-500 transition-all shadow-sm">
+                                <LayoutDashboard size={14} />
+                                Dashboard
+                            </Link>
+                            <Link to="/articles" className="flex-1 flex items-center justify-center gap-2 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-rose-500 hover:border-rose-500 transition-all shadow-sm">
+                                <BookOpen size={14} />
+                                Library
+                            </Link>
+                        </div>
+                    </div>
+
                     {/* Sidebar Header */}
                     <div className="p-6 border-b border-chat-border">
-                        <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-xl shadow-primary-500/30 relative overflow-hidden group hover:scale-105 transition-transform duration-300">
                                     <GraduationCap size={24} className="relative z-10" />

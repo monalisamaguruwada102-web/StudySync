@@ -8,7 +8,7 @@ import ImageSlideshow from '../ui/ImageSlideshow';
 import OnboardingTutorial from '../onboarding/OnboardingTutorial';
 import HelpAssistant from '../help/HelpAssistant';
 
-const Layout = ({ children, title = 'Dashboard' }) => {
+const Layout = ({ children, title = 'Dashboard', hidePadding = false }) => {
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
     return (
@@ -29,7 +29,7 @@ const Layout = ({ children, title = 'Dashboard' }) => {
                     </p>
                 </div>
 
-                <main className="p-4 lg:p-6 flex-1 overflow-x-hidden relative z-10 w-full">
+                <main className={`${hidePadding ? '' : 'p-4 lg:p-6'} flex-1 overflow-x-hidden relative z-10 w-full`}>
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={window.location.pathname}
