@@ -1687,7 +1687,7 @@ app.get('/api/public/:collection/:id', async (req, res) => {
             url: item.url, // For tutorials
             videoId: item.videoId,
             moduleId: item.moduleId,
-            isPublic: item.isPublic === true || item.isPublic === 'true'
+            isPublic: item.isPublic === true || item.isPublic === 'true' || item.is_public === true || item.is_public === 'true'
         };
 
         // Security check: Only serve if explicitly public

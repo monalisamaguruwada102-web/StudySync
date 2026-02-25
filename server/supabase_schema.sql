@@ -4,6 +4,7 @@
 -- 1. Modules
 CREATE TABLE IF NOT EXISTS modules (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  user_id TEXT,
   name TEXT NOT NULL,
   description TEXT,
   target_hours NUMERIC DEFAULT 0,
@@ -28,6 +29,7 @@ CREATE TABLE IF NOT EXISTS study_logs (
 -- 3. Tasks
 CREATE TABLE IF NOT EXISTS tasks (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  user_id TEXT,
   module_id TEXT REFERENCES modules(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   priority TEXT DEFAULT 'Medium',
@@ -39,11 +41,13 @@ CREATE TABLE IF NOT EXISTS tasks (
 -- 4. Notes
 CREATE TABLE IF NOT EXISTS notes (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  user_id TEXT,
   module_id TEXT REFERENCES modules(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   content TEXT,
   resource_link TEXT,
   pdf_path TEXT,
+  is_public BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -61,9 +65,11 @@ CREATE TABLE IF NOT EXISTS grades (
 -- 6. Flashcard Decks
 CREATE TABLE IF NOT EXISTS flashcard_decks (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  user_id TEXT,
   module_id TEXT REFERENCES modules(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   description TEXT,
+  is_public BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -107,6 +113,7 @@ CREATE TABLE IF NOT EXISTS tutorials (
   topic TEXT,
   description TEXT,
   user_id TEXT,
+  is_public BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
