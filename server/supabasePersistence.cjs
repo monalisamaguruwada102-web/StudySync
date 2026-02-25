@@ -62,6 +62,12 @@ const mapToTable = (item, table = null) => {
         if (skipKeys.includes(key) || typeof item[key] === 'function') continue;
         mapped[toSnake(key)] = item[key];
     }
+
+    // Safeguard for study_logs hours NOT NULL constraint
+    if (table === 'study_logs' && (mapped.hours === undefined || mapped.hours === null)) {
+        mapped.hours = 0;
+    }
+
     return mapped;
 };
 

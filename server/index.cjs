@@ -1490,7 +1490,11 @@ genericCollections.forEach(collection => {
         // Smarter XP Logic
         let xpGained = 0;
         if (collection === 'studyLogs') {
-            xpGained = Math.round(parseFloat(req.body.hours || 0) * 100) || 50;
+            // Safeguard: Ensure hours is always present for Supabase, fallback to duration
+            if (req.body.hours === undefined && req.body.duration !== undefined) {
+                rawItem.hours = parseFloat(req.body.duration);
+            }
+            xpGained = Math.round(parseFloat(rawItem.hours || 0) * 100) || 50;
         } else if (collection === 'tasks' && item.status === 'Completed') {
             xpGained = 150; // Increased to match syncService live calculation
         } else if (collection === 'pomodoroSessions') {

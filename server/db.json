@@ -408,9 +408,13 @@
       "supabaseId": "da761fd0-6f8d-4a45-89f0-75233d7657fc"
     },
     {
+      "id": "129756aa-e07d-443a-90ee-83b24e1fe88f",
       "task": "Performance Test",
       "duration": 10,
-      "id": "129756aa-e07d-443a-90ee-83b24e1fe88f",
+      "hours": 10,
+      "date": "2026-02-24",
+      "topic": "Performance Test",
+      "userId": "1769561085648",
       "createdAt": "2026-02-24T07:42:04.789Z"
     }
   ],
