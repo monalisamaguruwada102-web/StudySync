@@ -14,11 +14,14 @@ CREATE TABLE IF NOT EXISTS modules (
 -- 2. Study Logs
 CREATE TABLE IF NOT EXISTS study_logs (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  user_id TEXT,
   module_id TEXT REFERENCES modules(id) ON DELETE CASCADE,
   hours NUMERIC NOT NULL,
+  duration NUMERIC,
   date DATE DEFAULT CURRENT_DATE,
   activity TEXT,
-  created_at TIMESTAMPTZ DEFAULT now()
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
 );
 
 -- 3. Tasks
