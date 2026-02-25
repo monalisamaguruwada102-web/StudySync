@@ -468,7 +468,7 @@ const Tutorials = () => {
                 resource={tutorialToShare}
             />
         </div>
-        </Layout >
+        </Layout>
     );
 };
 

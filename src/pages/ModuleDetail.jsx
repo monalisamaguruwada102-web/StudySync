@@ -303,7 +303,7 @@ const ModuleDetail = () => {
                     </button>
                 </div>
             )}
-        </Layout >
+        </Layout>
     );
 };
 
