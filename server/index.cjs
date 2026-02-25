@@ -29,7 +29,17 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             "default-src": ["'self'", "https://*.supabase.co", "wss://*.supabase.co"],
-            "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://pagead2.googlesyndication.com", "https://www.googletagmanager.com", "https://www.google-analytics.com"],
+            "script-src": [
+                "'self'",
+                "'unsafe-inline'",
+                "'unsafe-eval'",
+                "https://pagead2.googlesyndication.com",
+                "https://www.googletagmanager.com",
+                "https://www.google-analytics.com",
+                "https://www.youtube.com",
+                "https://*.youtube.com",
+                "https://s.ytimg.com"
+            ],
             "connect-src": [
                 "'self'",
                 "https://*.supabase.co",
@@ -54,7 +64,8 @@ app.use(helmet({
                 "https://t4.ftcdn.net",
                 "https://*.ftcdn.net",
                 "https://media.istockphoto.com",
-                "https://img.youtube.com"
+                "https://img.youtube.com",
+                "https://*.ytimg.com"
             ],
             "frame-src": [
                 "'self'",
@@ -62,7 +73,8 @@ app.use(helmet({
                 "https://tpc.googlesyndication.com",
                 "https://www.google.com",
                 "https://www.youtube.com",
-                "https://*.youtube.com"
+                "https://*.youtube.com",
+                "https://www.youtube-nocookie.com"
             ],
             "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             "font-src": ["'self'", "https://fonts.gstatic.com"],
