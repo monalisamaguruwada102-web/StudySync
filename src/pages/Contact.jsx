@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Mail, Phone, MapPin, Send, MessageSquare, Clock, Globe, LayoutDashboard } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, MessageSquare, Clock, Globe, LayoutDashboard, X } from 'lucide-react';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import Layout from '../components/layout/Layout';
