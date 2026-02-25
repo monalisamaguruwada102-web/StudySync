@@ -467,7 +467,6 @@ const Tutorials = () => {
                 onClose={() => setShowShareModal(false)}
                 resource={tutorialToShare}
             />
-        </div>
         </Layout>
     );
 };
