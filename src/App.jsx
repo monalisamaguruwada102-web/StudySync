@@ -9,6 +9,10 @@ import ConnectionStatus from './components/ConnectionStatus';
 import TimerWidget from './components/TimerWidget';
 
 import BackgroundSlideshow from './components/layout/BackgroundSlideshow';
+import MaintenanceMode from './components/layout/MaintenanceMode';
+
+// Toggle this to turn the site on/off
+const MAINTENANCE_MODE = true;
 
 // Pages - Lazy Loaded
 const Login = React.lazy(() => import('./pages/Login'));
@@ -45,7 +49,9 @@ const LoadingScreen = () => (
 );
 
 function App() {
-
+  if (MAINTENANCE_MODE) {
+    return <MaintenanceMode />;
+  }
 
   return (
     <ThemeProvider>
