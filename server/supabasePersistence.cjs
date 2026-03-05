@@ -317,14 +317,23 @@ const upsertProfile = async (profile) => {
         if (isUUID) {
             // Sync to profiles table
             const row = mapToTable(profile, 'profiles');
-            await client.from('profiles').upsert([row]);
+            console.log('📝 Upserting to profiles table:', JSON.stringify(row));
+            const { error: profError } = await client.from('profiles').upsert([row]);
+            if (profError) {
+                console.error('❌ Supabase profiles upsert error:', profError.message);
+                // Don't throw yet, try users table too
+            }
         }
 
         // Always sync to users table
         const userRow = mapToTable(profile, 'users');
+        console.log('📝 Upserting to users table:', JSON.stringify(userRow));
         const { data, error } = await client.from('users').upsert([userRow]).select().single();
 
-        if (error) throw error;
+        if (error) {
+            console.error('❌ Supabase users upsert error:', error.message);
+            throw error;
+        }
         return data ? mapRow(data, 'users') : null;
     } catch (error) {
         console.error('Error in upsertProfile:', error.message);

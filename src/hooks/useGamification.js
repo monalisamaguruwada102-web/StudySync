@@ -32,12 +32,24 @@ export const useGamification = (stats) => {
                 console.log(`🎉 Level Up! ${user.level || 1} -> ${currentLevel}`);
             }
 
+            const achievements = [
+                { name: 'Scholar', icon: 'Target', color: 'gold', description: 'Studied for over 10 hours', requirement: (s) => (s.totalHours || 0) >= 10 },
+                { name: 'Focus King', icon: 'Award', color: 'green', description: 'Completed 5+ tasks', requirement: (s) => (s.completedTasks || 0) >= 5 },
+                { name: 'Streak Master', icon: 'Flame', color: 'orange', description: 'Maintained a 7-day streak', requirement: (s) => (s.streak || 0) >= 7 },
+                { name: 'Early Bird', icon: 'Zap', color: 'blue', description: 'Study session before 8 AM', requirement: (s) => s.sessions?.some(sess => new Date(sess.startTime).getHours() < 8) }
+            ];
+
+            const currentBadgeNames = currentBadges.map(b => b.name);
+
             // --- Badge Logic ---
             achievements.forEach(achievement => {
                 // Check if user already has the badge and if the requirement is met
                 if (!currentBadgeNames.includes(achievement.name) && achievement.requirement(stats, currentLevel)) {
                     const newBadge = {
-                        ...achievement,
+                        name: achievement.name,
+                        icon: achievement.icon,
+                        color: achievement.color,
+                        description: achievement.description,
                         earnedAt: new Date().toISOString()
                     };
                     updatedBadges.push(newBadge);
