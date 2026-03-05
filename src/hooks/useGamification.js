@@ -21,29 +21,40 @@ export const useGamification = (stats) => {
             const totalXP = hoursXP + tasksXP + streakXP;
             const currentLevel = Math.floor(totalXP / 1000) + 1;
 
-            // Update User if XP, Level, or Streak changed
-            if (totalXP !== user.xp || currentLevel !== user.level || stats.streak !== user.streak) {
-                // Determine if level up occurred
-                if (currentLevel > (user.level || 1)) {
-                    // Could trigger a level up animation/toast here if we had a toast context available
-                    console.log(`🎉 Level Up! ${user.level} -> ${currentLevel}`);
-                }
+            let updatedXP = totalXP;
+            let updatedLevel = currentLevel;
+            let updatedStreak = stats.streak;
+            let updatedBadges = [...currentBadges];
+            let badgesEarnedThisCheck = [];
 
-                updateUser({
-                    xp: totalXP,
-                    level: currentLevel,
-                    streak: stats.streak
-                });
+            // Determine if level up occurred
+            if (currentLevel > (user.level || 1)) {
+                console.log(`🎉 Level Up! ${user.level || 1} -> ${currentLevel}`);
             }
 
             // --- Badge Logic ---
-            // 1. Persistence (Streak >= 3)
-            if (stats.streak >= 3) {
-                earnedBadges.push({ name: 'Persistence', icon: 'Flame', color: 'purple', description: 'Maintained a 3-day study streak' });
-            }
+            achievements.forEach(achievement => {
+                // Check if user already has the badge and if the requirement is met
+                if (!currentBadgeNames.includes(achievement.name) && achievement.requirement(stats, currentLevel)) {
+                    const newBadge = {
+                        ...achievement,
+                        earnedAt: new Date().toISOString()
+                    };
+                    updatedBadges.push(newBadge);
+                    badgesEarnedThisCheck.push(newBadge);
+                    console.log('🏆 New Badge Earned:', newBadge.name);
+                }
+            });
 
-            // 2. Scholar (Total Hours >= 10)
-            if (stats.totalHours >= 10) {
+            // Only update user if something has changed
+            if (totalXP !== user.xp || currentLevel !== user.level || stats.streak !== user.streak || badgesEarnedThisCheck.length > 0) {
+                // Optimistically update local context
+                updateUser({
+                    xp: updatedXP,
+                    level: updatedLevel,
+                    streak: updatedStreak,
+                    badges: updatedBadges
+                });
                 earnedBadges.push({ name: 'Scholar', icon: 'Target', color: 'gold', description: 'Studied for over 10 hours' });
             }
 

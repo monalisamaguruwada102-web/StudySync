@@ -3,154 +3,47 @@
     {
       "email": "joshuamujakari15@gmail.com",
       "password": "$2b$10$l03GqpkdfeZx1yv31CUq4eDSmUL.6pANJMiZqERFGNCvu1bHCOY0u",
-      "id": "1769561085648",
-      "createdAt": "2026-01-28T00:44:45.648Z",
-      "supabaseId": "1769561085648",
-      "updatedAt": "2026-02-25T09:00:31.025Z",
-      "timer_state": {
-        "timeLeft": 3600,
-        "isRunning": false,
-        "isBreak": false,
-        "sessionsCompleted": 0,
-        "selectedTask": null,
-        "lastUpdate": 1770616764058
-      },
-      "theme": "default",
-      "dark_mode": false,
-      "streak": 2,
-      "level": 8
+      "id": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-01-28T00:44:45.648Z"
     },
     {
-      "id": "6e145a1e-645c-4e80-93bc-9500469b8a1b",
       "email": "monalisamaguruwada@gmail.com",
       "password": "$2b$10$1A8q/9vTzMc5sfmVdn8hzuVZk41Ict4CV06Ipztb9IaL1YZWR8W0S",
-      "xp": 0,
-      "level": 1,
-      "badges": [],
-      "createdAt": "2026-02-08T15:55:53.470Z",
-      "supabaseId": "1769561085649",
-      "tutorial_completed": false,
-      "streak": 0,
-      "updatedAt": "2026-02-25T09:00:39.289Z"
+      "id": "1769561085649",
+      "createdAt": "2026-01-28T00:45:00.000Z"
     },
     {
-      "id": "1738640325000",
       "email": "andrewmaposa27@gmail.com",
       "password": "$2b$10$B81YDknsPmNqcvVbNi/SYeV0Udw3oRAVoPNQ5TGYo7oJZYBXUMkmK",
-      "xp": 0,
-      "level": 1,
-      "badges": [],
-      "createdAt": "2026-02-09T05:52:35.342Z",
-      "supabaseId": "1738640325000",
-      "tutorial_completed": false,
-      "streak": 0,
-      "updatedAt": "2026-02-25T09:00:48.388Z"
+      "id": "1738640325000",
+      "createdAt": "2026-02-03T19:38:45.000Z"
     },
     {
-      "id": "94b96706-33d1-4bed-bcc8-cd0c5281ea85",
-      "email": "joshwebsinfo@gmail.com",
-      "password": "$2b$10$yxN1yQl5PO.mxx3LvIgOt.GV/NngU8s6Q8RgxbmoTS3RZaurCe9MS",
-      "name": "joshwebsinfo",
+      "email": "test_verified_ps@example.com",
+      "password": "$2b$10$wi/zg/EITv6YqLcacJhX7.glCgm3c.EAeMzkhHOrPz9T78vQX.fy.",
       "xp": 0,
       "level": 1,
       "badges": [],
-      "newly_registered": true,
-      "supabaseAuthId": null,
-      "createdAt": "2026-02-09T06:01:06.433Z",
-      "tutorial_completed": true,
-      "timer_state": {
-        "timeLeft": 3600,
-        "isRunning": false,
-        "isBreak": false,
-        "sessionsCompleted": 0,
-        "selectedTask": null,
-        "lastUpdate": 1770618621939
-      },
-      "updatedAt": "2026-02-25T09:00:56.463Z",
-      "supabaseId": "94b96706-33d1-4bed-bcc8-cd0c5281ea85",
-      "streak": 0
+      "id": "1770285120974",
+      "createdAt": "2026-02-05T09:52:00.975Z"
     },
     {
-      "id": "2e421591-dbcb-458a-bf2c-fa5460065b64",
-      "email": "andrew27@gmail.com",
-      "password": "$2b$10$B7OgAaVrh0aIxgszsbdoxOqOKwXcBh15P9mWBwBbA8SHO3InkZb.y",
+      "email": "testuser_local@example.com",
+      "password": "$2b$10$Q7FwBWTBZAO8kO2zJOx2c.Vc8wrEjHIAj9ZUfW0QwMv/X04Ocjzva",
       "xp": 0,
       "level": 1,
       "badges": [],
-      "createdAt": "2026-02-09T06:10:22.649Z",
-      "supabaseId": "2e421591-dbcb-458a-bf2c-fa5460065b64",
-      "tutorial_completed": false,
-      "streak": 0,
-      "updatedAt": "2026-02-25T09:01:05.465Z"
+      "id": "1770288071029",
+      "createdAt": "2026-02-05T10:41:11.029Z"
     },
     {
-      "id": "37f98a6a-1fab-4ef1-9c8e-916e6a371251",
-      "email": "tayzielol774@gmail.com",
-      "password": "$2b$10$HMp6Ukq2YJuN8vY3tyZ/8OSvzTxn1FmD5.C4YW.tXrxJ3eOV3PZ06",
+      "email": "test-agent-1770288292269@example.com",
+      "password": "$2b$10$k5Zd1ugVQYCrjVjQ/jdITeypBJxFGXoIn8QVS/WuvS5P2HkDQfyBm",
       "xp": 0,
       "level": 1,
       "badges": [],
-      "createdAt": "2026-02-09T07:00:00.726Z",
-      "supabaseId": "37f98a6a-1fab-4ef1-9c8e-916e6a371251",
-      "tutorial_completed": false,
-      "streak": 0,
-      "updatedAt": "2026-02-25T09:01:14.275Z"
-    },
-    {
-      "id": "97d031e6-00f7-4b26-8722-682254410b29",
-      "email": "joshuamujakari@gmail.com",
-      "password": "$2b$10$iyYM/CruVZcYNREeAem.M.lSDDZEC9jjM.t.ywWtc85XYdB44qp2u",
-      "xp": 0,
-      "level": 1,
-      "badges": [],
-      "createdAt": "2026-02-10T02:56:50.406Z",
-      "supabaseId": "97d031e6-00f7-4b26-8722-682254410b29",
-      "tutorial_completed": false,
-      "streak": 0,
-      "updatedAt": "2026-02-25T09:01:23.218Z"
-    },
-    {
-      "id": "337274c6-dcc2-427d-92a7-2108e2508c88",
-      "email": "test@example.com",
-      "password": "$2b$10$puB5pd2ieT2qBvRnkYcu.eF9e1icjMrL7LamB82oZCXRdi5Cd2RiK",
-      "name": "Tester",
-      "xp": 0,
-      "level": 1,
-      "badges": [],
-      "newly_registered": true,
-      "supabaseAuthId": null,
-      "createdAt": "2026-02-10T02:57:06.567Z",
-      "tutorial_completed": false,
-      "supabaseId": "337274c6-dcc2-427d-92a7-2108e2508c88",
-      "updatedAt": "2026-02-25T09:01:31.869Z",
-      "streak": 0
-    },
-    {
-      "id": "c8dfa2b4-96b3-42fc-ad3c-47a915d32eb9",
-      "email": "Remmiemadiviko@gmail.com",
-      "password": "$2b$10$h8DVhV3l0i80ge8by3vdquHLXTPLncBVNjZY0iIWKWIZQ024h6y2.",
-      "xp": 0,
-      "level": 1,
-      "badges": [],
-      "createdAt": "2026-02-10T02:58:40.578Z",
-      "supabaseId": "c8dfa2b4-96b3-42fc-ad3c-47a915d32eb9",
-      "tutorial_completed": false,
-      "streak": 0,
-      "updatedAt": "2026-02-25T09:01:39.372Z"
-    },
-    {
-      "email": "system-test-1770773745876@example.com",
-      "password": "$2b$10$Wtxj6wSoUGIRMBbrmAR9sO6rFNEyx6Zbqd6zMIyKHzsWDP0tXNMHO",
-      "name": "System Test User",
-      "xp": 0,
-      "level": 1,
-      "badges": [],
-      "id": "08367c08-3ce8-465a-82d0-13c06a89f2c6",
-      "createdAt": "2026-02-11T01:35:50.208Z",
-      "tutorial_completed": false,
-      "supabaseId": "08367c08-3ce8-465a-82d0-13c06a89f2c6",
-      "updatedAt": "2026-02-25T09:01:47.183Z",
-      "streak": 0
+      "id": "1770288292523",
+      "createdAt": "2026-02-05T10:44:52.523Z"
     }
   ],
   "modules": [
@@ -159,40 +52,32 @@
       "name": "OOP",
       "description": "HARDEST",
       "targetHours": 1000,
-      "userId": "1769561085648",
-      "createdAt": "2026-01-29T19:58:18.602842+00:00",
-      "supabaseId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
-      "updatedAt": "2026-02-06T20:08:22.956Z"
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-01-29T19:58:18.602842+00:00"
     },
     {
       "id": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
       "name": "SOFTWARE ENGINEERING",
       "description": "MODERATE ",
       "targetHours": 750,
-      "userId": "1769561085648",
-      "createdAt": "2026-01-29T20:02:24.706128+00:00",
-      "supabaseId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
-      "updatedAt": "2026-02-06T20:08:24.514Z"
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-01-29T20:02:24.706128+00:00"
     },
     {
       "id": "2d9fa95b-6ac5-47a7-8ccf-94006949e057",
       "name": "NETWORK ADMIN",
       "description": "HARD ",
       "targetHours": 750,
-      "userId": "1769561085648",
-      "createdAt": "2026-01-29T20:08:51.896907+00:00",
-      "supabaseId": "2d9fa95b-6ac5-47a7-8ccf-94006949e057",
-      "updatedAt": "2026-02-06T20:08:26.258Z"
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-01-29T20:08:51.896907+00:00"
     },
     {
       "id": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "name": "C#",
       "description": "HARD",
       "targetHours": 1200,
-      "userId": "1769561085648",
-      "createdAt": "2026-01-29T21:38:43.914103+00:00",
-      "supabaseId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
-      "updatedAt": "2026-02-06T20:08:26.615Z"
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-01-29T21:38:43.914103+00:00"
     },
     {
       "id": "91772215-06b6-48fd-b980-1d0327a15a4e",
@@ -200,9 +85,7 @@
       "description": "HARD",
       "targetHours": 900,
       "userId": "1769561085649",
-      "createdAt": "2026-01-30T05:51:00.974877+00:00",
-      "supabaseId": "91772215-06b6-48fd-b980-1d0327a15a4e",
-      "updatedAt": "2026-02-06T20:08:27.034Z"
+      "createdAt": "2026-01-30T05:51:00.974877+00:00"
     },
     {
       "id": "d4373f87-e53f-4148-84f8-a211f2b648c7",
@@ -210,9 +93,7 @@
       "description": "EASY",
       "targetHours": 500,
       "userId": "1769561085649",
-      "createdAt": "2026-01-30T05:51:15.038554+00:00",
-      "supabaseId": "d4373f87-e53f-4148-84f8-a211f2b648c7",
-      "updatedAt": "2026-02-06T20:08:27.831Z"
+      "createdAt": "2026-01-30T05:51:15.038554+00:00"
     },
     {
       "id": "b85660b3-7849-47d1-a384-3421a40b1f7b",
@@ -220,9 +101,7 @@
       "description": "MODERATE ",
       "targetHours": 700,
       "userId": "1769561085649",
-      "createdAt": "2026-01-30T05:51:51.915828+00:00",
-      "supabaseId": "b85660b3-7849-47d1-a384-3421a40b1f7b",
-      "updatedAt": "2026-02-06T20:08:28.268Z"
+      "createdAt": "2026-01-30T05:51:51.915828+00:00"
     },
     {
       "id": "01ff51d7-be9d-4fdb-8218-6b9aacb5257f",
@@ -230,9 +109,7 @@
       "description": "PROGRAMMING ",
       "targetHours": 1000,
       "userId": "1769561085649",
-      "createdAt": "2026-01-30T05:52:16.548937+00:00",
-      "supabaseId": "01ff51d7-be9d-4fdb-8218-6b9aacb5257f",
-      "updatedAt": "2026-02-06T20:08:28.659Z"
+      "createdAt": "2026-01-30T05:52:16.548937+00:00"
     },
     {
       "id": "54d3897e-f954-4942-95cf-3e1c6059f95a",
@@ -240,19 +117,15 @@
       "description": "HARDEST",
       "targetHours": 700,
       "userId": "1738640325000",
-      "createdAt": "2026-02-04T21:26:27.498259+00:00",
-      "supabaseId": "54d3897e-f954-4942-95cf-3e1c6059f95a",
-      "updatedAt": "2026-02-06T20:08:29.036Z"
+      "createdAt": "2026-02-04T21:26:27.498259+00:00"
     },
     {
       "id": "f52b0bbb-80e5-4fcd-87ea-5f10e5779dc3",
       "name": "HARDWARE ADMIN ",
       "description": "EASY",
       "targetHours": 600,
-      "userId": "1769561085648",
-      "createdAt": "2026-01-29T20:03:08.471326+00:00",
-      "supabaseId": "f52b0bbb-80e5-4fcd-87ea-5f10e5779dc3",
-      "updatedAt": "2026-02-06T20:08:29.439Z"
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-01-29T20:03:08.471326+00:00"
     },
     {
       "id": "d4e65677-e3b6-4443-b7e0-c073f9dc8e3a",
@@ -260,19 +133,15 @@
       "description": "MODERATE ",
       "targetHours": 800,
       "userId": "1769561085649",
-      "createdAt": "2026-01-30T05:50:32.600053+00:00",
-      "supabaseId": "d4e65677-e3b6-4443-b7e0-c073f9dc8e3a",
-      "updatedAt": "2026-02-06T20:08:29.770Z"
+      "createdAt": "2026-01-30T05:50:32.600053+00:00"
     },
     {
       "id": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "name": "DATABASE ADMIN",
       "description": "HARD",
       "targetHours": 800,
-      "userId": "1769561085648",
-      "createdAt": "2026-01-29T19:52:11.826717+00:00",
-      "supabaseId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
-      "updatedAt": "2026-02-06T20:08:33.277Z"
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-01-29T19:52:11.826717+00:00"
     }
   ],
   "studyLogs": [
@@ -282,10 +151,8 @@
       "hours": 0.25,
       "date": "2026-02-01",
       "topic": "Evolution of C#",
-      "userId": "1769561085648",
-      "createdAt": "2026-02-01T17:47:57.948041+00:00",
-      "supabaseId": "32ffc0eb-e91c-4744-a88a-2d5321e976d0",
-      "updatedAt": "2026-02-06T20:08:33.774Z"
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-02-01T17:47:57.948041+00:00"
     },
     {
       "id": "e721ee1a-6ca2-4069-8922-29539d18ceb9",
@@ -293,10 +160,8 @@
       "hours": 0.15,
       "date": "2026-02-01",
       "topic": "DATA ENTRY",
-      "userId": "1769561085648",
-      "createdAt": "2026-02-01T18:12:21.803357+00:00",
-      "supabaseId": "e721ee1a-6ca2-4069-8922-29539d18ceb9",
-      "updatedAt": "2026-02-06T20:08:35.610Z"
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-02-01T18:12:21.803357+00:00"
     },
     {
       "id": "5beb2e2b-49e2-4374-89a1-3a092cfcf265",
@@ -304,10 +169,8 @@
       "hours": 0.31,
       "date": "2026-02-02",
       "topic": "OOP COMPONENT 1 .1",
-      "userId": "1769561085648",
-      "createdAt": "2026-02-02T22:19:10.96805+00:00",
-      "supabaseId": "5beb2e2b-49e2-4374-89a1-3a092cfcf265",
-      "updatedAt": "2026-02-06T20:08:37.898Z"
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-02-02T22:19:10.96805+00:00"
     },
     {
       "id": "f184becd-2a0a-4327-a1e0-1383f9980a0a",
@@ -316,9 +179,7 @@
       "date": "2026-02-02",
       "topic": "Identify security requirements",
       "userId": "1769561085649",
-      "createdAt": "2026-02-02T22:41:23.88085+00:00",
-      "supabaseId": "f184becd-2a0a-4327-a1e0-1383f9980a0a",
-      "updatedAt": "2026-02-06T20:08:38.510Z"
+      "createdAt": "2026-02-02T22:41:23.88085+00:00"
     },
     {
       "id": "19a3839b-38cf-43de-a2ae-b80efde54edd",
@@ -326,10 +187,8 @@
       "hours": 1,
       "date": "2026-02-03",
       "topic": "LEARNING OUTCOME 1",
-      "userId": "1769561085648",
-      "createdAt": "2026-02-03T17:50:50.06458+00:00",
-      "supabaseId": "19a3839b-38cf-43de-a2ae-b80efde54edd",
-      "updatedAt": "2026-02-06T20:08:38.833Z"
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-02-03T17:50:50.06458+00:00"
     },
     {
       "id": "261dd85e-201f-4007-be81-f01c808b0703",
@@ -338,9 +197,7 @@
       "date": "2026-02-04",
       "topic": " identify security requirements",
       "userId": "1769561085649",
-      "createdAt": "2026-02-04T19:22:52.14423+00:00",
-      "supabaseId": "261dd85e-201f-4007-be81-f01c808b0703",
-      "updatedAt": "2026-02-06T20:08:39.150Z"
+      "createdAt": "2026-02-04T19:22:52.14423+00:00"
     },
     {
       "id": "edcdff99-ce9d-4424-a1b8-23865ab19dfa",
@@ -348,10 +205,8 @@
       "hours": 1,
       "date": "2026-02-04",
       "topic": "DESIGN DATABASE OUTCOME ONE ",
-      "userId": "1769561085648",
-      "createdAt": "2026-02-04T19:47:34.188613+00:00",
-      "supabaseId": "edcdff99-ce9d-4424-a1b8-23865ab19dfa",
-      "updatedAt": "2026-02-06T20:08:39.423Z"
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-02-04T19:47:34.188613+00:00"
     },
     {
       "id": "55aad989-0c3b-46ce-b71d-fa4463e32b97",
@@ -359,10 +214,8 @@
       "hours": 1,
       "date": "2026-02-04",
       "topic": "DESIGN DATABASE OUTCOME ONE ",
-      "userId": "1769561085648",
-      "createdAt": "2026-02-04T19:47:41.528757+00:00",
-      "supabaseId": "55aad989-0c3b-46ce-b71d-fa4463e32b97",
-      "updatedAt": "2026-02-06T20:08:39.817Z"
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-02-04T19:47:41.528757+00:00"
     },
     {
       "id": "52c5b54c-6c63-420b-a24c-2db831dfa027",
@@ -370,10 +223,8 @@
       "hours": 0.15,
       "date": "2026-02-05",
       "topic": "LEARNING OUTCOME 1",
-      "userId": "1769561085648",
-      "createdAt": "2026-02-04T22:39:27.997517+00:00",
-      "supabaseId": "52c5b54c-6c63-420b-a24c-2db831dfa027",
-      "updatedAt": "2026-02-06T20:08:40.126Z"
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-02-04T22:39:27.997517+00:00"
     },
     {
       "id": "fe167234-7c7f-4acc-8d02-8c99e1462ffb",
@@ -382,41 +233,7 @@
       "date": "2026-02-04",
       "topic": "describe business information systems",
       "userId": "1769561085649",
-      "createdAt": "2026-02-04T22:42:41.800292+00:00",
-      "supabaseId": "fe167234-7c7f-4acc-8d02-8c99e1462ffb",
-      "updatedAt": "2026-02-06T20:08:40.471Z"
-    },
-    {
-      "id": "1d1a5ca7-6773-4fce-9a44-dc83e7cd84ad",
-      "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
-      "hours": 1,
-      "date": "2026-02-08",
-      "activity": "C#",
-      "createdAt": "2026-02-10T02:56:50.716Z",
-      "userId": "1769561085648",
-      "updatedAt": "2026-02-09T15:51:53.688516+00:00",
-      "supabaseId": "1d1a5ca7-6773-4fce-9a44-dc83e7cd84ad"
-    },
-    {
-      "id": "da761fd0-6f8d-4a45-89f0-75233d7657fc",
-      "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
-      "hours": 2,
-      "date": "2026-02-08",
-      "activity": "DATABASE NOTES",
-      "createdAt": "2026-02-10T02:58:40.875Z",
-      "userId": "1769561085648",
-      "updatedAt": "2026-02-09T15:51:53.688516+00:00",
-      "supabaseId": "da761fd0-6f8d-4a45-89f0-75233d7657fc"
-    },
-    {
-      "id": "129756aa-e07d-443a-90ee-83b24e1fe88f",
-      "task": "Performance Test",
-      "duration": 10,
-      "hours": 10,
-      "date": "2026-02-24",
-      "topic": "Performance Test",
-      "userId": "1769561085648",
-      "createdAt": "2026-02-24T07:42:04.789Z"
+      "createdAt": "2026-02-04T22:42:41.800292+00:00"
     }
   ],
   "tasks": [
@@ -427,46 +244,8 @@
       "priority": "Medium",
       "status": "In Progress",
       "dueDate": "2026-02-14T00:00:00+00:00",
-      "userId": "1769561085648",
-      "createdAt": "2026-02-01T18:07:58.722371+00:00",
-      "supabaseId": "033958c0-4cfe-4033-a774-840846354ae4",
-      "updatedAt": "2026-02-06T20:08:40.857Z"
-    },
-    {
-      "id": "4fb8c345-8cfe-498f-bb5c-16b4c52b4ca4",
-      "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
-      "title": "DATABASE NOTES ",
-      "priority": "Medium",
-      "status": "Completed",
-      "dueDate": "2026-02-07T00:00:00+00:00",
-      "createdAt": "2026-02-10T02:56:51.267Z",
-      "userId": "1769561085648",
-      "description": "",
-      "subtasks": [],
-      "updatedAt": "2026-02-08T00:13:26.229+00:00",
-      "supabaseId": "4fb8c345-8cfe-498f-bb5c-16b4c52b4ca4"
-    },
-    {
-      "title": "Test Task",
-      "status": "Pending",
-      "userId": "test-user-1771372002753",
-      "id": "11e3511c-730d-40c0-8bdc-8220f2e54f08",
-      "createdAt": "2026-02-17T23:46:42.778Z"
-    },
-    {
-      "title": "Test Task",
-      "status": "Pending",
-      "userId": "test-user-1771372033815",
-      "id": "e46bed4a-d95e-4c80-83a0-ab73a7f58e4d",
-      "createdAt": "2026-02-17T23:47:13.825Z"
-    },
-    {
-      "title": "Test Task",
-      "status": "Completed",
-      "userId": "test-user-1771372076315",
-      "id": "03657f2c-11be-4cbf-87c0-e8dd6f1a9749",
-      "createdAt": "2026-02-17T23:47:56.616Z",
-      "updatedAt": "2026-02-17T23:47:56.905Z"
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-02-01T18:07:58.722371+00:00"
     }
   ],
   "notes": [
@@ -477,11 +256,8 @@
       "content": "",
       "resourceLink": "",
       "pdfPath": "https://pocuggehxeuheqzgixsx.supabase.co/storage/v1/object/public/notes-files/pdf_1769896788141_Database_Administration_(BG)_095554.pdf",
-      "userId": "1769561085648",
-      "createdAt": "2026-01-31T11:59:31.162372+00:00",
-      "supabaseId": "c346fa14-1580-4331-a052-7480b99a27ff",
-      "updatedAt": "2026-02-06T20:08:41.194Z",
-      "isPublic": true
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-01-31T11:59:31.162372+00:00"
     },
     {
       "id": "ceec4a88-3c57-4fab-9387-c878194982a0",
@@ -490,10 +266,8 @@
       "content": "",
       "resourceLink": "",
       "pdfPath": "https://pocuggehxeuheqzgixsx.supabase.co/storage/v1/object/public/notes-files/pdf_1769896843518_Object_Oriented_Programming_(BG)_095743.pdf",
-      "userId": "1769561085648",
-      "createdAt": "2026-01-31T12:00:25.54617+00:00",
-      "supabaseId": "ceec4a88-3c57-4fab-9387-c878194982a0",
-      "updatedAt": "2026-02-06T20:08:41.567Z"
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-01-31T12:00:25.54617+00:00"
     },
     {
       "id": "53738374-90dc-43d5-aa96-d860f3a0f226",
@@ -502,10 +276,8 @@
       "content": "",
       "resourceLink": "",
       "pdfPath": "https://pocuggehxeuheqzgixsx.supabase.co/storage/v1/object/public/notes-files/pdf_1769897147232_hardware_administratian_(BG)_095711.pdf",
-      "userId": "1769561085648",
-      "createdAt": "2026-01-31T12:05:30.251182+00:00",
-      "supabaseId": "53738374-90dc-43d5-aa96-d860f3a0f226",
-      "updatedAt": "2026-02-06T20:08:42.007Z"
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-01-31T12:05:30.251182+00:00"
     },
     {
       "id": "2f0bd282-c62c-4dcb-9c48-4ca84db6276a",
@@ -514,96 +286,8 @@
       "content": "",
       "resourceLink": "",
       "pdfPath": "https://pocuggehxeuheqzgixsx.supabase.co/storage/v1/object/public/notes-files/pdf_1769897179965_SOFTWARE_ENGINEERIG_(BG).pdf",
-      "userId": "1769561085648",
-      "createdAt": "2026-01-31T12:06:02.747293+00:00",
-      "supabaseId": "2f0bd282-c62c-4dcb-9c48-4ca84db6276a",
-      "updatedAt": "2026-02-06T20:08:43.123Z"
-    },
-    {
-      "id": "test-note-1770685620520",
-      "userId": "system-test-user-id",
-      "title": "Sync Test Note",
-      "content": "This note should be synced to the cloud.",
-      "createdAt": "2026-02-10T01:07:00.522Z",
-      "supabaseId": "test-note-1770685620520",
-      "updatedAt": "2026-02-10T02:56:51.911Z"
-    },
-    {
-      "id": "test-note-1770685645041",
-      "userId": "1769561085648",
-      "title": "Sync Test Note",
-      "content": "This note should be synced to the cloud.",
-      "createdAt": "2026-02-10T01:07:25.096Z",
-      "supabaseId": "test-note-1770685645041",
-      "updatedAt": "2026-02-10T02:56:52.224Z"
-    },
-    {
-      "id": "test-note-1770687504041",
-      "userId": "1769561085648",
-      "title": "Sync Test Note",
-      "content": "This note should be synced to the cloud.",
-      "createdAt": "2026-02-10T01:38:24.043Z",
-      "supabaseId": "test-note-1770687504041",
-      "updatedAt": "2026-02-10T02:56:51.237Z"
-    },
-    {
-      "title": "App Logic Sync Test",
-      "content": "Testing if this appears in Supabase via server logic.",
-      "userId": "1769561085648",
-      "createdAt": "2026-02-10T01:50:14.259Z",
-      "updatedAt": "2026-02-10T02:56:52.492Z",
-      "id": "593b77c0-9c6a-4927-b3c7-58f12994f8fc",
-      "supabaseId": "593b77c0-9c6a-4927-b3c7-58f12994f8fc"
-    },
-    {
-      "title": "App Logic Sync Test",
-      "content": "Testing if this appears in Supabase via server logic.",
-      "userId": "1769561085648",
-      "createdAt": "2026-02-10T01:52:45.686Z",
-      "updatedAt": "2026-02-10T01:52:46.466Z",
-      "id": "f93eb9aa-03ff-41a5-9c47-a3332df7cc73",
-      "supabaseId": "f93eb9aa-03ff-41a5-9c47-a3332df7cc73"
-    },
-    {
-      "id": "e825216c-c957-4a51-aae8-0bf7fc9cefa3",
-      "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
-      "title": "C# NOTES ",
-      "content": "C# NOTES AND .NET",
-      "resourceLink": "https://www.tutorialspoint.com/csharp/csharp_tutorial.pdf",
-      "pdfPath": "https://pocuggehxeuheqzgixsx.supabase.co/storage/v1/object/public/notes-files/pdf_1770434419386_csharp_tutorial.pdf",
-      "createdAt": "2026-02-10T02:58:41.074Z",
-      "userId": "1769561085648",
-      "audioPath": null,
-      "audioEpisodes": null,
-      "updatedAt": "2026-02-09T15:51:53.688516+00:00",
-      "supabaseId": "e825216c-c957-4a51-aae8-0bf7fc9cefa3"
-    },
-    {
-      "title": "Refactor Test Note 1770692411452",
-      "content": "Updated content",
-      "moduleId": "test-module",
-      "userId": "337274c6-dcc2-427d-92a7-2108e2508c88",
-      "createdAt": "2026-02-10T03:00:11.462Z",
-      "updatedAt": "2026-02-10T03:00:11.759Z",
-      "id": "899df5c3-ede9-42bd-886c-09048c14dc40"
-    },
-    {
-      "title": "Refactor Test Note 1770692485080",
-      "content": "Updated content",
-      "userId": "337274c6-dcc2-427d-92a7-2108e2508c88",
-      "createdAt": "2026-02-10T03:01:25.085Z",
-      "updatedAt": "2026-02-10T03:01:25.705Z",
-      "id": "4d9acc7e-c233-4eed-a91b-5ff2f535d584",
-      "supabaseId": "4d9acc7e-c233-4eed-a91b-5ff2f535d584"
-    },
-    {
-      "title": "Refactor Test Note 1770693130361",
-      "content": "Updated content",
-      "userId": "337274c6-dcc2-427d-92a7-2108e2508c88",
-      "createdAt": "2026-02-10T03:12:10.366Z",
-      "updatedAt": "2026-02-10T03:12:10.962Z",
-      "id": "4fa915d6-48a3-4de9-b714-6c4c8adb510c",
-      "supabaseId": "4fa915d6-48a3-4de9-b714-6c4c8adb510c"
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-01-31T12:06:02.747293+00:00"
     }
   ],
   "grades": [],
@@ -613,21 +297,16 @@
       "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
       "name": "AI: OOP",
       "description": "Auto-generated flashcards for OOP",
-      "userId": "1769561085648",
-      "createdAt": "2026-01-29T19:59:49.535088+00:00",
-      "supabaseId": "ded9f0b8-d466-4186-90ea-4f508f26692a",
-      "updatedAt": "2026-02-06T20:08:43.490Z",
-      "isPublic": true
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-01-29T19:59:49.535088+00:00"
     },
     {
       "id": "415ab09c-0c99-41da-92ca-b00188611bc2",
       "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
       "name": "STRUCTURE OF A C# PROGRAMM",
       "description": null,
-      "userId": "1769561085648",
-      "createdAt": "2026-02-02T22:29:05.562316+00:00",
-      "supabaseId": "415ab09c-0c99-41da-92ca-b00188611bc2",
-      "updatedAt": "2026-02-06T20:08:43.788Z"
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "createdAt": "2026-02-02T22:29:05.562316+00:00"
     }
   ],
   "flashcards": [
@@ -637,9 +316,7 @@
       "question": "How does this apply to real-world scenarios?",
       "answer": "Through the practical implementation steps mentioned in the conclusion.",
       "level": 2,
-      "createdAt": "2026-01-29T19:59:50.534844+00:00",
-      "supabaseId": "678c491f-4584-4416-ba3c-f3750c78e946",
-      "updatedAt": "2026-02-06T20:08:44.835Z"
+      "createdAt": "2026-01-29T19:59:50.534844+00:00"
     },
     {
       "id": "3f649d50-aee5-4b03-b8b9-38fc6d2176f5",
@@ -647,9 +324,7 @@
       "question": "What is the most critical definition in this text?",
       "answer": "The technical term defined in the first paragraph of your notes.",
       "level": 1,
-      "createdAt": "2026-01-29T19:59:50.241425+00:00",
-      "supabaseId": "3f649d50-aee5-4b03-b8b9-38fc6d2176f5",
-      "updatedAt": "2026-02-06T20:08:45.663Z"
+      "createdAt": "2026-01-29T19:59:50.241425+00:00"
     },
     {
       "id": "50dead90-7521-4b91-ba3d-9667e455d0c1",
@@ -657,9 +332,7 @@
       "question": "Main concept of OOP?",
       "answer": "The primary framework discussed in your study materials.",
       "level": 2,
-      "createdAt": "2026-01-29T19:59:49.901983+00:00",
-      "supabaseId": "50dead90-7521-4b91-ba3d-9667e455d0c1",
-      "updatedAt": "2026-02-06T20:08:46.155Z"
+      "createdAt": "2026-01-29T19:59:49.901983+00:00"
     },
     {
       "id": "c3a197bb-bfbb-4b15-b196-b061f9a9f5e1",
@@ -667,9 +340,7 @@
       "question": "WHAT IS AN IDE",
       "answer": "AN IDE IS AN INTERGRATED ENVIRONMENT THAT HELPS US OR MAKES US MAKE OUR PROGRAMS FROM A VARIETY OF LANGAUGES LIKE JAVA AND EXAMPLES ARE VS code ",
       "level": 2,
-      "createdAt": "2026-02-02T23:03:16.975792+00:00",
-      "supabaseId": "c3a197bb-bfbb-4b15-b196-b061f9a9f5e1",
-      "updatedAt": "2026-02-06T20:08:46.576Z"
+      "createdAt": "2026-02-02T23:03:16.975792+00:00"
     },
     {
       "id": "4d57490a-3e96-49c5-a19e-5bbbda68a881",
@@ -677,9 +348,7 @@
       "question": "TWO TYPES OF C# ERRORS ",
       "answer": "RUN TIME ERROR AND COMPILE ERROR",
       "level": 2,
-      "createdAt": "2026-02-02T23:04:30.319917+00:00",
-      "supabaseId": "4d57490a-3e96-49c5-a19e-5bbbda68a881",
-      "updatedAt": "2026-02-06T20:08:48.159Z"
+      "createdAt": "2026-02-02T23:04:30.319917+00:00"
     },
     {
       "id": "1473bd65-93e1-44ca-862f-1b59441f9ced",
@@ -687,9 +356,7 @@
       "question": "WHAT IS ERROR HANDLING IN C#",
       "answer": "ERROR HANDLING IS A WAY OF IDENTIFIYING A CERTAIN ERROR IN A PROGRAM AND A WAY TO FIX IT ",
       "level": 2,
-      "createdAt": "2026-02-02T23:06:04.319614+00:00",
-      "supabaseId": "1473bd65-93e1-44ca-862f-1b59441f9ced",
-      "updatedAt": "2026-02-06T20:08:48.449Z"
+      "createdAt": "2026-02-02T23:06:04.319614+00:00"
     },
     {
       "id": "b2c4d3b4-4bb8-4a66-b2dc-17a447dff802",
@@ -697,9 +364,7 @@
       "question": "DESCRIBE THE PROCESS OF ERROR HANDLING USING TRY BLOCK ",
       "answer": "THE TRY BLOCK COMES FIRST BEFORE THE CATCH BLOCK APPEARS ,IT CONTAINS THE CODE THAT MAY LEAD TO AN ERROR  try {\nint numerator=10;\nint denominator=0;\nint result=10/0;\nConsole.WriteLine(\"Result: {0}\", result);",
       "level": 2,
-      "createdAt": "2026-02-02T23:14:01.349367+00:00",
-      "supabaseId": "b2c4d3b4-4bb8-4a66-b2dc-17a447dff802",
-      "updatedAt": "2026-02-06T20:08:48.924Z"
+      "createdAt": "2026-02-02T23:14:01.349367+00:00"
     },
     {
       "id": "2c2651e4-849a-4e89-9202-f17646d12ab8",
@@ -707,88 +372,13 @@
       "question": "STATE COMPONENTS OF A C# PROGRAMM",
       "answer": "\nCOMMENTS \nMAIN() METHODE\nNAMESPACE\nMETHODE BODY STATEMENT \nUSING DERECTIVES\nCLASS DEFINATION",
       "level": 3,
-      "createdAt": "2026-02-02T23:01:14.491711+00:00",
-      "supabaseId": "2c2651e4-849a-4e89-9202-f17646d12ab8",
-      "updatedAt": "2026-02-06T20:08:49.860Z"
+      "createdAt": "2026-02-02T23:01:14.491711+00:00"
     }
   ],
   "calendarEvents": [],
   "pomodoroSessions": [],
-  "tutorials": [
-    {
-      "id": "21dd4bc7-fc03-4f93-af64-de8d0939fd33",
-      "userId": "1769561085648",
-      "title": "C#",
-      "youtubeUrl": "https://youtu.be/6yApLUzbXWk?si=ecgWiQ4Aif-R01Lm",
-      "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
-      "topic": "C# STRUCTURE",
-      "description": "C#",
-      "createdAt": "2026-02-10T02:56:51.278Z",
-      "updatedAt": "2026-02-07T11:53:33.647+00:00",
-      "videoId": "6yApLUzbXWk",
-      "supabaseId": "21dd4bc7-fc03-4f93-af64-de8d0939fd33"
-    },
-    {
-      "id": "bb06750e-598c-4c13-a497-b8a0bd8f7ac0",
-      "userId": "1769561085648",
-      "title": "C#",
-      "youtubeUrl": "https://youtu.be/6yApLUzbXWk?si=G4ZeqS8JVGyAl85_",
-      "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
-      "topic": "C#",
-      "description": "STRUCTURE OF A C#",
-      "createdAt": "2026-02-10T02:58:40.977Z",
-      "updatedAt": "2026-02-07T11:45:00.65+00:00",
-      "videoId": "6yApLUzbXWk",
-      "supabaseId": "bb06750e-598c-4c13-a497-b8a0bd8f7ac0"
-    }
-  ],
-  "conversations": [
-    {
-      "type": "direct",
-      "participants": [
-        "94b96706-33d1-4bed-bcc8-cd0c5281ea85",
-        "1769561085648"
-      ],
-      "lastMessage": "",
-      "lastMessageTime": "2026-02-09T06:04:45.475Z",
-      "status": "pending",
-      "initiatorId": "94b96706-33d1-4bed-bcc8-cd0c5281ea85",
-      "id": "1e7015b4-4ae6-4f3e-a266-b6a2ae6f2bab",
-      "createdAt": "2026-02-09T06:04:45.911Z",
-      "supabaseId": "cbe67069-3379-4261-aa0c-37bfb3fe34cc",
-      "updatedAt": "2026-02-09T06:45:26.546Z"
-    },
-    {
-      "id": "2bd49d12-cdb8-4dd7-83d2-d2bb4117adcd",
-      "type": "direct",
-      "groupId": null,
-      "participants": [
-        "1769561085648",
-        "c8dfa2b4-96b3-42fc-ad3c-47a915d32eb9"
-      ],
-      "lastMessage": "hie",
-      "lastMessageTime": "2026-02-09T08:12:56.74+00:00",
-      "createdAt": "2026-02-10T02:56:51.587Z",
-      "status": "pending",
-      "initiatorId": "1769561085648",
-      "supabaseId": "2bd49d12-cdb8-4dd7-83d2-d2bb4117adcd"
-    },
-    {
-      "id": "69773f22-220d-4d4c-8ef4-b6470e2b2e14",
-      "type": "direct",
-      "groupId": null,
-      "participants": [
-        "94b96706-33d1-4bed-bcc8-cd0c5281ea85",
-        "1769561085648"
-      ],
-      "lastMessage": "",
-      "lastMessageTime": "2026-02-09T06:04:45.475+00:00",
-      "createdAt": "2026-02-10T02:58:41.611Z",
-      "status": "pending",
-      "initiatorId": "94b96706-33d1-4bed-bcc8-cd0c5281ea85",
-      "supabaseId": "69773f22-220d-4d4c-8ef4-b6470e2b2e14"
-    }
-  ],
+  "tutorials": [],
+  "conversations": [],
   "messages": [],
   "groups": [],
   "settings": {

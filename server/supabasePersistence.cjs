@@ -307,32 +307,29 @@ const getAllProfiles = async () => {
 };
 
 const upsertProfile = async (profile) => {
-    const client = initSupabase();
-    if (!client) return null;
+    try {
+        const client = initSupabase();
+        if (!client) throw new Error('Supabase not initialized');
 
-    const row = mapToTable(profile, 'profiles');
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(profile.id);
+        // Identify if it's a UUID
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(profile.id);
 
-    let profileResult = null;
-    // Only upsert to profiles if it's a valid UUID (referenced to auth.users)
-    if (isUUID) {
-        const { data, error } = await client.from('profiles').upsert([row]).select().single();
-        if (error) {
-            console.error('Error upserting to profiles:', error);
-        } else {
-            profileResult = mapRow(data, 'profiles');
+        if (isUUID) {
+            // Sync to profiles table
+            const row = mapToTable(profile, 'profiles');
+            await client.from('profiles').upsert([row]);
         }
+
+        // Always sync to users table
+        const userRow = mapToTable(profile, 'users');
+        const { data, error } = await client.from('users').upsert([userRow]).select().single();
+
+        if (error) throw error;
+        return data ? mapRow(data, 'users') : null;
+    } catch (error) {
+        console.error('Error in upsertProfile:', error.message);
+        throw error;
     }
-
-    // Always sync to users table as legacy fallback
-    const userRow = mapToTable(profile, 'users');
-    const { data: userData, error: userError } = await client.from('users').upsert([userRow]).select().single();
-
-    if (userError) {
-        console.error('Error upserting to users table:', userError);
-    }
-
-    return profileResult || (userData ? mapRow(userData, 'users') : null);
 };
 
 const deleteAllUserData = async (userId) => {

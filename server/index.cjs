@@ -394,6 +394,8 @@ app.post('/api/auth/register', async (req, res) => {
                 xp: 0,
                 level: 1,
                 badges: [],
+                streak: 0,
+                settings: {},
                 newly_registered: true,
                 tutorial_completed: false
             });
@@ -505,7 +507,9 @@ app.post('/api/auth/login', async (req, res) => {
                     name: existingData?.name || email.split('@')[0],
                     xp: existingData?.xp || 0,
                     level: existingData?.level || 1,
-                    badges: existingData?.badges || []
+                    badges: existingData?.badges || [],
+                    streak: existingData?.streak || 0,
+                    settings: existingData?.settings || {}
                 });
                 console.log(`✅ Local user cache created from Supabase data for: ${email}`);
             }
@@ -565,7 +569,9 @@ app.post('/api/auth/login', async (req, res) => {
                 email: user.email,
                 xp: user.xp || 0,
                 level: user.level || 1,
-                badges: user.badges || []
+                badges: user.badges || [],
+                streak: user.streak || 0,
+                settings: user.settings || {}
             });
         } catch (syncErr) {
             console.error('❌ Failed to sync profile on login:', syncErr.message);
@@ -690,15 +696,36 @@ app.post('/api/user/profile', authenticateToken, async (req, res) => {
 app.post('/api/user/settings', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
-        const updates = req.body; // { theme, dark_mode, timer_state }
+        const updates = req.body;
 
-        // Update local DB
-        db.update('users', userId, updates);
+        const user = db.getById('users', userId);
+        if (!user) return res.status(404).json({ error: 'User not found' });
 
-        // Update Supabase
-        await supabasePersistence.upsertToCollection('users', { id: userId, ...updates });
+        const columnFields = ['theme', 'dark_mode', 'timer_state', 'name', 'email', 'xp', 'level', 'streak', 'badges', 'tutorial_completed'];
+        const finalUpdate = {};
+        const settingsUpdates = { ...(user.settings || {}) };
 
-        res.json({ success: true });
+        Object.keys(updates).forEach(key => {
+            if (columnFields.includes(key)) {
+                finalUpdate[key] = updates[key];
+            } else {
+                settingsUpdates[key] = updates[key];
+            }
+        });
+
+        if (Object.keys(settingsUpdates).length > 0) {
+            finalUpdate.settings = settingsUpdates;
+        }
+
+        db.update('users', userId, finalUpdate);
+
+        try {
+            await supabasePersistence.upsertProfile({ id: userId, ...user, ...finalUpdate });
+        } catch (supaErr) {
+            console.warn('⚠️ Supabase settings sync failed:', supaErr.message);
+        }
+
+        res.json({ success: true, settings: finalUpdate.settings || user.settings || {} });
     } catch (error) {
         console.error('Error updating settings:', error);
         res.status(500).json({ error: 'Failed to update settings' });
