@@ -2114,44 +2114,7 @@ app.post('/api/ai/process', authenticateToken, async (req, res) => {
                 ];
                 break;
 
-            case 'generateStudyRoadmap':
-                if (!genAI) return res.status(500).json({ error: 'AI not configured' });
-                const roadmapModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-                const { userData } = payload;
-
-                const roadmapPrompt = `
-                    As the StudySync AI Strategist, generate a 7-day personalized study roadmap for a student.
-                    
-                    USER DATA:
-                    - Modules: ${JSON.stringify(userData.modules)}
-                    - Recent Study Logs: ${JSON.stringify(userData.logs)}
-                    - Pending Tasks: ${JSON.stringify(userData.tasks)}
-                    - Efficiency Score: ${userData.efficiencyScore}
-                    
-                    REQUIREMENTS:
-                    1. Prioritize modules with low mastery or high target hours.
-                    2. Address urgent tasks (near due dates).
-                    3. Suggest specific focus durations for each day.
-                    4. Return the result as a JSON array of 7 objects, each with:
-                       - day: (e.g., "Monday")
-                       - focus: "Primary module/topic"
-                       - duration: "e.g., 2h"
-                       - strategy: "Short actionable advice"
-                `;
-
-                try {
-                    const roadmapResult = await callGeminiWithRetry(roadmapModel, roadmapPrompt);
-                    const roadmapText = roadmapResult.response.text();
-                    // Clean JSON if needed
-                    const jsonMatch = roadmapText.match(/\[[\s\S]*\]/);
-                    const cleanRoadmap = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(roadmapText);
-                    return res.json(cleanRoadmap);
-                } catch (aiErr) {
-                    console.error('Roadmap AI failure:', aiErr);
-                    return res.json([
-                        { day: "Today", focus: "General Review", duration: "1h", strategy: "Focus on your most urgent tasks first." }
-                    ]);
-                }
+                break;
 
             case 'chat':
                 const localResponse = getLocalChatBoatResponse(payload.message, payload.context);
