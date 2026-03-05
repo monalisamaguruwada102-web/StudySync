@@ -43,7 +43,7 @@ export const ThemeProvider = ({ children }) => {
         }).catch(err => {
             // Silently fail if not logged in (e.g. on login page)
             if (err.response?.status !== 401) {
-                console.error('Failed to sync theme to cloud:', err);
+                console.error('Failed to sync theme to cloud:', err.response?.data || err.message);
             }
         });
     }, [theme, isDarkMode]);
