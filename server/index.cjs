@@ -687,7 +687,11 @@ app.post('/api/user/profile', authenticateToken, async (req, res) => {
 
         // Update Supabase (Primary & Fallback)
         try {
-            const updated = await supabasePersistence.upsertProfile({ id: userId, ...updates });
+            const updated = await supabasePersistence.upsertProfile({
+                id: userId,
+                email: req.user.email, // Satisfy NOT NULL constraint in users table
+                ...updates
+            });
             res.json({ success: true, user: updated });
         } catch (supaErr) {
             console.error('❌ Supabase profile sync failed:', supaErr.message);
