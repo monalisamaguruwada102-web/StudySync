@@ -435,8 +435,8 @@ app.post('/api/auth/register', async (req, res) => {
     // Set Secure HttpOnly Cookie
     res.cookie('auth_token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
+        secure: true, // Always secure for production domains like joshwebs.co.zw
+        sameSite: 'lax',
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
@@ -556,7 +556,7 @@ app.post('/api/auth/login', async (req, res) => {
     // Set Secure HttpOnly Cookie
     res.cookie('auth_token', token, {
         httpOnly: true,
-        secure: IS_PROD,
+        secure: true, // Always secure for production domains like joshwebs.co.zw
         sameSite: 'lax',
         maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
     });
@@ -680,16 +680,26 @@ app.post('/api/user/profile', authenticateToken, async (req, res) => {
         const userId = req.user.id;
         const updates = req.body;
 
+        console.log(`👤 Profile Update Requested for ${userId}:`, JSON.stringify(updates));
+
         // Update local DB (cache)
         db.update('users', userId, updates);
 
         // Update Supabase (Primary & Fallback)
-        const updated = await supabasePersistence.upsertProfile({ id: userId, ...updates });
-
-        res.json({ success: true, user: updated });
+        try {
+            const updated = await supabasePersistence.upsertProfile({ id: userId, ...updates });
+            res.json({ success: true, user: updated });
+        } catch (supaErr) {
+            console.error('❌ Supabase profile sync failed:', supaErr.message);
+            res.status(500).json({
+                error: 'Cloud sync failed',
+                message: supaErr.message,
+                details: supaErr
+            });
+        }
     } catch (error) {
         console.error('Error updating profile:', error);
-        res.status(500).json({ error: 'Failed to update profile' });
+        res.status(500).json({ error: 'Failed to update profile', message: error.message });
     }
 });
 
