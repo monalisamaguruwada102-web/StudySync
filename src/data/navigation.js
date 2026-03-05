@@ -21,7 +21,8 @@ import {
     Info,
     Mail,
     Shield,
-    Newspaper
+    Newspaper,
+    Code2
 } from 'lucide-react';
 
 export const navGroups = [
@@ -41,6 +42,7 @@ export const navGroups = [
             { icon: Brain, label: 'Flashcards', path: '/flashcards', gradient: 'from-fuchsia-500 to-pink-500' },
             { icon: FileText, label: 'Notes', path: '/notes', gradient: 'from-teal-500 to-cyan-500' },
             { icon: MessageCircle, label: 'Chat', path: '/chat', gradient: 'from-blue-500 to-sky-500' },
+            { icon: Code2, label: 'Code Sandbox', path: '/sandbox', gradient: 'from-emerald-500 to-teal-500' },
             { icon: Zap, label: 'Deep Focus', path: '/focus', gradient: 'from-yellow-500 to-orange-500' },
         ]
     },

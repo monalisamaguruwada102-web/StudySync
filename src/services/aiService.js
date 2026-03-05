@@ -72,6 +72,23 @@ export const aiService = {
             console.error("AI Chat error:", error);
             throw error;
         }
+    },
+
+    /**
+     * Generates a personalized study roadmap based on user data.
+     */
+    generateStudyRoadmap: async (userData) => {
+        try {
+            const response = await api.post('/ai/process', {
+                action: 'generateStudyRoadmap',
+                payload: { userData }
+            });
+
+            return response.data;
+        } catch (error) {
+            console.error("AI Roadmap generation error:", error);
+            throw error;
+        }
     }
 };
 

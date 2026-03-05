@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 import { useTheme } from '../context/ThemeContext';
+import aiService from '../services/aiService';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -164,6 +165,25 @@ const Dashboard = () => {
     const [cloudEvents, setCloudEvents] = React.useState([]);
     const [isSyncingCloud, setIsSyncingCloud] = React.useState(false);
     const [isBroadcasting, setIsBroadcasting] = React.useState(false);
+    const [roadmap, setRoadmap] = React.useState(null);
+    const [loadingRoadmap, setLoadingRoadmap] = React.useState(false);
+
+    const fetchRoadmap = async () => {
+        try {
+            setLoadingRoadmap(true);
+            const data = await aiService.generateStudyRoadmap({
+                modules,
+                logs,
+                tasks,
+                efficiencyScore: stats.efficiencyScore
+            });
+            setRoadmap(data);
+        } catch (error) {
+            console.error("Failed to fetch roadmap:", error);
+        } finally {
+            setLoadingRoadmap(false);
+        }
+    };
 
     const handleTriggerGlobalEmails = async () => {
         if (!window.confirm('Are you sure you want to trigger a global email broadcast to ALL users?')) return;
@@ -371,19 +391,59 @@ const Dashboard = () => {
                 />
             </div>
 
+
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
                 {/* Visual Journey Map */}
                 <Card
-                    title="My Learning Journey"
+                    title="AI Study Strategist"
                     className="lg:col-span-2 min-h-[450px]"
                     HeaderAction={
-                        <button className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all text-[10px] font-black uppercase tracking-widest">
-                            <Map size={14} />
-                            View Map
+                        <button
+                            onClick={fetchRoadmap}
+                            disabled={loadingRoadmap}
+                            className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-xl shadow-lg hover:bg-primary-700 transition-all text-[10px] font-black uppercase tracking-widest disabled:opacity-50"
+                        >
+                            <Brain size={14} className={loadingRoadmap ? 'animate-pulse' : ''} />
+                            {loadingRoadmap ? 'Generating...' : 'Refresh Strategy'}
                         </button>
                     }
                 >
-                    <JourneyMap />
+                    {roadmap ? (
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {roadmap.slice(0, 4).map((day, idx) => (
+                                    <div key={idx} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700">
+                                        <span className="text-[10px] font-black text-primary-500 uppercase tracking-widest">{day.day}</span>
+                                        <h4 className="text-sm font-bold text-slate-900 dark:text-white mt-1">{day.focus}</h4>
+                                        <div className="flex items-center gap-2 mt-2 text-xs text-slate-500">
+                                            <Clock size={12} />
+                                            <span>{day.duration}</span>
+                                        </div>
+                                        <p className="text-[11px] text-slate-400 mt-2 leading-relaxed italic">"{day.strategy}"</p>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="p-4 bg-primary-50 dark:bg-primary-900/10 rounded-2xl border border-primary-100 dark:border-primary-900/20">
+                                <p className="text-xs font-bold text-primary-700 dark:text-primary-400 flex items-center gap-2">
+                                    <Zap size={14} />
+                                    AI Insight: Based on your ${stats.efficiencyScore}% efficiency, we've optimized your load for peak hours.
+                                </p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="h-[300px] flex flex-col items-center justify-center text-center">
+                            <Brain size={48} className="text-slate-200 dark:text-slate-800 mb-4" />
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Your AI Roadmap is Ready</h3>
+                            <p className="text-sm text-slate-500 max-w-xs mt-2">Generate a personalized 7-day plan based on your current modules, tasks, and study habits.</p>
+                            <button
+                                onClick={fetchRoadmap}
+                                className="mt-6 px-8 py-3 bg-gradient-to-r from-primary-600 to-purple-600 text-white rounded-2xl font-bold shadow-xl shadow-primary-500/20 hover:scale-105 transition-all active:scale-95"
+                            >
+                                Generate Roadmap
+                            </button>
+                        </div>
+                    )}
                 </Card>
 
                 {/* Focus Profile & Badges */}
