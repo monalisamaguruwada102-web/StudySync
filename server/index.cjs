@@ -14,7 +14,7 @@ const ical = require('node-ical');
 const axios = require('axios');
 const cookieParser = require('cookie-parser');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { initScheduler } = require('./scheduler_utf8.cjs');
+const { initScheduler, runDailyReports, runWeeklyTutorials, runWeeklyRetrospectives } = require('./scheduler_utf8.cjs');
 const emailService = require('./emailService.cjs');
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -2363,6 +2363,38 @@ app.use((req, res) => {
     res.status(404).send('Not Found');
 });
 
+
+// --- ADMIN GLOBAL EMAIL TRIGGER ---
+app.post('/api/admin/trigger-global-emails', authenticateToken, async (req, res) => {
+    try {
+        const authorizedEmail = 'joshuamujakari15@gmail.com';
+        if (req.user.email !== authorizedEmail) {
+            return res.status(403).json({ error: 'Unauthorized. Only joshuamujakari15 can trigger global broadcasts.' });
+        }
+
+        console.log(`🚀 Global email broadcast manually triggered by ${req.user.email}`);
+
+        // Run all report types in the background
+        runDailyReports();
+        runWeeklyTutorials();
+        runWeeklyRetrospectives();
+
+        // Also send a general restoration notification to everyone
+        const users = db.get('users') || [];
+        for (const user of users) {
+            if (user.email) {
+                emailService.sendRestorationNotification(user).catch(err => {
+                    console.error(`Error sending restoration email to ${user.email}:`, err);
+                });
+            }
+        }
+
+        res.json({ success: true, message: 'Global email distribution started in background.' });
+    } catch (error) {
+        console.error('Error triggering global emails:', error);
+        res.status(500).json({ error: 'Failed to start global email distribution.' });
+    }
+});
 
 // START SERVER
 const server = app.listen(PORT, async () => {

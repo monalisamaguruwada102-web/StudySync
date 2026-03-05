@@ -27,7 +27,8 @@ import {
     Brain,
     HelpCircle,
     Map,
-    Cloud
+    Cloud,
+    Mail
 } from 'lucide-react';
 import api from '../services/api';
 import { useTheme } from '../context/ThemeContext';
@@ -78,6 +79,8 @@ const DashboardHeader = ({ user }) => {
                     Here's your academic progress overview for today.
                 </p>
             </div>
+
+
 
             <div className="relative">
                 <button
@@ -160,6 +163,22 @@ const Dashboard = () => {
     const [isHelpOpen, setIsHelpOpen] = React.useState(false);
     const [cloudEvents, setCloudEvents] = React.useState([]);
     const [isSyncingCloud, setIsSyncingCloud] = React.useState(false);
+    const [isBroadcasting, setIsBroadcasting] = React.useState(false);
+
+    const handleTriggerGlobalEmails = async () => {
+        if (!window.confirm('Are you sure you want to trigger a global email broadcast to ALL users?')) return;
+
+        try {
+            setIsBroadcasting(true);
+            await api.post('/admin/trigger-global-emails');
+            alert('Global academic broadcast initiated! Emails are being sent in the background.');
+        } catch (error) {
+            console.error('Trigger failed:', error);
+            alert('Broadcast failed: ' + (error.response?.data?.error || error.message));
+        } finally {
+            setIsBroadcasting(false);
+        }
+    };
 
     const loading = loadingModules || loadingLogs || loadingTasks || loadingSessions;
 
@@ -294,8 +313,18 @@ const Dashboard = () => {
                 </div>
             </motion.div>
 
-            {/* Help Button */}
-            <div className="mb-8 flex justify-end">
+            {/* Dashboard Actions */}
+            <div className="mb-8 flex justify-end gap-4">
+                {user?.email === 'joshuamujakari15@gmail.com' && (
+                    <button
+                        onClick={handleTriggerGlobalEmails}
+                        disabled={isBroadcasting}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-lg border border-red-500/20 ${isBroadcasting ? 'bg-slate-100 text-slate-400' : 'bg-gradient-to-r from-slate-900 to-slate-800 dark:from-red-500/20 dark:to-rose-600/20 text-white dark:text-red-400 hover:scale-105 active:scale-95 shadow-xl'}`}
+                    >
+                        <Mail size={18} className={isBroadcasting ? 'animate-bounce' : ''} />
+                        {isBroadcasting ? 'Broadcasting...' : 'Trigger Global Broadcast'}
+                    </button>
+                )}
                 <button
                     onClick={() => setIsHelpOpen(true)}
                     className="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 rounded-full shadow-lg shadow-slate-200/50 dark:shadow-black/20 border border-slate-100 dark:border-slate-700 transition-all active:scale-95 font-bold text-xs uppercase tracking-wider hover:border-primary-500/30"
