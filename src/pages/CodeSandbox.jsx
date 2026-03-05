@@ -28,6 +28,8 @@ const CodeSandbox = () => {
     const [output, setOutput] = useState('');
     const [isRunning, setIsRunning] = useState(false);
     const [executionTime, setExecutionTime] = useState(null);
+    const [stdin, setStdin] = useState('');
+    const [isInputVisible, setIsInputVisible] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     useEffect(() => {
@@ -51,21 +53,39 @@ const CodeSandbox = () => {
             const result = await codeService.execute(
                 selectedLanguage.id,
                 selectedLanguage.version,
-                code
+                code,
+                stdin
             );
 
             const end = performance.now();
-            setExecutionTime(((end - start) / 1000).toFixed(2));
 
+            // Priority 1: Check for Compilation Errors
+            if (result.compile && result.compile.stderr) {
+                setOutput(`[COMPILATION ERROR]\n${result.compile.stderr}`);
+                setExecutionTime(null);
+                showToast('Compilation Failed', 'error');
+                return;
+            }
+
+            // Priority 2: Check for Runtime Output
             if (result.run) {
                 const stdout = result.run.stdout || '';
                 const stderr = result.run.stderr || '';
-                setOutput(stdout + (stderr ? `\n--- Errors ---\n${stderr}` : ''));
+
+                // Use Piston's provided execution time if available, otherwise fallback
+                const pTime = result.run.time ? result.run.time.toFixed(3) : ((end - start) / 1000).toFixed(2);
+                setExecutionTime(pTime);
+
+                if (stderr) {
+                    setOutput(`${stdout}\n--- RUNTIME ERROR ---\n${stderr}`);
+                } else {
+                    setOutput(stdout || '[Process finished with no output]');
+                }
 
                 if (result.run.code !== 0) {
-                    showToast(`Execution finished with exit code ${result.run.code}`, 'warning');
+                    showToast(`Finished with exit code ${result.run.code}`, 'warning');
                 } else {
-                    showToast('Code executed successfully!', 'success');
+                    showToast('Executed Successfully', 'success');
                 }
             }
         } catch (error) {
@@ -180,11 +200,35 @@ const CodeSandbox = () => {
                             <div className="absolute left-0 top-0 bottom-0 w-4 bg-slate-100/30 dark:bg-slate-800/20 border-r border-slate-200/30 dark:border-slate-800/30 pointer-events-none" />
                         </div>
 
+                        {/* Stdin / Input Section */}
+                        <div className={`transition-all duration-300 overflow-hidden ${isInputVisible ? 'h-32 opacity-100' : 'h-0 opacity-0'}`}>
+                            <div className="bg-slate-100 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 p-4">
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Standard Input (stdin)</label>
+                                    <button onClick={() => setStdin('')} className="text-slate-400 hover:text-red-500 transition-colors">
+                                        <Trash2 size={12} />
+                                    </button>
+                                </div>
+                                <textarea
+                                    value={stdin}
+                                    onChange={(e) => setStdin(e.target.value)}
+                                    className="w-full h-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-xs font-mono outline-none focus:border-primary-500 transition-all resize-none custom-scrollbar"
+                                    placeholder="Enter program input here (if your code reads from console)..."
+                                />
+                            </div>
+                        </div>
+
                         {/* Editor Footer */}
                         <div className="px-6 py-3 border-t border-slate-200 dark:border-slate-800 text-[10px] font-bold text-slate-400 flex items-center justify-between uppercase tracking-widest bg-white/30 dark:bg-slate-900/30">
                             <div className="flex items-center gap-4">
+                                <button
+                                    onClick={() => setIsInputVisible(!isInputVisible)}
+                                    className={`flex items-center gap-2 px-2 py-1 rounded-md transition-all ${isInputVisible ? 'bg-primary-500/10 text-primary-500' : 'hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                >
+                                    <Terminal size={12} />
+                                    <span>{isInputVisible ? 'Close Input' : 'Add Input (stdin)'}</span>
+                                </button>
                                 <span>Encoding: UTF-8</span>
-                                <span>Engine: Piston V2</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Zap size={10} className="text-yellow-500" />

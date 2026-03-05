@@ -14,7 +14,7 @@ const codeService = {
      * @param {string} source - The source code to execute.
      * @returns {Promise<Object>} The execution results (stdout, stderr, etc.).
      */
-    execute: async (language, version, source) => {
+    execute: async (language, version, source, stdin = '') => {
         try {
             const response = await axios.post(`${PISTON_URL}/execute`, {
                 language,
@@ -23,7 +23,8 @@ const codeService = {
                     {
                         content: source
                     }
-                ]
+                ],
+                stdin
             });
             return response.data;
         } catch (error) {
@@ -38,34 +39,50 @@ const codeService = {
     templates: {
         csharp: `using System;
 
-namespace HelloWorld
-{
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            Console.WriteLine("Hello from StudySync C# Sandbox!");
-            
-            // Try some logic
-            int a = 10;
-            int b = 20;
-            Console.WriteLine($"Sum of {a} and {b} is {a + b}");
-        }
-    }
-}`,
+// Modern C# supports top-level statements
+Console.WriteLine("Deep-check: Piston C# Runtime");
+Console.WriteLine("----------------------------");
+
+string input = "User";
+Console.WriteLine($"Hello, {input}! Current Time: {DateTime.Now}");
+
+int x = 42;
+int y = 58;
+Console.WriteLine($"Computation Test: {x} + {y} = {x + y}");
+
+/* 
+  To test stdin:
+  1. Click 'Add Input (stdin)' below.
+  2. Type your name.
+  3. Uncomment the lines below:
+*/
+
+// Console.Write("Enter your name: ");
+// string name = Console.ReadLine();
+// Console.WriteLine($"Greetings, {name}!");`,
         cpp: `#include <iostream>
-#include <vector>
 #include <string>
 
 int main() {
-    std::cout << "Hello from StudySync C++ Sandbox!" << std::endl;
+    std::cout << "--- StudySync C++ Compiler Check ---" << std::endl;
     
-    std::vector<std::string> features = {"Live Execution", "Multiple Languages", "Premium UI"};
+    std::string version = "GCC Latest";
+    std::cout << "Engine: " << version << std::endl;
     
-    std::cout << "\\nFeatures of this sandbox:" << std::endl;
-    for (const auto& feature : features) {
-        std::cout << "- " << feature << std::endl;
-    }
+    int val = 100;
+    std::cout << "Memory Allocation Check: " << &val << std::endl;
+    
+    /* 
+      To test stdin:
+      1. Click 'Add Input (stdin)' below.
+      2. Type a number.
+      3. Uncomment the lines below:
+    */
+    
+    // int num;
+    // std::cout << "Enter a number: ";
+    // std::cin >> num;
+    // std::cout << "You entered: " << num << std::endl;
     
     return 0;
 }`,
@@ -110,11 +127,11 @@ console.log(\`Top student: \${topStudent.name} with \${topStudent.score} points\
      * Language metadata for the sandbox
      */
     languages: [
-        { id: 'csharp', name: 'C#', version: '6.12.0', extension: 'cs' },
-        { id: 'cpp', name: 'C++ (GCC)', version: '10.2.0', extension: 'cpp' },
-        { id: 'python', name: 'Python 3', version: '3.10.0', extension: 'py' },
-        { id: 'javascript', name: 'JavaScript (Node)', version: '18.15.0', extension: 'js' },
-        { id: 'java', name: 'Java', version: '15.0.2', extension: 'java' }
+        { id: 'csharp', name: 'C# (Dotnet)', version: '*', extension: 'cs' },
+        { id: 'cpp', name: 'C++ (GCC)', version: '*', extension: 'cpp' },
+        { id: 'python', name: 'Python 3', version: '*', extension: 'py' },
+        { id: 'javascript', name: 'JavaScript (Node)', version: '*', extension: 'js' },
+        { id: 'java', name: 'Java', version: '*', extension: 'java' }
     ]
 };
 
