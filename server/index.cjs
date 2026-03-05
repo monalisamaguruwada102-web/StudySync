@@ -2145,19 +2145,31 @@ app.post('/api/code/execute', authenticateToken, async (req, res) => {
     const { language, version, files, stdin } = req.body;
 
     try {
+        console.log(`🔨 Proxying code execution: ${language} (version: ${version})`);
         const response = await axios.post('https://emkc.org/api/v2/piston/execute', {
             language,
             version,
             files,
             stdin
+        }, {
+            headers: {
+                'User-Agent': 'StudySync-Compiler-Bridge/1.0',
+                'Content-Type': 'application/json'
+            },
+            timeout: 15000 // 15s timeout for compilation + execution
         });
         res.json(response.data);
     } catch (error) {
-        console.error('Piston Proxy Error:', error.response?.data || error.message);
-        res.status(500).json({
-            error: 'Code execution failed via server proxy',
-            message: error.response?.data?.message || error.message,
-            details: error.response?.data
+        const status = error.response?.status || 500;
+        const errorData = error.response?.data || { message: error.message };
+
+        console.error(`❌ Piston Proxy Error (${status}):`, JSON.stringify(errorData));
+
+        res.status(status).json({
+            error: 'Execution bridge failure',
+            message: errorData.message || 'The code execution engine returned an error',
+            server_details: errorData,
+            piston_status: status
         });
     }
 });
