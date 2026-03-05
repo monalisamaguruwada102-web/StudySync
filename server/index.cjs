@@ -1496,8 +1496,6 @@ const tableMap = {
     'messages': 'messages'
 };
 
-const { runDailyReports } = require('./scheduler_utf8.cjs');
-
 app.post('/api/admin/trigger-daily-reports', authenticateToken, async (req, res) => {
     // Basic safety check
     if (req.user.email !== 'joshua@joshwebs.co.zw' && !req.user.email?.includes('admin')) {
@@ -2414,7 +2412,6 @@ const server = app.listen(PORT, async () => {
     // One-time: send daily reports 30s after startup (allows data sync to complete)
     setTimeout(async () => {
         console.log('📧 One-time startup email trigger running...');
-        const { runDailyReports } = require('./scheduler_utf8.cjs');
         try {
             await runDailyReports();
             console.log('✅ Startup email trigger completed');
