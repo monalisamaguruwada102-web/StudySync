@@ -1,22 +1,21 @@
-import axios from 'axios';
+import api from './api';
 
 /**
- * Service for executing code using the Piston API.
- * Piston is a high performance code execution engine.
+ * Service for executing code using the Piston API via an internal proxy.
+ * This avoids CORS issues on the deployed production site.
  */
-const PISTON_URL = 'https://emkc.org/api/v2/piston';
-
 const codeService = {
     /**
      * Executes the provided source code in the specified language.
-     * @param {string} language - The programming language slug (e.g., 'csharp', 'cpp', 'python').
+     * @param {string} language - The programming language slug.
      * @param {string} version - The version of the runtime to use ('*' for latest).
      * @param {string} source - The source code to execute.
-     * @returns {Promise<Object>} The execution results (stdout, stderr, etc.).
+     * @param {string} stdin - Optional standard input.
+     * @returns {Promise<Object>} The execution results.
      */
     execute: async (language, version, source, stdin = '') => {
         try {
-            const response = await axios.post(`${PISTON_URL}/execute`, {
+            const response = await api.post('/code/execute', {
                 language,
                 version,
                 files: [
@@ -29,7 +28,7 @@ const codeService = {
             return response.data;
         } catch (error) {
             console.error('Code execution error:', error);
-            throw new Error(error.response?.data?.message || 'Failed to execute code');
+            throw new Error(error.response?.data?.message || 'Failed to execute code via bridge');
         }
     },
 

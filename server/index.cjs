@@ -2140,6 +2140,28 @@ app.post('/api/ai/process', authenticateToken, async (req, res) => {
     }
 });
 
+// --- CODE EXECUTION PROXY (Piston) ---
+app.post('/api/code/execute', authenticateToken, async (req, res) => {
+    const { language, version, files, stdin } = req.body;
+
+    try {
+        const response = await axios.post('https://emkc.org/api/v2/piston/execute', {
+            language,
+            version,
+            files,
+            stdin
+        });
+        res.json(response.data);
+    } catch (error) {
+        console.error('Piston Proxy Error:', error.response?.data || error.message);
+        res.status(500).json({
+            error: 'Code execution failed via server proxy',
+            message: error.response?.data?.message || error.message,
+            details: error.response?.data
+        });
+    }
+});
+
 // --- LOCAL AI BRAIN (ChatBoat) ---
 const getLocalChatBoatResponse = (message, context = {}) => {
     const msg = message.toLowerCase();
