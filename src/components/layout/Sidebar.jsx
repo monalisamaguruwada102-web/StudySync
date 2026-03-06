@@ -11,7 +11,7 @@ import { useAuth } from '../../context/AuthContext';
 import useChat from '../../hooks/useChat';
 import { usePresence } from '../../hooks/usePresence';
 import PomodoroTimer from '../PomodoroTimer';
-import MusicPlayer from './MusicPlayer';
+import SonicStudio from './MusicPlayer';
 import { navGroups } from '../../data/navigation';
 import { NavLink } from 'react-router-dom';
 
@@ -233,7 +233,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
                 {/* Music Player & Timer (Fixed at bottom) */}
                 <div className="p-4 border-t border-slate-200/50 dark:border-slate-700/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm relative z-10 gap-2 flex flex-col">
-                    <MusicPlayer compact />
+                    <SonicStudio compact />
                     <PomodoroTimer compact />
 
                     <button

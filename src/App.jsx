@@ -38,6 +38,15 @@ const Articles = React.lazy(() => import('./pages/Articles'));
 const ArticleDetail = React.lazy(() => import('./pages/ArticleDetail'));
 const CodeSandbox = React.lazy(() => import('./pages/CodeSandbox'));
 const Leaderboard = React.lazy(() => import('./pages/Leaderboard'));
+const CommandCenter = React.lazy(() => import('./pages/CommandCenter'));
+const Marketplace = React.lazy(() => import('./pages/Marketplace'));
+const SyncRooms = React.lazy(() => import('./pages/SyncRooms'));
+const KnowledgeDuels = React.lazy(() => import('./pages/KnowledgeDuels'));
+const FocusGuardian = React.lazy(() => import('./pages/FocusGuardian'));
+const AcademyCommons = React.lazy(() => import('./pages/AcademyCommons'));
+const Vault = React.lazy(() => import('./pages/Vault'));
+const Blueprints = React.lazy(() => import('./pages/Blueprints'));
+const Portfolio = React.lazy(() => import('./pages/Portfolio'));
 
 // Loading Screen Component
 const LoadingScreen = () => (
@@ -98,6 +107,15 @@ function App() {
                       <Route path="/articles/:id" element={<ArticleDetail />} />
                       <Route path="/sandbox" element={<CodeSandbox />} />
                       <Route path="/leaderboard" element={<Leaderboard />} />
+                      <Route path="/command-center" element={<CommandCenter />} />
+                      <Route path="/marketplace" element={<Marketplace />} />
+                      <Route path="/sync-rooms" element={<SyncRooms />} />
+                      <Route path="/duels" element={<KnowledgeDuels />} />
+                      <Route path="/guardians" element={<FocusGuardian />} />
+                      <Route path="/commons" element={<AcademyCommons />} />
+                      <Route path="/vault" element={<Vault />} />
+                      <Route path="/blueprints" element={<Blueprints />} />
+                      <Route path="/portfolio" element={<Portfolio />} />
                       {/* Analytics link points to dashboard as it contains the main charts */}
                       <Route path="/analytics" element={<Dashboard />} />
                     </Route>

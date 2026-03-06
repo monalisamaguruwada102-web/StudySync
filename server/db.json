@@ -6,7 +6,7 @@
       "id": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "createdAt": "2026-01-28T00:44:45.648Z",
       "supabaseId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
-      "updatedAt": "2026-03-05T17:22:35.836Z",
+      "updatedAt": "2026-03-06T20:45:13.195Z",
       "timer_state": {
         "timeLeft": 3600,
         "isRunning": false,
@@ -17,8 +17,8 @@
       },
       "theme": "default",
       "dark_mode": false,
-      "streak": 2,
-      "level": 10,
+      "streak": 3,
+      "level": 11,
       "badges": [
         {
           "name": "Persistence",
@@ -58,7 +58,7 @@
       "supabaseId": "1769561085649",
       "tutorial_completed": false,
       "streak": 0,
-      "updatedAt": "2026-02-25T09:00:39.289Z"
+      "updatedAt": "2026-03-06T20:45:20.587Z"
     },
     {
       "id": "1738640325000",
@@ -71,7 +71,7 @@
       "supabaseId": "1738640325000",
       "tutorial_completed": false,
       "streak": 0,
-      "updatedAt": "2026-02-25T09:00:48.388Z"
+      "updatedAt": "2026-03-06T20:45:27.999Z"
     },
     {
       "id": "94b96706-33d1-4bed-bcc8-cd0c5281ea85",
@@ -93,7 +93,7 @@
         "selectedTask": null,
         "lastUpdate": 1770618621939
       },
-      "updatedAt": "2026-02-25T09:00:56.463Z",
+      "updatedAt": "2026-03-06T20:45:34.973Z",
       "supabaseId": "94b96706-33d1-4bed-bcc8-cd0c5281ea85",
       "streak": 0
     },
@@ -108,7 +108,7 @@
       "supabaseId": "2e421591-dbcb-458a-bf2c-fa5460065b64",
       "tutorial_completed": false,
       "streak": 0,
-      "updatedAt": "2026-02-25T09:01:05.465Z"
+      "updatedAt": "2026-03-06T20:45:41.541Z"
     },
     {
       "id": "37f98a6a-1fab-4ef1-9c8e-916e6a371251",
@@ -121,7 +121,7 @@
       "supabaseId": "37f98a6a-1fab-4ef1-9c8e-916e6a371251",
       "tutorial_completed": false,
       "streak": 0,
-      "updatedAt": "2026-02-25T09:01:14.275Z"
+      "updatedAt": "2026-03-06T20:45:50.072Z"
     },
     {
       "id": "97d031e6-00f7-4b26-8722-682254410b29",
@@ -134,7 +134,7 @@
       "supabaseId": "97d031e6-00f7-4b26-8722-682254410b29",
       "tutorial_completed": false,
       "streak": 0,
-      "updatedAt": "2026-02-25T09:01:23.218Z"
+      "updatedAt": "2026-03-06T20:45:57.425Z"
     },
     {
       "id": "337274c6-dcc2-427d-92a7-2108e2508c88",
@@ -149,7 +149,7 @@
       "createdAt": "2026-02-10T02:57:06.567Z",
       "tutorial_completed": false,
       "supabaseId": "337274c6-dcc2-427d-92a7-2108e2508c88",
-      "updatedAt": "2026-02-25T09:01:31.869Z",
+      "updatedAt": "2026-03-06T20:46:05.835Z",
       "streak": 0
     },
     {
@@ -163,7 +163,7 @@
       "supabaseId": "c8dfa2b4-96b3-42fc-ad3c-47a915d32eb9",
       "tutorial_completed": false,
       "streak": 0,
-      "updatedAt": "2026-02-25T09:01:39.372Z"
+      "updatedAt": "2026-03-06T20:46:13.012Z"
     },
     {
       "email": "system-test-1770773745876@example.com",
@@ -176,8 +176,417 @@
       "createdAt": "2026-02-11T01:35:50.208Z",
       "tutorial_completed": false,
       "supabaseId": "08367c08-3ce8-465a-82d0-13c06a89f2c6",
-      "updatedAt": "2026-02-25T09:01:47.183Z",
+      "updatedAt": "2026-03-06T20:46:20.132Z",
       "streak": 0
+    },
+    {
+      "id": "9902c275-b983-433b-9b3f-f0eada3c1d00",
+      "email": "monalisamagurawada@gmail.com",
+      "password": null,
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-03-06T20:44:36.702Z",
+      "name": "monalisamagurawada",
+      "supabaseId": "9902c275-b983-433b-9b3f-f0eada3c1d00",
+      "newlyRegistered": true,
+      "updatedAt": "2026-03-06T20:46:27.159Z",
+      "tutorialCompleted": false,
+      "darkMode": false,
+      "theme": "default",
+      "timerState": null,
+      "lastSeenAt": "2026-02-12T20:59:13.111217+00:00",
+      "streak": 0,
+      "settings": {},
+      "tutorial_completed": false
+    },
+    {
+      "id": "b887a328-07d6-4388-b59c-084389b1159f",
+      "email": "charambatanakakirsty@gmail.com",
+      "password": null,
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-03-06T20:44:36.702Z",
+      "name": "charambatanakakirsty",
+      "supabaseId": "b887a328-07d6-4388-b59c-084389b1159f",
+      "newlyRegistered": true,
+      "updatedAt": "2026-03-06T20:46:35.602Z",
+      "tutorialCompleted": false,
+      "darkMode": false,
+      "theme": "default",
+      "timerState": null,
+      "lastSeenAt": "2026-02-12T20:59:13.111217+00:00",
+      "streak": 0,
+      "settings": {},
+      "tutorial_completed": false
+    },
+    {
+      "id": "ccbca461-1408-4e8a-bd5c-24120e79cfc2",
+      "email": "tadiwa18choruwa@gmail.com",
+      "password": null,
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-03-06T20:44:36.702Z",
+      "name": "tadiwa18choruwa",
+      "supabaseId": "ccbca461-1408-4e8a-bd5c-24120e79cfc2",
+      "newlyRegistered": true,
+      "updatedAt": "2026-03-06T20:46:42.991Z",
+      "tutorialCompleted": false,
+      "darkMode": false,
+      "theme": "default",
+      "timerState": null,
+      "lastSeenAt": "2026-02-12T20:59:13.111217+00:00",
+      "streak": 0,
+      "settings": {},
+      "tutorial_completed": false
+    },
+    {
+      "id": "5c255f8a-7308-4778-a581-94ded46270c5",
+      "email": "craigmutsawashe2004@gmail.com",
+      "password": null,
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-03-06T20:44:36.702Z",
+      "name": "craigmutsawashe2004",
+      "supabaseId": "5c255f8a-7308-4778-a581-94ded46270c5",
+      "newlyRegistered": true,
+      "updatedAt": "2026-03-06T20:46:50.179Z",
+      "tutorialCompleted": false,
+      "darkMode": false,
+      "theme": "default",
+      "timerState": null,
+      "lastSeenAt": "2026-02-12T20:59:13.111217+00:00",
+      "streak": 0,
+      "settings": {},
+      "tutorial_completed": false
+    },
+    {
+      "id": "e2f9cb16-9974-4d60-9b3e-c5ac6405d593",
+      "email": "imurdaddytojif@gmail.com",
+      "password": null,
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-03-06T20:44:36.702Z",
+      "name": "imurdaddytojif",
+      "supabaseId": "e2f9cb16-9974-4d60-9b3e-c5ac6405d593",
+      "newlyRegistered": true,
+      "updatedAt": "2026-03-06T20:46:57.110Z",
+      "tutorialCompleted": false,
+      "darkMode": false,
+      "theme": "default",
+      "timerState": null,
+      "lastSeenAt": "2026-02-13T11:10:23.722893+00:00",
+      "streak": 0,
+      "settings": {},
+      "tutorial_completed": false
+    },
+    {
+      "id": "928b1fb8-928f-4739-88ef-4c956c13dabe",
+      "email": "keithnyaningwe19@gmail.com",
+      "password": null,
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-03-06T20:44:36.702Z",
+      "name": "keithnyaningwe19",
+      "supabaseId": "928b1fb8-928f-4739-88ef-4c956c13dabe",
+      "newlyRegistered": true,
+      "updatedAt": "2026-03-06T20:47:05.077Z",
+      "tutorialCompleted": false,
+      "darkMode": false,
+      "theme": "default",
+      "timerState": null,
+      "lastSeenAt": "2026-02-12T20:59:13.111217+00:00",
+      "streak": 0,
+      "settings": {},
+      "tutorial_completed": false
+    },
+    {
+      "id": "1eb558ac-6ca1-4ed5-97c7-6e83577a5613",
+      "email": "mawirejozey@gmail.com",
+      "password": null,
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-03-06T20:44:36.702Z",
+      "name": "mawirejozey",
+      "supabaseId": "1eb558ac-6ca1-4ed5-97c7-6e83577a5613",
+      "newlyRegistered": true,
+      "updatedAt": "2026-03-06T20:47:13.067Z",
+      "tutorialCompleted": false,
+      "darkMode": false,
+      "theme": "default",
+      "timerState": null,
+      "lastSeenAt": "2026-02-12T20:59:13.111217+00:00",
+      "streak": 0,
+      "settings": {},
+      "tutorial_completed": false
+    },
+    {
+      "id": "e7291610-fcde-4d2a-82a9-cf47375dbc26",
+      "email": "awtrinix@gmail.com",
+      "password": null,
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-03-06T20:44:36.702Z",
+      "name": "awtrinix",
+      "supabaseId": "e7291610-fcde-4d2a-82a9-cf47375dbc26",
+      "newlyRegistered": true,
+      "updatedAt": "2026-03-06T20:47:20.316Z",
+      "tutorialCompleted": false,
+      "darkMode": false,
+      "theme": "default",
+      "timerState": null,
+      "lastSeenAt": "2026-02-13T11:30:41.155767+00:00",
+      "streak": 0,
+      "settings": {},
+      "tutorial_completed": false
+    },
+    {
+      "id": "25da36b0-92a0-4364-84f9-a1f7b248e6df",
+      "email": "nyakudyafarai6@gmail.com",
+      "password": null,
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-03-06T20:44:36.702Z",
+      "name": "nyakudyafarai6",
+      "supabaseId": "25da36b0-92a0-4364-84f9-a1f7b248e6df",
+      "newlyRegistered": true,
+      "updatedAt": "2026-03-06T20:47:27.655Z",
+      "tutorialCompleted": false,
+      "darkMode": false,
+      "theme": "default",
+      "timerState": null,
+      "lastSeenAt": "2026-02-12T20:59:13.111217+00:00",
+      "streak": 0,
+      "settings": {},
+      "tutorial_completed": false
+    },
+    {
+      "id": "4dbd2ac5-3f3a-4cc1-b198-4012b917cace",
+      "email": "chinganduransom@gmail.com",
+      "password": null,
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-03-06T20:44:36.702Z",
+      "name": "chinganduransom",
+      "supabaseId": "4dbd2ac5-3f3a-4cc1-b198-4012b917cace",
+      "newlyRegistered": true,
+      "updatedAt": "2026-03-06T20:47:35.335Z",
+      "tutorialCompleted": false,
+      "darkMode": false,
+      "theme": "default",
+      "timerState": null,
+      "lastSeenAt": "2026-02-12T21:09:32.158146+00:00",
+      "streak": 0,
+      "settings": {},
+      "tutorial_completed": false
+    },
+    {
+      "id": "8d47c94d-e9d4-4f4e-9c64-f066e9d1cc14",
+      "email": "heymishmalunga79@gmail.com",
+      "password": null,
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-03-06T20:44:36.702Z",
+      "name": "heymishmalunga79",
+      "supabaseId": "8d47c94d-e9d4-4f4e-9c64-f066e9d1cc14",
+      "newlyRegistered": true,
+      "updatedAt": "2026-03-06T20:47:42.909Z",
+      "tutorialCompleted": false,
+      "darkMode": false,
+      "theme": "default",
+      "timerState": null,
+      "lastSeenAt": "2026-02-12T21:11:55.949622+00:00",
+      "streak": 0,
+      "settings": {},
+      "tutorial_completed": false
+    },
+    {
+      "id": "d80b48b4-5026-4140-88a0-703daa3a9c28",
+      "email": "bblessedseann@gmail.com",
+      "password": null,
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-03-06T20:44:36.702Z",
+      "name": "bblessedseann",
+      "supabaseId": "d80b48b4-5026-4140-88a0-703daa3a9c28",
+      "newlyRegistered": true,
+      "updatedAt": "2026-03-06T20:47:50.277Z",
+      "tutorialCompleted": false,
+      "darkMode": false,
+      "theme": "default",
+      "timerState": null,
+      "lastSeenAt": "2026-02-12T20:59:13.111217+00:00",
+      "streak": 0,
+      "settings": {},
+      "tutorial_completed": false
+    },
+    {
+      "id": "af2f088a-3cf9-4772-8901-572bdf4b88cd",
+      "email": "matssatatenda@gmail.com",
+      "password": null,
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-03-06T20:44:36.702Z",
+      "name": "matssatatenda",
+      "supabaseId": "af2f088a-3cf9-4772-8901-572bdf4b88cd",
+      "newlyRegistered": true,
+      "updatedAt": "2026-03-06T20:47:57.534Z",
+      "tutorialCompleted": false,
+      "darkMode": false,
+      "theme": "default",
+      "timerState": null,
+      "lastSeenAt": "2026-02-12T20:59:13.111217+00:00",
+      "streak": 0,
+      "settings": {},
+      "tutorial_completed": false
+    },
+    {
+      "id": "644ebcee-00cf-472a-9ab3-aba33fd4ee85",
+      "email": "matimbeshaun@gmail.com",
+      "password": null,
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-03-06T20:44:36.702Z",
+      "name": "matimbeshaun",
+      "supabaseId": "644ebcee-00cf-472a-9ab3-aba33fd4ee85",
+      "newlyRegistered": true,
+      "updatedAt": "2026-03-06T20:48:05.217Z",
+      "tutorialCompleted": false,
+      "darkMode": false,
+      "theme": "default",
+      "timerState": null,
+      "lastSeenAt": "2026-02-12T20:59:13.111217+00:00",
+      "streak": 0,
+      "settings": {},
+      "tutorial_completed": false
+    },
+    {
+      "id": "f3cc7e82-9156-4dc1-a95b-fb17171419fd",
+      "email": "blesse10dchiwaye@gmail.com",
+      "password": null,
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-03-06T20:44:36.702Z",
+      "name": "blesse10dchiwaye",
+      "supabaseId": "f3cc7e82-9156-4dc1-a95b-fb17171419fd",
+      "newlyRegistered": true,
+      "updatedAt": "2026-03-06T20:48:12.713Z",
+      "tutorialCompleted": false,
+      "darkMode": false,
+      "theme": "default",
+      "timerState": null,
+      "lastSeenAt": "2026-02-13T03:45:40.184127+00:00",
+      "streak": 0,
+      "settings": {},
+      "tutorial_completed": false
+    },
+    {
+      "id": "c10d10a6-415f-4ac5-b82c-70a42349e5cb",
+      "email": "tagzdropx@gmail.com",
+      "password": null,
+      "xp": 30,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-03-06T20:44:36.702Z",
+      "name": "tagzdropx",
+      "supabaseId": "c10d10a6-415f-4ac5-b82c-70a42349e5cb",
+      "newlyRegistered": true,
+      "updatedAt": "2026-03-06T20:48:20.115Z",
+      "tutorialCompleted": false,
+      "darkMode": false,
+      "theme": "default",
+      "timerState": null,
+      "lastSeenAt": "2026-02-14T17:26:12.029054+00:00",
+      "streak": 0,
+      "settings": {},
+      "tutorial_completed": false
+    },
+    {
+      "id": "5dcfda7f-82e5-4e4f-84ab-d85b3ffa4325",
+      "email": "theophiluschinopwa78@gmail.com",
+      "password": null,
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-03-06T20:44:36.702Z",
+      "name": "theophiluschinopwa78",
+      "supabaseId": "5dcfda7f-82e5-4e4f-84ab-d85b3ffa4325",
+      "newlyRegistered": true,
+      "updatedAt": "2026-03-06T20:48:27.358Z",
+      "tutorialCompleted": false,
+      "darkMode": false,
+      "theme": "default",
+      "timerState": null,
+      "lastSeenAt": "2026-03-04T20:17:39.164791+00:00",
+      "streak": 0,
+      "settings": {},
+      "tutorial_completed": false
+    },
+    {
+      "id": "3815cad6-958d-41a7-97f3-03730096af24",
+      "email": "maguruwadamonalisa@gmail.com",
+      "password": null,
+      "xp": 5641,
+      "level": 6,
+      "badges": [
+        {
+          "icon": "Target",
+          "name": "Scholar",
+          "color": "gold",
+          "description": "Studied for over 10 hours"
+        },
+        {
+          "icon": "Zap",
+          "name": "Early Bird",
+          "color": "primary"
+        }
+      ],
+      "createdAt": "2026-03-06T20:44:36.702Z",
+      "name": "maguruwadamonalisa",
+      "supabaseId": "3815cad6-958d-41a7-97f3-03730096af24",
+      "newlyRegistered": true,
+      "updatedAt": "2026-03-06T20:48:34.581Z",
+      "tutorialCompleted": false,
+      "darkMode": false,
+      "theme": "default",
+      "timerState": {
+        "isBreak": false,
+        "timeLeft": 3600,
+        "isRunning": false,
+        "lastUpdate": 1772879624699,
+        "selectedTask": {
+          "id": "9579a621-7630-4a7e-a46c-98c0e1426317",
+          "title": "SECURITY",
+          "status": "In Progress",
+          "userId": "3815cad6-958d-41a7-97f3-03730096af24",
+          "dueDate": "2026-03-07T00:00:00+00:00",
+          "moduleId": "b85660b3-7849-47d1-a384-3421a40b1f7b",
+          "priority": "Medium",
+          "subtasks": [],
+          "createdAt": "2026-03-07T09:06:56.34+00:00",
+          "updatedAt": "2026-03-07T09:07:03.195+00:00",
+          "description": ""
+        },
+        "sessionsCompleted": 8
+      },
+      "lastSeenAt": "2026-03-07T10:30:14.896+00:00",
+      "streak": 1,
+      "settings": {},
+      "tutorial_completed": false
     }
   ],
   "modules": [
@@ -249,7 +658,8 @@
       "total_hours_studied": 0,
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "createdAt": "2026-01-29T19:58:18.602842+00:00",
-      "updatedAt": "2026-02-15T08:12:38.002+00:00"
+      "updatedAt": "2026-03-06T20:44:37.698Z",
+      "supabaseId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3"
     },
     {
       "id": "2d9fa95b-6ac5-47a7-8ccf-94006949e057",
@@ -259,7 +669,8 @@
       "total_hours_studied": 1,
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "createdAt": "2026-01-29T20:08:51.896907+00:00",
-      "updatedAt": "2026-02-15T19:59:49.063+00:00"
+      "updatedAt": "2026-03-06T20:44:37.698Z",
+      "supabaseId": "2d9fa95b-6ac5-47a7-8ccf-94006949e057"
     },
     {
       "id": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
@@ -269,7 +680,8 @@
       "total_hours_studied": 1,
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "createdAt": "2026-01-29T19:52:11.826717+00:00",
-      "updatedAt": "2026-02-25T13:09:30.05+00:00"
+      "updatedAt": "2026-03-06T20:44:37.698Z",
+      "supabaseId": "803730ec-ee55-4450-a9b6-f36c0a0d511e"
     },
     {
       "id": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
@@ -279,7 +691,8 @@
       "total_hours_studied": 4,
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "createdAt": "2026-01-29T21:38:43.914103+00:00",
-      "updatedAt": "2026-03-05T11:31:39.024+00:00"
+      "updatedAt": "2026-03-06T20:44:37.698Z",
+      "supabaseId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099"
     },
     {
       "id": "f52b0bbb-80e5-4fcd-87ea-5f10e5779dc3",
@@ -289,7 +702,8 @@
       "total_hours_studied": 1,
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "createdAt": "2026-01-29T20:03:08.471326+00:00",
-      "updatedAt": "2026-03-05T12:44:59.238+00:00"
+      "updatedAt": "2026-03-06T20:44:37.698Z",
+      "supabaseId": "f52b0bbb-80e5-4fcd-87ea-5f10e5779dc3"
     },
     {
       "id": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
@@ -299,7 +713,96 @@
       "total_hours_studied": 0,
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "createdAt": "2026-01-29T20:02:24.706128+00:00",
-      "updatedAt": "2026-02-15T08:12:27.592+00:00"
+      "updatedAt": "2026-03-06T20:44:37.698Z",
+      "supabaseId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9"
+    },
+    {
+      "id": "5b416a82-3179-4661-9c3a-f598619aac35",
+      "name": "COMPUTER NETWORK",
+      "description": "HARDEST",
+      "targetHours": 900,
+      "createdAt": "2026-03-06T20:44:37.698Z",
+      "updatedAt": "2026-03-07T09:04:12.785+00:00",
+      "userId": "3815cad6-958d-41a7-97f3-03730096af24",
+      "totalHoursStudied": 1,
+      "supabaseId": "5b416a82-3179-4661-9c3a-f598619aac35"
+    },
+    {
+      "id": "9e42d38d-4fe0-46b1-b460-e72c57cfb99c",
+      "name": "",
+      "description": "",
+      "targetHours": 0,
+      "createdAt": "2026-03-06T20:44:37.698Z",
+      "updatedAt": "2026-02-13T03:48:22.895+00:00",
+      "userId": "f3cc7e82-9156-4dc1-a95b-fb17171419fd",
+      "totalHoursStudied": 0,
+      "supabaseId": "9e42d38d-4fe0-46b1-b460-e72c57cfb99c"
+    },
+    {
+      "id": "bf1bdbf4-d06a-4ff4-bcbc-df8667fee0c5",
+      "name": "",
+      "description": "C++",
+      "targetHours": 180,
+      "createdAt": "2026-03-06T20:44:37.698Z",
+      "updatedAt": "2026-02-13T03:49:22.31+00:00",
+      "userId": "f3cc7e82-9156-4dc1-a95b-fb17171419fd",
+      "totalHoursStudied": 156,
+      "supabaseId": "bf1bdbf4-d06a-4ff4-bcbc-df8667fee0c5"
+    },
+    {
+      "id": "e87d2d32-ee76-4b87-966d-78cef2c0e299",
+      "name": "sample testing",
+      "description": "",
+      "targetHours": 2160,
+      "createdAt": "2026-03-06T20:44:37.698Z",
+      "updatedAt": "2026-02-13T18:26:48.221+00:00",
+      "userId": "1738640325000",
+      "totalHoursStudied": 0,
+      "supabaseId": "e87d2d32-ee76-4b87-966d-78cef2c0e299"
+    },
+    {
+      "id": "38e62b7a-7d79-4281-884d-dd69a837a54e",
+      "name": "safety and health",
+      "description": "",
+      "targetHours": 1000,
+      "createdAt": "2026-03-06T20:44:37.698Z",
+      "updatedAt": "2026-02-13T18:27:33.214+00:00",
+      "userId": "1738640325000",
+      "totalHoursStudied": 0,
+      "supabaseId": "38e62b7a-7d79-4281-884d-dd69a837a54e"
+    },
+    {
+      "id": "8bae2754-6eb1-44d5-9972-43dad5bf9c20",
+      "name": "NASS",
+      "description": "",
+      "targetHours": 1000,
+      "createdAt": "2026-03-06T20:44:37.698Z",
+      "updatedAt": "2026-02-13T18:27:59.517+00:00",
+      "userId": "1738640325000",
+      "totalHoursStudied": 0,
+      "supabaseId": "8bae2754-6eb1-44d5-9972-43dad5bf9c20"
+    },
+    {
+      "id": "2d6f694f-48fa-4b96-8e30-412e7f8e3302",
+      "name": "COMMUNICATION AND COMPUTER APPLICATION",
+      "description": "",
+      "targetHours": 1000,
+      "createdAt": "2026-03-06T20:44:37.698Z",
+      "updatedAt": "2026-02-13T18:28:46.266+00:00",
+      "userId": "1738640325000",
+      "totalHoursStudied": 0,
+      "supabaseId": "2d6f694f-48fa-4b96-8e30-412e7f8e3302"
+    },
+    {
+      "id": "27c0b9b7-060b-4f1b-893a-d8e1eb08087d",
+      "name": "powere train",
+      "description": "moderate",
+      "targetHours": 700,
+      "createdAt": "2026-03-06T20:44:37.698Z",
+      "updatedAt": "2026-02-14T17:27:29.221+00:00",
+      "userId": "c10d10a6-415f-4ac5-b82c-70a42349e5cb",
+      "totalHoursStudied": 0,
+      "supabaseId": "27c0b9b7-060b-4f1b-893a-d8e1eb08087d"
     }
   ],
   "studyLogs": [
@@ -347,7 +850,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
       "createdAt": "2026-02-14T18:55:19.105+00:00",
-      "updatedAt": "2026-02-14T18:55:19.105+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "9a2000e4-8794-478c-9f00-e3769cfc0ddd"
     },
     {
       "id": "32ffc0eb-e91c-4744-a88a-2d5321e976d0",
@@ -360,7 +864,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
       "createdAt": "2026-02-01T17:47:57.948041+00:00",
-      "updatedAt": "2026-02-06T20:08:33.774+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "32ffc0eb-e91c-4744-a88a-2d5321e976d0"
     },
     {
       "id": "e721ee1a-6ca2-4069-8922-29539d18ceb9",
@@ -373,7 +878,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "createdAt": "2026-02-01T18:12:21.803357+00:00",
-      "updatedAt": "2026-02-06T20:08:35.61+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "e721ee1a-6ca2-4069-8922-29539d18ceb9"
     },
     {
       "id": "671f860a-ba75-45e8-9f7a-bb412b151a34",
@@ -386,7 +892,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
       "createdAt": "2026-02-06T17:20:53.788+00:00",
-      "updatedAt": "2026-02-09T15:51:53.688516+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "671f860a-ba75-45e8-9f7a-bb412b151a34"
     },
     {
       "id": "266313e0-81a8-4cfe-b53a-95b017a6a855",
@@ -399,7 +906,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
       "createdAt": "2026-02-10T21:13:37.828+00:00",
-      "updatedAt": "2026-02-10T21:13:37.828+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "266313e0-81a8-4cfe-b53a-95b017a6a855"
     },
     {
       "id": "5beb2e2b-49e2-4374-89a1-3a092cfcf265",
@@ -412,7 +920,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
       "createdAt": "2026-02-02T22:19:10.96805+00:00",
-      "updatedAt": "2026-02-06T20:08:37.898+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "5beb2e2b-49e2-4374-89a1-3a092cfcf265"
     },
     {
       "id": "91b32b75-b004-4bb1-8a7f-87891094c9d7",
@@ -425,7 +934,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
       "createdAt": "2026-02-18T13:18:18.805+00:00",
-      "updatedAt": "2026-02-18T13:18:18.805+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "91b32b75-b004-4bb1-8a7f-87891094c9d7"
     },
     {
       "id": "19a3839b-38cf-43de-a2ae-b80efde54edd",
@@ -438,7 +948,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
       "createdAt": "2026-02-03T17:50:50.06458+00:00",
-      "updatedAt": "2026-02-06T20:08:38.833+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "19a3839b-38cf-43de-a2ae-b80efde54edd"
     },
     {
       "id": "64684841-c638-4c35-9089-0e4f18213ada",
@@ -451,7 +962,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
       "createdAt": "2026-02-18T16:56:07.783+00:00",
-      "updatedAt": "2026-02-18T16:56:07.783+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "64684841-c638-4c35-9089-0e4f18213ada"
     },
     {
       "id": "edcdff99-ce9d-4424-a1b8-23865ab19dfa",
@@ -464,7 +976,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "createdAt": "2026-02-04T19:47:34.188613+00:00",
-      "updatedAt": "2026-02-06T20:08:39.423+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "edcdff99-ce9d-4424-a1b8-23865ab19dfa"
     },
     {
       "id": "55aad989-0c3b-46ce-b71d-fa4463e32b97",
@@ -477,7 +990,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "createdAt": "2026-02-04T19:47:41.528757+00:00",
-      "updatedAt": "2026-02-06T20:08:39.817+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "55aad989-0c3b-46ce-b71d-fa4463e32b97"
     },
     {
       "id": "52c5b54c-6c63-420b-a24c-2db831dfa027",
@@ -490,7 +1004,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "f52b0bbb-80e5-4fcd-87ea-5f10e5779dc3",
       "createdAt": "2026-02-04T22:39:27.997517+00:00",
-      "updatedAt": "2026-02-06T20:08:40.126+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "52c5b54c-6c63-420b-a24c-2db831dfa027"
     },
     {
       "id": "1d1a5ca7-6773-4fce-9a44-dc83e7cd84ad",
@@ -503,7 +1018,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
       "createdAt": "2026-02-10T02:56:50.716+00:00",
-      "updatedAt": "2026-02-09T15:51:53.688516+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "1d1a5ca7-6773-4fce-9a44-dc83e7cd84ad"
     },
     {
       "id": "dae1739f-b599-46f5-aa00-60246131f5f3",
@@ -516,7 +1032,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-02-15T11:02:59.093+00:00",
-      "updatedAt": "2026-02-15T11:02:59.093+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "dae1739f-b599-46f5-aa00-60246131f5f3"
     },
     {
       "id": "3b39972b-bfda-4593-8980-36dcd5775537",
@@ -529,7 +1046,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "2d9fa95b-6ac5-47a7-8ccf-94006949e057",
       "createdAt": "2026-02-15T20:00:27.002+00:00",
-      "updatedAt": "2026-02-15T20:00:27.002+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "3b39972b-bfda-4593-8980-36dcd5775537"
     },
     {
       "id": "c1ef5d6b-397e-42a7-9724-11431201a8e5",
@@ -542,7 +1060,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "createdAt": "2026-02-17T10:45:39.991+00:00",
-      "updatedAt": "2026-02-17T10:45:39.991+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "c1ef5d6b-397e-42a7-9724-11431201a8e5"
     },
     {
       "id": "da761fd0-6f8d-4a45-89f0-75233d7657fc",
@@ -555,7 +1074,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "createdAt": "2026-02-10T02:58:40.875+00:00",
-      "updatedAt": "2026-02-09T15:51:53.688516+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "da761fd0-6f8d-4a45-89f0-75233d7657fc"
     },
     {
       "id": "b86b8caa-a33c-4884-af94-a7dff5dea5c3",
@@ -568,7 +1088,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
       "createdAt": "2026-02-11T14:36:24.996+00:00",
-      "updatedAt": "2026-02-11T14:36:24.995+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "b86b8caa-a33c-4884-af94-a7dff5dea5c3"
     },
     {
       "id": "5a453aa0-99b6-4f0e-bd4b-9e45ff921d14",
@@ -581,7 +1102,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "createdAt": "2026-02-11T21:18:33.528+00:00",
-      "updatedAt": "2026-02-11T21:18:33.527+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "5a453aa0-99b6-4f0e-bd4b-9e45ff921d14"
     },
     {
       "id": "a68bb296-8244-46f1-8249-891d84420dd6",
@@ -594,7 +1116,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
       "createdAt": "2026-02-12T10:34:07.174+00:00",
-      "updatedAt": "2026-02-12T10:34:07.173+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "a68bb296-8244-46f1-8249-891d84420dd6"
     },
     {
       "id": "5ee6b473-07a2-4ab5-afed-0ebd80cd2ac7",
@@ -607,7 +1130,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "2d9fa95b-6ac5-47a7-8ccf-94006949e057",
       "createdAt": "2026-02-12T10:35:04.722+00:00",
-      "updatedAt": "2026-02-12T10:35:04.721+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "5ee6b473-07a2-4ab5-afed-0ebd80cd2ac7"
     },
     {
       "id": "767aba4b-7c57-435c-95c1-126e0a1bc7da",
@@ -620,7 +1144,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "2d9fa95b-6ac5-47a7-8ccf-94006949e057",
       "createdAt": "2026-02-12T11:56:30.664+00:00",
-      "updatedAt": "2026-02-12T11:56:30.664+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "767aba4b-7c57-435c-95c1-126e0a1bc7da"
     },
     {
       "id": "f4eaabd8-763a-4927-8810-384fbf0c9713",
@@ -633,7 +1158,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-02-12T20:38:33.387+00:00",
-      "updatedAt": "2026-02-12T20:38:33.387+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "f4eaabd8-763a-4927-8810-384fbf0c9713"
     },
     {
       "id": "c82f8729-f215-4dc1-828b-67468abd0a57",
@@ -646,7 +1172,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "createdAt": "2026-02-17T17:27:32.957+00:00",
-      "updatedAt": "2026-02-17T17:27:32.957+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "c82f8729-f215-4dc1-828b-67468abd0a57"
     },
     {
       "id": "a9c4d6fa-1e2a-49d2-a8f9-b6e1c0e759cd",
@@ -659,7 +1186,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
       "createdAt": "2026-02-17T19:47:50.95+00:00",
-      "updatedAt": "2026-02-17T19:47:50.949+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "a9c4d6fa-1e2a-49d2-a8f9-b6e1c0e759cd"
     },
     {
       "id": "aaab1630-0c05-4634-8568-c666cacdd37a",
@@ -672,7 +1200,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "createdAt": "2026-02-24T21:36:10.636+00:00",
-      "updatedAt": "2026-02-24T21:36:10.635+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "aaab1630-0c05-4634-8568-c666cacdd37a"
     },
     {
       "id": "e1b324d8-7d02-4001-a3a0-572277909373",
@@ -685,7 +1214,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-02-25T12:45:08.207+00:00",
-      "updatedAt": "2026-02-25T12:45:08.207+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "e1b324d8-7d02-4001-a3a0-572277909373"
     },
     {
       "id": "6461327f-82f9-4080-8786-1e2d841218da",
@@ -698,7 +1228,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "createdAt": "2026-02-25T14:16:06.047+00:00",
-      "updatedAt": "2026-02-25T14:16:06.046+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "6461327f-82f9-4080-8786-1e2d841218da"
     },
     {
       "id": "9c872031-ab1e-47a1-a364-fd727886822c",
@@ -711,7 +1242,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "createdAt": "2026-02-25T14:36:34.899+00:00",
-      "updatedAt": "2026-02-25T14:36:34.898+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "9c872031-ab1e-47a1-a364-fd727886822c"
     },
     {
       "id": "38f9dddc-dd8c-440c-8eb0-21d3d7aeb2ab",
@@ -724,7 +1256,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-02-25T20:29:11.144+00:00",
-      "updatedAt": "2026-02-25T20:29:11.144+00:00"
+      "updatedAt": "2026-03-06T20:44:37.032Z",
+      "supabaseId": "38f9dddc-dd8c-440c-8eb0-21d3d7aeb2ab"
     },
     {
       "id": "129756aa-e07d-443a-90ee-83b24e1fe88f",
@@ -737,7 +1270,8 @@
       "task": "Performance Test",
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "createdAt": "2026-02-24T07:42:04.789+00:00",
-      "updatedAt": "2026-02-25T22:16:49.075058+00:00"
+      "updatedAt": "2026-03-06T20:44:37.033Z",
+      "supabaseId": "129756aa-e07d-443a-90ee-83b24e1fe88f"
     },
     {
       "id": "19585125-6c36-4693-8c18-5f419b79775b",
@@ -750,7 +1284,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
       "createdAt": "2026-03-01T21:34:09.133+00:00",
-      "updatedAt": "2026-03-01T21:34:09.133+00:00"
+      "updatedAt": "2026-03-06T20:44:37.033Z",
+      "supabaseId": "19585125-6c36-4693-8c18-5f419b79775b"
     },
     {
       "id": "46f84249-53d9-4820-9265-8b4042713398",
@@ -763,7 +1298,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-03-05T11:30:55.437+00:00",
-      "updatedAt": "2026-03-05T11:30:55.437+00:00"
+      "updatedAt": "2026-03-06T20:44:37.033Z",
+      "supabaseId": "46f84249-53d9-4820-9265-8b4042713398"
     },
     {
       "id": "fffd5f2e-1314-461c-98e5-f28b3939c78f",
@@ -776,7 +1312,176 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "f52b0bbb-80e5-4fcd-87ea-5f10e5779dc3",
       "createdAt": "2026-03-05T12:45:26.99+00:00",
-      "updatedAt": "2026-03-05T12:45:26.99+00:00"
+      "updatedAt": "2026-03-06T20:44:37.033Z",
+      "supabaseId": "fffd5f2e-1314-461c-98e5-f28b3939c78f"
+    },
+    {
+      "id": "1d082c80-1762-4f11-ba1d-2e996161fd8b",
+      "moduleId": "2d6f694f-48fa-4b96-8e30-412e7f8e3302",
+      "hours": 1,
+      "date": "2026-02-14",
+      "activity": null,
+      "createdAt": "2026-03-06T20:44:37.032Z",
+      "userId": "1738640325000",
+      "updatedAt": "2026-02-14T19:54:04.324+00:00",
+      "topic": "comms",
+      "duration": null,
+      "task": null,
+      "supabaseId": "1d082c80-1762-4f11-ba1d-2e996161fd8b"
+    },
+    {
+      "id": "565158b9-8a16-4a82-8f1d-4f9dafc97d13",
+      "moduleId": "54d3897e-f954-4942-95cf-3e1c6059f95a",
+      "hours": 0.9997222222222222,
+      "date": "2026-02-14",
+      "activity": null,
+      "createdAt": "2026-03-06T20:44:37.032Z",
+      "userId": "1738640325000",
+      "updatedAt": "2026-02-14T22:12:51.872+00:00",
+      "topic": "Pomodoro Focus Session",
+      "duration": null,
+      "task": null,
+      "supabaseId": "565158b9-8a16-4a82-8f1d-4f9dafc97d13"
+    },
+    {
+      "id": "fbf03525-45a0-436f-a51d-032d5e67d91f",
+      "moduleId": "8bae2754-6eb1-44d5-9972-43dad5bf9c20",
+      "hours": 1,
+      "date": "2026-02-19",
+      "activity": null,
+      "createdAt": "2026-03-06T20:44:37.032Z",
+      "userId": "1738640325000",
+      "updatedAt": "2026-02-19T11:00:12.352+00:00",
+      "topic": "",
+      "duration": null,
+      "task": null,
+      "supabaseId": "fbf03525-45a0-436f-a51d-032d5e67d91f"
+    },
+    {
+      "id": "d8078a44-e89d-479e-b9a8-5266f29457b1",
+      "moduleId": "54d3897e-f954-4942-95cf-3e1c6059f95a",
+      "hours": 1,
+      "date": "2026-02-13",
+      "activity": null,
+      "createdAt": "2026-03-06T20:44:37.032Z",
+      "userId": "1738640325000",
+      "updatedAt": "2026-02-13T15:10:16.246+00:00",
+      "topic": "Lo  1",
+      "duration": null,
+      "task": null,
+      "supabaseId": "d8078a44-e89d-479e-b9a8-5266f29457b1"
+    },
+    {
+      "id": "daf07bba-a70e-41b5-b9b8-743d1b78b31c",
+      "moduleId": "27c0b9b7-060b-4f1b-893a-d8e1eb08087d",
+      "hours": 1,
+      "date": "2026-02-14",
+      "activity": null,
+      "createdAt": "2026-03-06T20:44:37.032Z",
+      "userId": "c10d10a6-415f-4ac5-b82c-70a42349e5cb",
+      "updatedAt": "2026-02-14T17:35:37.438+00:00",
+      "topic": "reading ",
+      "duration": null,
+      "task": null,
+      "supabaseId": "daf07bba-a70e-41b5-b9b8-743d1b78b31c"
+    },
+    {
+      "id": "a0d6108a-c5cf-4048-b969-a09161bf20ff",
+      "moduleId": "d4e65677-e3b6-4443-b7e0-c073f9dc8e3a",
+      "hours": 1,
+      "date": "2026-02-18",
+      "activity": null,
+      "createdAt": "2026-03-06T20:44:37.032Z",
+      "userId": "3815cad6-958d-41a7-97f3-03730096af24",
+      "updatedAt": "2026-02-17T22:18:48.034+00:00",
+      "topic": "Hardware Specifications",
+      "duration": null,
+      "task": null,
+      "supabaseId": "a0d6108a-c5cf-4048-b969-a09161bf20ff"
+    },
+    {
+      "id": "931f754d-68d6-40da-939b-75200f9053d1",
+      "moduleId": "8bae2754-6eb1-44d5-9972-43dad5bf9c20",
+      "hours": 1,
+      "date": "2026-02-19",
+      "activity": null,
+      "createdAt": "2026-03-06T20:44:37.032Z",
+      "userId": "1738640325000",
+      "updatedAt": "2026-02-19T12:29:44.781+00:00",
+      "topic": "",
+      "duration": null,
+      "task": null,
+      "supabaseId": "931f754d-68d6-40da-939b-75200f9053d1"
+    },
+    {
+      "id": "703ea62d-6f86-472a-b70d-b82fb5adbff4",
+      "moduleId": "2d9fa95b-6ac5-47a7-8ccf-94006949e057",
+      "hours": 1,
+      "date": "2026-03-05",
+      "activity": null,
+      "createdAt": "2026-03-06T20:44:37.033Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "updatedAt": "2026-03-06T10:43:59.476+00:00",
+      "topic": "OUTCOME 2",
+      "duration": null,
+      "task": null,
+      "supabaseId": "703ea62d-6f86-472a-b70d-b82fb5adbff4"
+    },
+    {
+      "id": "3d2c3508-7c48-48ec-8043-22366bf94c78",
+      "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
+      "hours": 1,
+      "date": "2026-03-05",
+      "activity": null,
+      "createdAt": "2026-03-06T20:44:37.033Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "updatedAt": "2026-03-06T11:56:25.703+00:00",
+      "topic": "OTCOME 1",
+      "duration": null,
+      "task": null,
+      "supabaseId": "3d2c3508-7c48-48ec-8043-22366bf94c78"
+    },
+    {
+      "id": "b50095bf-35b1-47f7-8b90-2b7265bca708",
+      "moduleId": "f52b0bbb-80e5-4fcd-87ea-5f10e5779dc3",
+      "hours": 1,
+      "date": "2026-03-06",
+      "activity": null,
+      "createdAt": "2026-03-06T20:44:37.033Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "updatedAt": "2026-03-07T00:02:52.4+00:00",
+      "topic": "OUTCOME 1TO1.3",
+      "duration": null,
+      "task": null,
+      "supabaseId": "b50095bf-35b1-47f7-8b90-2b7265bca708"
+    },
+    {
+      "id": "585cdff7-b0fa-445e-8908-04a150347f31",
+      "moduleId": "5b416a82-3179-4661-9c3a-f598619aac35",
+      "hours": 0.4,
+      "date": "2026-03-07",
+      "activity": null,
+      "createdAt": "2026-03-06T20:44:37.033Z",
+      "userId": "3815cad6-958d-41a7-97f3-03730096af24",
+      "updatedAt": "2026-03-07T09:05:34.418+00:00",
+      "topic": "Analog signals",
+      "duration": null,
+      "task": null,
+      "supabaseId": "585cdff7-b0fa-445e-8908-04a150347f31"
+    },
+    {
+      "id": "24cf1a34-6169-4be5-adec-ea889a316aa1",
+      "moduleId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
+      "hours": 0.3,
+      "date": "2026-03-06",
+      "activity": null,
+      "createdAt": "2026-03-06T20:54:39.230Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "updatedAt": "2026-03-07T10:48:13.909+00:00",
+      "topic": "QW",
+      "duration": null,
+      "task": null,
+      "supabaseId": "24cf1a34-6169-4be5-adec-ea889a316aa1"
     }
   ],
   "tasks": [
@@ -785,14 +1490,18 @@
       "status": "Pending",
       "userId": "test-user-1771372002753",
       "id": "11e3511c-730d-40c0-8bdc-8220f2e54f08",
-      "createdAt": "2026-02-17T23:46:42.778Z"
+      "createdAt": "2026-02-17T23:46:42.778Z",
+      "supabaseId": "11e3511c-730d-40c0-8bdc-8220f2e54f08",
+      "updatedAt": "2026-03-06T20:44:37.232Z"
     },
     {
       "title": "Test Task",
       "status": "Pending",
       "userId": "test-user-1771372033815",
       "id": "e46bed4a-d95e-4c80-83a0-ab73a7f58e4d",
-      "createdAt": "2026-02-17T23:47:13.825Z"
+      "createdAt": "2026-02-17T23:47:13.825Z",
+      "supabaseId": "e46bed4a-d95e-4c80-83a0-ab73a7f58e4d",
+      "updatedAt": "2026-03-06T20:44:37.232Z"
     },
     {
       "title": "Test Task",
@@ -800,7 +1509,8 @@
       "userId": "test-user-1771372076315",
       "id": "03657f2c-11be-4cbf-87c0-e8dd6f1a9749",
       "createdAt": "2026-02-17T23:47:56.616Z",
-      "updatedAt": "2026-02-17T23:47:56.905Z"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "03657f2c-11be-4cbf-87c0-e8dd6f1a9749"
     },
     {
       "id": "e05bccda-9d1c-4969-a776-9ea3dfbe815e",
@@ -813,7 +1523,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "createdAt": "2026-02-12T09:19:16.032+00:00",
-      "updatedAt": "2026-02-12T09:19:15.689+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "e05bccda-9d1c-4969-a776-9ea3dfbe815e"
     },
     {
       "id": "beb1caa8-0506-47f8-ba51-fa056785012e",
@@ -826,7 +1537,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "2d9fa95b-6ac5-47a7-8ccf-94006949e057",
       "createdAt": "2026-02-12T09:19:59.869+00:00",
-      "updatedAt": "2026-02-12T10:36:15.896+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "beb1caa8-0506-47f8-ba51-fa056785012e"
     },
     {
       "id": "5c67db51-790a-4a87-b8da-cf73bb68caf9",
@@ -839,7 +1551,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-02-15T10:00:30.685+00:00",
-      "updatedAt": "2026-02-15T11:01:43.344+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "5c67db51-790a-4a87-b8da-cf73bb68caf9"
     },
     {
       "id": "e542aff6-4e3e-475c-a22d-6fe8965f417a",
@@ -852,7 +1565,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
       "createdAt": "2026-02-14T17:31:23.448+00:00",
-      "updatedAt": "2026-02-14T18:50:12.596+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "e542aff6-4e3e-475c-a22d-6fe8965f417a"
     },
     {
       "id": "9d2c19a5-90c9-49a3-aeaa-3db1886cdc99",
@@ -865,7 +1579,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "2d9fa95b-6ac5-47a7-8ccf-94006949e057",
       "createdAt": "2026-02-24T21:18:09.962+00:00",
-      "updatedAt": "2026-02-24T21:33:58.3+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "9d2c19a5-90c9-49a3-aeaa-3db1886cdc99"
     },
     {
       "id": "e2d91bc5-f3ce-4f72-97e3-d1cb7e411db0",
@@ -878,7 +1593,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-02-14T19:08:30.444+00:00",
-      "updatedAt": "2026-02-14T20:18:29.5+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "e2d91bc5-f3ce-4f72-97e3-d1cb7e411db0"
     },
     {
       "id": "437939ee-1574-4803-ac14-a1d0cfb31e46",
@@ -891,7 +1607,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "createdAt": "2026-02-10T20:59:57.759+00:00",
-      "updatedAt": "2026-02-10T21:14:07.867+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "437939ee-1574-4803-ac14-a1d0cfb31e46"
     },
     {
       "id": "c9ff65f5-2004-47a7-b69a-8766dccf773e",
@@ -904,7 +1621,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "f52b0bbb-80e5-4fcd-87ea-5f10e5779dc3",
       "createdAt": "2026-02-15T07:35:03.732+00:00",
-      "updatedAt": "2026-02-15T09:09:18.67+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "c9ff65f5-2004-47a7-b69a-8766dccf773e"
     },
     {
       "id": "4fb8c345-8cfe-498f-bb5c-16b4c52b4ca4",
@@ -917,7 +1635,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "createdAt": "2026-02-10T02:56:51.267+00:00",
-      "updatedAt": "2026-02-08T00:13:26.229+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "4fb8c345-8cfe-498f-bb5c-16b4c52b4ca4"
     },
     {
       "id": "033958c0-4cfe-4033-a774-840846354ae4",
@@ -930,7 +1649,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
       "createdAt": "2026-02-01T18:07:58.722371+00:00",
-      "updatedAt": "2026-02-24T21:34:12.236+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "033958c0-4cfe-4033-a774-840846354ae4"
     },
     {
       "id": "385fb8c7-0948-4ff5-89e6-2a850fbbd54e",
@@ -948,7 +1668,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-02-15T11:09:11.258+00:00",
-      "updatedAt": "2026-02-15T12:02:18.919+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "385fb8c7-0948-4ff5-89e6-2a850fbbd54e"
     },
     {
       "id": "c145bb83-8bce-495a-8400-cb00abbecf16",
@@ -966,7 +1687,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "f52b0bbb-80e5-4fcd-87ea-5f10e5779dc3",
       "createdAt": "2026-02-15T09:17:02.621+00:00",
-      "updatedAt": "2026-02-15T09:44:17.45+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "c145bb83-8bce-495a-8400-cb00abbecf16"
     },
     {
       "id": "1022ab17-48f0-4969-94a1-b3b853f927d5",
@@ -979,7 +1701,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "createdAt": "2026-02-17T04:48:00.217+00:00",
-      "updatedAt": "2026-02-17T04:48:00.084+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "1022ab17-48f0-4969-94a1-b3b853f927d5"
     },
     {
       "id": "16697823-c4be-4dc1-b040-479379e23973",
@@ -992,7 +1715,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
       "createdAt": "2026-02-24T21:34:19.577+00:00",
-      "updatedAt": "2026-02-24T21:34:19.393+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "16697823-c4be-4dc1-b040-479379e23973"
     },
     {
       "id": "8571c861-820f-4807-9324-ac49e955592e",
@@ -1014,7 +1738,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "2d9fa95b-6ac5-47a7-8ccf-94006949e057",
       "createdAt": "2026-02-15T18:44:32.684+00:00",
-      "updatedAt": "2026-02-15T19:58:56.06+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "8571c861-820f-4807-9324-ac49e955592e"
     },
     {
       "id": "ea83a645-12d8-459f-8935-15df42444503",
@@ -1027,7 +1752,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
       "createdAt": "2026-02-18T18:15:39.805+00:00",
-      "updatedAt": "2026-02-18T18:28:48.977+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "ea83a645-12d8-459f-8935-15df42444503"
     },
     {
       "id": "6070961f-e63d-4347-89a4-55e5547ba9ae",
@@ -1040,7 +1766,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "createdAt": "2026-02-17T16:23:22.494+00:00",
-      "updatedAt": "2026-02-17T17:26:37.84+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "6070961f-e63d-4347-89a4-55e5547ba9ae"
     },
     {
       "id": "53934324-65f7-45ea-99ce-b6f18c6a2c95",
@@ -1053,7 +1780,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
       "createdAt": "2026-02-17T18:04:01.058+00:00",
-      "updatedAt": "2026-02-17T19:47:14.284+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "53934324-65f7-45ea-99ce-b6f18c6a2c95"
     },
     {
       "id": "c118f199-d6a5-497c-93a3-acfeb1be2104",
@@ -1066,7 +1794,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
       "createdAt": "2026-02-17T20:04:25.09+00:00",
-      "updatedAt": "2026-02-17T21:40:28.11+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "c118f199-d6a5-497c-93a3-acfeb1be2104"
     },
     {
       "id": "1ea4dccd-9cc4-4b8d-b69f-a243af830c4f",
@@ -1079,7 +1808,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-02-25T11:41:45.546+00:00",
-      "updatedAt": "2026-02-25T12:43:04.52+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "1ea4dccd-9cc4-4b8d-b69f-a243af830c4f"
     },
     {
       "id": "d0103e56-3dc1-4308-9cc8-6903d734a5bd",
@@ -1092,7 +1822,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
       "createdAt": "2026-02-18T13:17:22.665+00:00",
-      "updatedAt": "2026-02-18T13:17:22.498+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "d0103e56-3dc1-4308-9cc8-6903d734a5bd"
     },
     {
       "id": "059b4f01-9317-4bec-8141-7b57f347cb4d",
@@ -1105,7 +1836,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "createdAt": "2026-02-24T21:46:29.718+00:00",
-      "updatedAt": "2026-02-24T21:49:22.201+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "059b4f01-9317-4bec-8141-7b57f347cb4d"
     },
     {
       "id": "eeac28cc-244a-4d43-96bb-30d74150f68d",
@@ -1118,7 +1850,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
       "createdAt": "2026-02-18T15:11:52.518+00:00",
-      "updatedAt": "2026-02-18T16:54:11.803+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "eeac28cc-244a-4d43-96bb-30d74150f68d"
     },
     {
       "id": "9e8ff1c0-9ef5-47e6-855b-908a5ae1a366",
@@ -1136,7 +1869,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "createdAt": "2026-02-25T14:21:25.182+00:00",
-      "updatedAt": "2026-02-25T14:35:47.616+00:00"
+      "updatedAt": "2026-03-06T20:44:37.233Z",
+      "supabaseId": "9e8ff1c0-9ef5-47e6-855b-908a5ae1a366"
     },
     {
       "id": "d84743f8-9714-467c-9b83-2a809e030322",
@@ -1149,7 +1883,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "createdAt": "2026-02-25T13:09:03.553+00:00",
-      "updatedAt": "2026-02-25T14:15:20.633+00:00"
+      "updatedAt": "2026-03-06T20:44:37.233Z",
+      "supabaseId": "d84743f8-9714-467c-9b83-2a809e030322"
     },
     {
       "id": "28ea8a65-85a2-4d4c-8546-be5ecdff77a0",
@@ -1162,7 +1897,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
       "createdAt": "2026-02-26T16:16:43.284+00:00",
-      "updatedAt": "2026-02-26T17:34:19.465+00:00"
+      "updatedAt": "2026-03-06T20:44:37.233Z",
+      "supabaseId": "28ea8a65-85a2-4d4c-8546-be5ecdff77a0"
     },
     {
       "id": "90341226-5251-4153-9103-985a5a78e0f0",
@@ -1175,7 +1911,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
       "createdAt": "2026-03-01T20:11:31.147+00:00",
-      "updatedAt": "2026-03-01T21:21:15.852+00:00"
+      "updatedAt": "2026-03-06T20:44:37.233Z",
+      "supabaseId": "90341226-5251-4153-9103-985a5a78e0f0"
     },
     {
       "id": "47d31d8c-6686-4b1f-85c5-fb19b1e54524",
@@ -1188,7 +1925,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-03-02T11:44:11.809+00:00",
-      "updatedAt": "2026-03-02T12:48:45.483+00:00"
+      "updatedAt": "2026-03-06T20:44:37.233Z",
+      "supabaseId": "47d31d8c-6686-4b1f-85c5-fb19b1e54524"
     },
     {
       "id": "d5c235c9-7244-46c2-bf86-89dbd50d2c25",
@@ -1201,7 +1939,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-03-05T09:43:58.707+00:00",
-      "updatedAt": "2026-03-05T09:46:14.501+00:00"
+      "updatedAt": "2026-03-06T20:44:37.233Z",
+      "supabaseId": "d5c235c9-7244-46c2-bf86-89dbd50d2c25"
     },
     {
       "id": "660b10a1-fe5d-48de-bc60-55676ecea4bc",
@@ -1214,7 +1953,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-03-05T09:47:01.665+00:00",
-      "updatedAt": "2026-03-05T09:54:10.194+00:00"
+      "updatedAt": "2026-03-06T20:44:37.233Z",
+      "supabaseId": "660b10a1-fe5d-48de-bc60-55676ecea4bc"
     },
     {
       "id": "81e60549-f1f3-4e5f-9700-08250125adb9",
@@ -1227,7 +1967,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-03-05T09:58:40.835+00:00",
-      "updatedAt": "2026-03-05T11:23:45.037+00:00"
+      "updatedAt": "2026-03-06T20:44:37.233Z",
+      "supabaseId": "81e60549-f1f3-4e5f-9700-08250125adb9"
     },
     {
       "id": "0dc20d4a-1601-418b-9f78-e314ccab2d56",
@@ -1240,7 +1981,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-03-05T11:24:04.043+00:00",
-      "updatedAt": "2026-03-05T11:24:12.623+00:00"
+      "updatedAt": "2026-03-06T20:44:37.232Z",
+      "supabaseId": "0dc20d4a-1601-418b-9f78-e314ccab2d56"
     },
     {
       "id": "297eeef1-3866-4eeb-adc2-e3ed5fd19ea6",
@@ -1253,7 +1995,176 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "f52b0bbb-80e5-4fcd-87ea-5f10e5779dc3",
       "createdAt": "2026-03-05T11:44:01.294+00:00",
-      "updatedAt": "2026-03-05T12:44:38.348+00:00"
+      "updatedAt": "2026-03-06T20:44:37.233Z",
+      "supabaseId": "297eeef1-3866-4eeb-adc2-e3ed5fd19ea6"
+    },
+    {
+      "id": "1ebe8ede-e19b-4a53-bd74-d03d0a2ef115",
+      "moduleId": "2d9fa95b-6ac5-47a7-8ccf-94006949e057",
+      "title": "NETWORK ADMIN",
+      "priority": "Medium",
+      "status": "Completed",
+      "dueDate": "2026-03-06T00:00:00+00:00",
+      "createdAt": "2026-03-06T20:44:37.232Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "description": "",
+      "subtasks": [],
+      "updatedAt": "2026-03-06T10:42:15.683+00:00",
+      "supabaseId": "1ebe8ede-e19b-4a53-bd74-d03d0a2ef115"
+    },
+    {
+      "id": "72b07893-ba5d-44d7-8d77-35bd1be2c299",
+      "moduleId": "2d9fa95b-6ac5-47a7-8ccf-94006949e057",
+      "title": "NETWORK ADMIN",
+      "priority": "Medium",
+      "status": "Completed",
+      "dueDate": "2026-03-07T00:00:00+00:00",
+      "createdAt": "2026-03-06T20:44:37.232Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "description": "",
+      "subtasks": [],
+      "updatedAt": "2026-03-07T00:01:45.304+00:00",
+      "supabaseId": "72b07893-ba5d-44d7-8d77-35bd1be2c299"
+    },
+    {
+      "id": "10d39f6f-ebda-4eff-b31c-11ffa163cba3",
+      "moduleId": "91772215-06b6-48fd-b980-1d0327a15a4e",
+      "title": "Computer Networking",
+      "priority": "Medium",
+      "status": "Completed",
+      "dueDate": "2026-02-17T00:00:00+00:00",
+      "createdAt": "2026-03-06T20:44:37.232Z",
+      "userId": "3815cad6-958d-41a7-97f3-03730096af24",
+      "description": "",
+      "subtasks": [],
+      "updatedAt": "2026-03-07T09:02:12.635+00:00",
+      "supabaseId": "10d39f6f-ebda-4eff-b31c-11ffa163cba3"
+    },
+    {
+      "id": "e587dee0-a27a-482e-ac75-5100393b40ff",
+      "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
+      "title": "C# MATRIX",
+      "priority": "Medium",
+      "status": "Completed",
+      "dueDate": "2026-03-06T00:00:00+00:00",
+      "createdAt": "2026-03-06T20:44:37.232Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "description": "",
+      "subtasks": [],
+      "updatedAt": "2026-03-07T09:59:56.517+00:00",
+      "supabaseId": "e587dee0-a27a-482e-ac75-5100393b40ff"
+    },
+    {
+      "id": "c9803b78-67e8-4859-8290-ff4b3d00e994",
+      "moduleId": "54d3897e-f954-4942-95cf-3e1c6059f95a",
+      "title": "MACHINE PRAC",
+      "priority": "Medium",
+      "status": "Completed",
+      "dueDate": "2026-02-23T00:00:00+00:00",
+      "createdAt": "2026-03-06T20:44:37.232Z",
+      "userId": "1738640325000",
+      "description": "",
+      "subtasks": [],
+      "updatedAt": "2026-02-13T15:09:06.563+00:00",
+      "supabaseId": "c9803b78-67e8-4859-8290-ff4b3d00e994"
+    },
+    {
+      "id": "02339dd2-1313-48c7-a4d0-c80475913638",
+      "moduleId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
+      "title": "SOFTWARE ENGINEERING READING",
+      "priority": "Medium",
+      "status": "In Progress",
+      "dueDate": "2026-03-07T00:00:00+00:00",
+      "createdAt": "2026-03-06T20:44:37.232Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "description": "",
+      "subtasks": [],
+      "updatedAt": "2026-03-07T10:05:28.814+00:00",
+      "supabaseId": "02339dd2-1313-48c7-a4d0-c80475913638"
+    },
+    {
+      "id": "63f9254b-5ef5-417c-a562-2a76e7d77dfe",
+      "moduleId": "27c0b9b7-060b-4f1b-893a-d8e1eb08087d",
+      "title": "theory 1",
+      "priority": "Medium",
+      "status": "Completed",
+      "dueDate": "2026-12-02T00:00:00+00:00",
+      "createdAt": "2026-03-06T20:44:37.232Z",
+      "userId": "c10d10a6-415f-4ac5-b82c-70a42349e5cb",
+      "description": "",
+      "subtasks": [],
+      "updatedAt": "2026-02-14T17:28:20.141+00:00",
+      "supabaseId": "63f9254b-5ef5-417c-a562-2a76e7d77dfe"
+    },
+    {
+      "id": "fd3d6be7-f211-474e-85c9-a9079c1456b7",
+      "moduleId": "2d6f694f-48fa-4b96-8e30-412e7f8e3302",
+      "title": "communication",
+      "priority": "Medium",
+      "status": "Completed",
+      "dueDate": "2026-02-14T00:00:00+00:00",
+      "createdAt": "2026-03-06T20:44:37.232Z",
+      "userId": "1738640325000",
+      "description": "",
+      "subtasks": [],
+      "updatedAt": "2026-02-14T19:53:32.12+00:00",
+      "supabaseId": "fd3d6be7-f211-474e-85c9-a9079c1456b7"
+    },
+    {
+      "id": "37dc54b0-3f5f-4aae-a85f-8597fba55e1f",
+      "moduleId": "d4e65677-e3b6-4443-b7e0-c073f9dc8e3a",
+      "title": "Database Notes",
+      "priority": "Medium",
+      "status": "Completed",
+      "dueDate": "2026-02-17T00:00:00+00:00",
+      "createdAt": "2026-03-06T20:44:37.232Z",
+      "userId": "3815cad6-958d-41a7-97f3-03730096af24",
+      "description": "",
+      "subtasks": [],
+      "updatedAt": "2026-02-17T22:19:06.793+00:00",
+      "supabaseId": "37dc54b0-3f5f-4aae-a85f-8597fba55e1f"
+    },
+    {
+      "id": "9d2db901-794b-4d2b-bc0b-40d49e2dab41",
+      "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
+      "title": "C# MATRIX ",
+      "priority": "Medium",
+      "status": "Completed",
+      "dueDate": "2026-03-06T00:00:00+00:00",
+      "createdAt": "2026-03-06T20:44:37.233Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "description": "",
+      "subtasks": [],
+      "updatedAt": "2026-03-06T14:03:32.586+00:00",
+      "supabaseId": "9d2db901-794b-4d2b-bc0b-40d49e2dab41"
+    },
+    {
+      "id": "7b1268d5-5e3f-4b50-80f7-427e1061f4a5",
+      "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
+      "title": "C#",
+      "priority": "Medium",
+      "status": "Completed",
+      "dueDate": "2026-03-06T00:00:00+00:00",
+      "createdAt": "2026-03-06T20:44:37.233Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "description": "",
+      "subtasks": [],
+      "updatedAt": "2026-03-06T21:59:49.011+00:00",
+      "supabaseId": "7b1268d5-5e3f-4b50-80f7-427e1061f4a5"
+    },
+    {
+      "id": "9579a621-7630-4a7e-a46c-98c0e1426317",
+      "moduleId": "b85660b3-7849-47d1-a384-3421a40b1f7b",
+      "title": "SECURITY",
+      "priority": "Medium",
+      "status": "Completed",
+      "dueDate": "2026-03-07T00:00:00+00:00",
+      "createdAt": "2026-03-06T20:44:37.233Z",
+      "userId": "3815cad6-958d-41a7-97f3-03730096af24",
+      "description": "",
+      "subtasks": [],
+      "updatedAt": "2026-03-07T10:29:01.693+00:00",
+      "supabaseId": "9579a621-7630-4a7e-a46c-98c0e1426317"
     }
   ],
   "notes": [
@@ -1272,8 +2183,9 @@
       "moduleId": "test-module",
       "userId": "337274c6-dcc2-427d-92a7-2108e2508c88",
       "createdAt": "2026-02-10T03:00:11.462Z",
-      "updatedAt": "2026-02-10T03:00:11.759Z",
-      "id": "899df5c3-ede9-42bd-886c-09048c14dc40"
+      "updatedAt": "2026-03-06T20:44:37.820Z",
+      "id": "899df5c3-ede9-42bd-886c-09048c14dc40",
+      "supabaseId": "899df5c3-ede9-42bd-886c-09048c14dc40"
     },
     {
       "title": "Refactor Test Note 1770692485080",
@@ -1304,7 +2216,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-03-02T11:57:09.131+00:00",
-      "updatedAt": "2026-03-02T11:57:09.131+00:00"
+      "updatedAt": "2026-03-06T20:44:37.820Z",
+      "supabaseId": "2c4b675a-fab7-46ba-a30b-adc4e6248dd0"
     },
     {
       "id": "e6fc1da4-7410-4e30-bd93-74b2014979e6",
@@ -1317,7 +2230,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "f52b0bbb-80e5-4fcd-87ea-5f10e5779dc3",
       "createdAt": "2026-02-13T14:30:12.907+00:00",
-      "updatedAt": "2026-02-13T14:30:12.907+00:00"
+      "updatedAt": "2026-03-06T20:44:37.820Z",
+      "supabaseId": "e6fc1da4-7410-4e30-bd93-74b2014979e6"
     },
     {
       "id": "c346fa14-1580-4331-a052-7480b99a27ff",
@@ -1330,7 +2244,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "createdAt": "2026-01-31T11:59:31.162372+00:00",
-      "updatedAt": "2026-02-06T20:08:41.194+00:00"
+      "updatedAt": "2026-03-06T20:44:37.820Z",
+      "supabaseId": "c346fa14-1580-4331-a052-7480b99a27ff"
     },
     {
       "id": "ceec4a88-3c57-4fab-9387-c878194982a0",
@@ -1343,7 +2258,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
       "createdAt": "2026-01-31T12:00:25.54617+00:00",
-      "updatedAt": "2026-02-06T20:08:41.567+00:00"
+      "updatedAt": "2026-03-06T20:44:37.820Z",
+      "supabaseId": "ceec4a88-3c57-4fab-9387-c878194982a0"
     },
     {
       "id": "4a66e74e-d939-427f-977e-258e85f81935",
@@ -1356,7 +2272,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "803730ec-ee55-4450-a9b6-f36c0a0d511e",
       "createdAt": "2026-02-06T12:23:12.772+00:00",
-      "updatedAt": "2026-02-09T15:51:53.688516+00:00"
+      "updatedAt": "2026-03-06T20:44:37.820Z",
+      "supabaseId": "4a66e74e-d939-427f-977e-258e85f81935"
     },
     {
       "id": "53738374-90dc-43d5-aa96-d860f3a0f226",
@@ -1369,7 +2286,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "f52b0bbb-80e5-4fcd-87ea-5f10e5779dc3",
       "createdAt": "2026-01-31T12:05:30.251182+00:00",
-      "updatedAt": "2026-02-06T20:08:42.007+00:00"
+      "updatedAt": "2026-03-06T20:44:37.820Z",
+      "supabaseId": "53738374-90dc-43d5-aa96-d860f3a0f226"
     },
     {
       "id": "2f0bd282-c62c-4dcb-9c48-4ca84db6276a",
@@ -1382,7 +2300,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "977a5ffc-4685-4f89-97a1-1ac41a9fb0a9",
       "createdAt": "2026-01-31T12:06:02.747293+00:00",
-      "updatedAt": "2026-02-06T20:08:43.123+00:00"
+      "updatedAt": "2026-03-06T20:44:37.820Z",
+      "supabaseId": "2f0bd282-c62c-4dcb-9c48-4ca84db6276a"
     },
     {
       "id": "e825216c-c957-4a51-aae8-0bf7fc9cefa3",
@@ -1395,7 +2314,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-02-10T02:58:41.074+00:00",
-      "updatedAt": "2026-02-09T15:51:53.688516+00:00"
+      "updatedAt": "2026-03-06T20:44:37.820Z",
+      "supabaseId": "e825216c-c957-4a51-aae8-0bf7fc9cefa3"
     },
     {
       "id": "87f98bfc-08a6-41fd-b9da-0f4c2da336f2",
@@ -1408,7 +2328,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
       "createdAt": "2026-02-12T17:57:01.495+00:00",
-      "updatedAt": "2026-02-12T17:57:01.494+00:00"
+      "updatedAt": "2026-03-06T20:44:37.820Z",
+      "supabaseId": "87f98bfc-08a6-41fd-b9da-0f4c2da336f2"
     },
     {
       "id": "c4fd699f-46bb-475d-a9f4-2c07e22d8221",
@@ -1421,7 +2342,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "2d9fa95b-6ac5-47a7-8ccf-94006949e057",
       "createdAt": "2026-02-12T10:59:44.588+00:00",
-      "updatedAt": "2026-02-12T10:59:44.587+00:00"
+      "updatedAt": "2026-03-06T20:44:37.820Z",
+      "supabaseId": "c4fd699f-46bb-475d-a9f4-2c07e22d8221"
     },
     {
       "id": "d8571a77-144a-452e-b179-b120a0b19f6c",
@@ -1434,7 +2356,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-02-12T17:49:12.231+00:00",
-      "updatedAt": "2026-02-12T17:49:12.231+00:00"
+      "updatedAt": "2026-03-06T20:44:37.820Z",
+      "supabaseId": "d8571a77-144a-452e-b179-b120a0b19f6c"
     },
     {
       "id": "f861fcb9-2ba6-479e-bd47-3de6afa064a2",
@@ -1447,10 +2370,166 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
       "createdAt": "2026-02-17T22:52:56.123+00:00",
-      "updatedAt": "2026-02-17T22:52:56.122+00:00"
+      "updatedAt": "2026-03-06T20:44:37.820Z",
+      "supabaseId": "f861fcb9-2ba6-479e-bd47-3de6afa064a2"
+    },
+    {
+      "id": "2b034019-d46d-4f80-97fb-7bcb09edb393",
+      "moduleId": "91772215-06b6-48fd-b980-1d0327a15a4e",
+      "title": "COMPSN NOTES",
+      "content": "",
+      "resourceLink": "",
+      "pdfPath": "https://pocuggehxeuheqzgixsx.supabase.co/storage/v1/object/public/notes-files/pdf_1772829684596_COMPUTER%20NETWORKING%20notes.pdf",
+      "createdAt": "2026-03-06T20:44:37.820Z",
+      "userId": "3815cad6-958d-41a7-97f3-03730096af24",
+      "audioPath": null,
+      "audioEpisodes": null,
+      "updatedAt": "2026-03-06T20:41:29.853+00:00",
+      "supabaseId": "2b034019-d46d-4f80-97fb-7bcb09edb393"
+    },
+    {
+      "id": "0dc2e913-e80a-41e9-b552-c61cf3f29475",
+      "moduleId": null,
+      "title": "",
+      "content": "",
+      "resourceLink": "",
+      "pdfPath": "",
+      "createdAt": "2026-03-06T20:44:37.820Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "audioPath": null,
+      "audioEpisodes": null,
+      "updatedAt": "2026-03-06T21:27:04.813+00:00",
+      "supabaseId": "0dc2e913-e80a-41e9-b552-c61cf3f29475"
+    },
+    {
+      "id": "01cf9cd0-b23c-46d7-901e-08ba79eca2dd",
+      "moduleId": "d4e65677-e3b6-4443-b7e0-c073f9dc8e3a",
+      "title": "DBMS",
+      "content": "DATABASE NOTES",
+      "resourceLink": "",
+      "pdfPath": "https://pocuggehxeuheqzgixsx.supabase.co/storage/v1/object/public/notes-files/pdf_1770382873790_FIVEFEET%20DATABASE%201.2%20FULL%20Notes.pdf",
+      "createdAt": "2026-03-06T20:44:37.820Z",
+      "userId": "1769561085649",
+      "audioPath": null,
+      "audioEpisodes": null,
+      "updatedAt": "2026-02-09T15:51:53.688516+00:00",
+      "supabaseId": "01cf9cd0-b23c-46d7-901e-08ba79eca2dd"
+    },
+    {
+      "id": "201d9501-b887-4a7e-b69a-23a26a90df5e",
+      "moduleId": null,
+      "title": "",
+      "content": "",
+      "resourceLink": "",
+      "pdfPath": "",
+      "createdAt": "2026-03-06T20:44:37.820Z",
+      "userId": "f3cc7e82-9156-4dc1-a95b-fb17171419fd",
+      "audioPath": null,
+      "audioEpisodes": null,
+      "updatedAt": "2026-02-13T03:47:13.343+00:00",
+      "supabaseId": "201d9501-b887-4a7e-b69a-23a26a90df5e"
+    },
+    {
+      "id": "d6972428-8fcb-493e-a395-5642f20c3ac1",
+      "moduleId": "2d6f694f-48fa-4b96-8e30-412e7f8e3302",
+      "title": "COMMUNICATION",
+      "content": "NOTES",
+      "resourceLink": "",
+      "pdfPath": "https://pocuggehxeuheqzgixsx.supabase.co/storage/v1/object/public/notes-files/pdf_1771098957502_Communication_Study_Pack_Final.pdf",
+      "createdAt": "2026-03-06T20:44:37.820Z",
+      "userId": "1738640325000",
+      "audioPath": null,
+      "audioEpisodes": null,
+      "updatedAt": "2026-02-14T19:56:02.16+00:00",
+      "supabaseId": "d6972428-8fcb-493e-a395-5642f20c3ac1"
+    },
+    {
+      "id": "972dc8c6-0ba4-4586-a1c3-eb4f50d121e4",
+      "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
+      "title": "ERROR HANDLING IN C#",
+      "content": "using System;\n\npublic class GFG {\n\n    static void Divide(int num, int den)\n    {\n        try {\n            if (den == 0) {\n                throw new ArgumentException(\n                    \"Division by zero error\");\n            }\n            Console.WriteLine(\"Result of division: \"\n                              + (num / den));\n        }\n        catch (ArgumentException e) {\n            Console.WriteLine(\"Error: \" + e.Message);\n        }\n    }\n\n    static void Main()\n    {\n        try {\n            int numerator = 5;\n\n            int denominator = 0;\n\n            Divide(numerator, denominator);\n        }\n        catch (FormatException) {\n            Console.WriteLine(\"Error: Invalid input, please enter integers.\");\n        }\n    }\n}",
+      "resourceLink": "",
+      "pdfPath": "",
+      "createdAt": "2026-03-06T20:44:37.820Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "audioPath": null,
+      "audioEpisodes": null,
+      "updatedAt": "2026-03-06T11:09:43.959+00:00",
+      "supabaseId": "972dc8c6-0ba4-4586-a1c3-eb4f50d121e4"
+    },
+    {
+      "id": "a1d61ea3-c14c-4a5c-8e4f-737e96f014d6",
+      "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
+      "title": "C# THEORY LEARNING OUTCOME 1",
+      "content": "COMPONENTS OF A C# PROGRAMM ,USING DIRECTIVES,STATEMENTS,CONSOLE ,\n\nNAMESPACE\n--ORGANISES CLASSES AND PREVENT NAME CONFLICTS ;\n\nCLASS DEFINATION\n-A BLUEPRINT FOR CREATING OBJECTS \n\nMAIN METHOD \n\n-MAIN ENTRY OF OUR PROGRAM \n\nMETHODE BODY STATEMENT\n-THE CODE\n\nIDE(INTERGRATED DEVELOPMENT ENVIRONMENT)\nA software used to write,test and deburg code statement ",
+      "resourceLink": "",
+      "pdfPath": "",
+      "createdAt": "2026-03-06T20:44:37.820Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "audioPath": null,
+      "audioEpisodes": null,
+      "updatedAt": "2026-03-06T21:20:33.185+00:00",
+      "supabaseId": "a1d61ea3-c14c-4a5c-8e4f-737e96f014d6"
+    },
+    {
+      "id": "b2099337-865b-4a0e-8461-4177e9101c04",
+      "moduleId": "b85660b3-7849-47d1-a384-3421a40b1f7b",
+      "title": "COMPS SECURITY NOTES",
+      "content": "",
+      "resourceLink": "",
+      "pdfPath": "https://pocuggehxeuheqzgixsx.supabase.co/storage/v1/object/public/notes-files/pdf_1772874549486_COMPUTER%20SECURITY.pdf",
+      "createdAt": "2026-03-06T20:44:37.820Z",
+      "userId": "3815cad6-958d-41a7-97f3-03730096af24",
+      "audioPath": null,
+      "audioEpisodes": null,
+      "updatedAt": "2026-03-07T09:09:12.859+00:00",
+      "supabaseId": "b2099337-865b-4a0e-8461-4177e9101c04"
     }
   ],
-  "grades": [],
+  "grades": [
+    {
+      "id": "8f0ac618-816e-44fc-ab34-f2ffc5577665",
+      "moduleId": "27c0b9b7-060b-4f1b-893a-d8e1eb08087d",
+      "type": "Assignment",
+      "score": 20,
+      "weight": 100,
+      "date": "2026-02-14",
+      "createdAt": "2026-03-06T20:44:37.805Z",
+      "userId": "c10d10a6-415f-4ac5-b82c-70a42349e5cb",
+      "updatedAt": "2026-02-14T17:36:14.056+00:00",
+      "name": "theory 1",
+      "total": 20,
+      "supabaseId": "8f0ac618-816e-44fc-ab34-f2ffc5577665"
+    },
+    {
+      "id": "911b98a6-d34c-4e75-a94e-f7795a4442e6",
+      "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
+      "type": "Assignment",
+      "score": 20,
+      "weight": 100,
+      "date": "2026-02-25",
+      "createdAt": "2026-03-06T20:44:37.805Z",
+      "userId": "1769561085648",
+      "updatedAt": "2026-02-25T16:58:06.734+00:00",
+      "name": "THEORY 1",
+      "total": 20,
+      "supabaseId": "911b98a6-d34c-4e75-a94e-f7795a4442e6"
+    },
+    {
+      "id": "b3b9c8db-6f09-4996-98e2-35f7c1cc8d7a",
+      "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
+      "type": "Assignment",
+      "score": 20,
+      "weight": 100,
+      "date": "2026-03-06",
+      "createdAt": "2026-03-06T20:44:37.805Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "updatedAt": "2026-03-06T18:14:57.42+00:00",
+      "name": "ASS 1",
+      "total": 20,
+      "supabaseId": "b3b9c8db-6f09-4996-98e2-35f7c1cc8d7a"
+    }
+  ],
   "flashcardDecks": [
     {
       "id": "ded9f0b8-d466-4186-90ea-4f508f26692a",
@@ -1459,7 +2538,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
       "createdAt": "2026-01-29T19:59:49.535088+00:00",
-      "updatedAt": "2026-02-06T20:08:43.49+00:00"
+      "updatedAt": "2026-03-06T20:44:37.777Z",
+      "supabaseId": "ded9f0b8-d466-4186-90ea-4f508f26692a"
     },
     {
       "id": "415ab09c-0c99-41da-92ca-b00188611bc2",
@@ -1468,7 +2548,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "3ca6f010-584a-4ded-9d66-589f4f22f4c3",
       "createdAt": "2026-02-02T22:29:05.562316+00:00",
-      "updatedAt": "2026-02-06T20:08:43.788+00:00"
+      "updatedAt": "2026-03-06T20:44:37.777Z",
+      "supabaseId": "415ab09c-0c99-41da-92ca-b00188611bc2"
     },
     {
       "id": "b56f1d2b-f0ee-43dc-a5ae-730a2d50e340",
@@ -1477,7 +2558,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "2d9fa95b-6ac5-47a7-8ccf-94006949e057",
       "createdAt": "2026-02-14T09:04:14.474+00:00",
-      "updatedAt": "2026-02-14T09:04:14.474+00:00"
+      "updatedAt": "2026-03-06T20:44:37.777Z",
+      "supabaseId": "b56f1d2b-f0ee-43dc-a5ae-730a2d50e340"
     },
     {
       "id": "4c8ac434-e7db-4bae-9a80-a358aef89379",
@@ -1486,7 +2568,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "f52b0bbb-80e5-4fcd-87ea-5f10e5779dc3",
       "createdAt": "2026-02-15T09:38:00.44+00:00",
-      "updatedAt": "2026-02-15T09:38:00.439+00:00"
+      "updatedAt": "2026-03-06T20:44:37.777Z",
+      "supabaseId": "4c8ac434-e7db-4bae-9a80-a358aef89379"
     },
     {
       "id": "4c4ae412-8d10-4863-a33a-df8b8847c35f",
@@ -1495,7 +2578,28 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-03-02T12:05:19.057+00:00",
-      "updatedAt": "2026-03-02T12:05:19.057+00:00"
+      "updatedAt": "2026-03-06T20:44:37.777Z",
+      "supabaseId": "4c4ae412-8d10-4863-a33a-df8b8847c35f"
+    },
+    {
+      "id": "66a5cbb6-043e-4425-b04e-9ebcde764b30",
+      "moduleId": "54d3897e-f954-4942-95cf-3e1c6059f95a",
+      "name": "MACHINE OP",
+      "description": null,
+      "createdAt": "2026-03-06T20:44:37.777Z",
+      "userId": "1738640325000",
+      "updatedAt": "2026-02-13T15:06:05.622+00:00",
+      "supabaseId": "66a5cbb6-043e-4425-b04e-9ebcde764b30"
+    },
+    {
+      "id": "c04a78f2-18e0-41f6-bc10-7a0803bd57b3",
+      "moduleId": "27c0b9b7-060b-4f1b-893a-d8e1eb08087d",
+      "name": "power tran",
+      "description": null,
+      "createdAt": "2026-03-06T20:44:37.777Z",
+      "userId": "c10d10a6-415f-4ac5-b82c-70a42349e5cb",
+      "updatedAt": "2026-02-14T17:30:11.392+00:00",
+      "supabaseId": "c04a78f2-18e0-41f6-bc10-7a0803bd57b3"
     }
   ],
   "flashcards": [
@@ -1509,7 +2613,9 @@
       "level": 2,
       "createdAt": "2026-01-29T19:59:50.534844+00:00",
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
-      "nextReview": "2026-02-10T21:32:04.228637+00:00"
+      "nextReview": "2026-02-10T21:32:04.228637+00:00",
+      "supabaseId": "678c491f-4584-4416-ba3c-f3750c78e946",
+      "updatedAt": "2026-03-06T20:44:37.547Z"
     },
     {
       "id": "3f649d50-aee5-4b03-b8b9-38fc6d2176f5",
@@ -1521,7 +2627,9 @@
       "level": 1,
       "createdAt": "2026-01-29T19:59:50.241425+00:00",
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
-      "nextReview": "2026-02-10T21:32:04.549435+00:00"
+      "nextReview": "2026-02-10T21:32:04.549435+00:00",
+      "supabaseId": "3f649d50-aee5-4b03-b8b9-38fc6d2176f5",
+      "updatedAt": "2026-03-06T20:44:37.547Z"
     },
     {
       "id": "50dead90-7521-4b91-ba3d-9667e455d0c1",
@@ -1533,7 +2641,9 @@
       "level": 2,
       "createdAt": "2026-01-29T19:59:49.901983+00:00",
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
-      "nextReview": "2026-02-10T21:32:04.820388+00:00"
+      "nextReview": "2026-02-10T21:32:04.820388+00:00",
+      "supabaseId": "50dead90-7521-4b91-ba3d-9667e455d0c1",
+      "updatedAt": "2026-03-06T20:44:37.547Z"
     },
     {
       "id": "c3a197bb-bfbb-4b15-b196-b061f9a9f5e1",
@@ -1555,7 +2665,9 @@
       "level": 2,
       "createdAt": "2026-02-02T23:04:30.319917+00:00",
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
-      "nextReview": "2026-02-10T21:32:05.462307+00:00"
+      "nextReview": "2026-02-10T21:32:05.462307+00:00",
+      "supabaseId": "4d57490a-3e96-49c5-a19e-5bbbda68a881",
+      "updatedAt": "2026-03-06T20:44:37.547Z"
     },
     {
       "id": "1473bd65-93e1-44ca-862f-1b59441f9ced",
@@ -1567,7 +2679,9 @@
       "level": 2,
       "createdAt": "2026-02-02T23:06:04.319614+00:00",
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
-      "nextReview": "2026-02-10T21:32:05.789009+00:00"
+      "nextReview": "2026-02-10T21:32:05.789009+00:00",
+      "supabaseId": "1473bd65-93e1-44ca-862f-1b59441f9ced",
+      "updatedAt": "2026-03-06T20:44:37.547Z"
     },
     {
       "id": "b2c4d3b4-4bb8-4a66-b2dc-17a447dff802",
@@ -1579,7 +2693,9 @@
       "level": 2,
       "createdAt": "2026-02-02T23:14:01.349367+00:00",
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
-      "nextReview": "2026-02-10T21:32:06.058634+00:00"
+      "nextReview": "2026-02-10T21:32:06.058634+00:00",
+      "supabaseId": "b2c4d3b4-4bb8-4a66-b2dc-17a447dff802",
+      "updatedAt": "2026-03-06T20:44:37.547Z"
     },
     {
       "id": "2c2651e4-849a-4e89-9202-f17646d12ab8",
@@ -1591,7 +2707,9 @@
       "level": 3,
       "createdAt": "2026-02-02T23:01:14.491711+00:00",
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
-      "nextReview": "2026-02-10T21:32:06.367507+00:00"
+      "nextReview": "2026-02-10T21:32:06.367507+00:00",
+      "supabaseId": "2c2651e4-849a-4e89-9202-f17646d12ab8",
+      "updatedAt": "2026-03-06T20:44:37.547Z"
     },
     {
       "id": "dc1497b6-12c0-4ca3-bffe-c1c371f78800",
@@ -1603,7 +2721,9 @@
       "level": 4,
       "createdAt": "2026-03-02T11:41:45.003+00:00",
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
-      "nextReview": "2026-02-13T19:11:38.632+00:00"
+      "nextReview": "2026-02-13T19:11:38.632+00:00",
+      "supabaseId": "dc1497b6-12c0-4ca3-bffe-c1c371f78800",
+      "updatedAt": "2026-03-06T20:44:37.547Z"
     },
     {
       "id": "ca9000d5-5766-40e8-b25b-3a9980a4f3cc",
@@ -1615,7 +2735,9 @@
       "level": 1,
       "createdAt": "2026-02-15T09:41:32.822+00:00",
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
-      "nextReview": "2026-02-14T19:41:19.957+00:00"
+      "nextReview": "2026-02-14T19:41:19.957+00:00",
+      "supabaseId": "ca9000d5-5766-40e8-b25b-3a9980a4f3cc",
+      "updatedAt": "2026-03-06T20:44:37.547Z"
     },
     {
       "id": "4011ffbe-0310-4516-9a4d-1f02eadfff83",
@@ -1627,7 +2749,9 @@
       "level": 4,
       "createdAt": "2026-02-15T07:31:35.682+00:00",
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
-      "nextReview": "2026-02-13T20:22:47.23+00:00"
+      "nextReview": "2026-02-13T20:22:47.23+00:00",
+      "supabaseId": "4011ffbe-0310-4516-9a4d-1f02eadfff83",
+      "updatedAt": "2026-03-06T20:44:37.547Z"
     },
     {
       "id": "0e8c1a36-7db6-49ae-9a30-617c9d7b3172",
@@ -1639,7 +2763,9 @@
       "level": 4,
       "createdAt": "2026-02-17T10:03:05.065+00:00",
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
-      "nextReview": "2026-02-14T19:42:42.612+00:00"
+      "nextReview": "2026-02-14T19:42:42.612+00:00",
+      "supabaseId": "0e8c1a36-7db6-49ae-9a30-617c9d7b3172",
+      "updatedAt": "2026-03-06T20:44:37.547Z"
     },
     {
       "id": "2f9a9d23-4306-4d04-b9ba-90c7dc0019e8",
@@ -1651,7 +2777,9 @@
       "level": 2,
       "createdAt": "2026-02-25T16:34:30.954+00:00",
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
-      "nextReview": "2026-02-14T19:42:02.647+00:00"
+      "nextReview": "2026-02-14T19:42:02.647+00:00",
+      "supabaseId": "2f9a9d23-4306-4d04-b9ba-90c7dc0019e8",
+      "updatedAt": "2026-03-06T20:44:37.547Z"
     },
     {
       "id": "df7e717d-78bd-4e76-8314-e0c7ae6e845e",
@@ -1663,7 +2791,9 @@
       "level": 3,
       "createdAt": "2026-02-25T22:58:56.29+00:00",
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
-      "nextReview": "2026-02-12T07:20:12.988+00:00"
+      "nextReview": "2026-02-12T07:20:12.988+00:00",
+      "supabaseId": "df7e717d-78bd-4e76-8314-e0c7ae6e845e",
+      "updatedAt": "2026-03-06T20:44:37.547Z"
     },
     {
       "id": "2a275889-9a14-4dd7-9cc5-12f697eff93a",
@@ -1675,7 +2805,9 @@
       "level": 2,
       "createdAt": "2026-02-15T09:38:25.12+00:00",
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
-      "nextReview": "2026-02-14T19:38:12.258+00:00"
+      "nextReview": "2026-02-14T19:38:12.258+00:00",
+      "supabaseId": "2a275889-9a14-4dd7-9cc5-12f697eff93a",
+      "updatedAt": "2026-03-06T20:44:37.547Z"
     },
     {
       "id": "85aa4622-90ff-4e3e-9cc7-2b45ddf57a00",
@@ -1687,7 +2819,9 @@
       "level": 1,
       "createdAt": "2026-02-15T09:39:08.009+00:00",
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
-      "nextReview": "2026-02-14T19:38:55.156+00:00"
+      "nextReview": "2026-02-14T19:38:55.156+00:00",
+      "supabaseId": "85aa4622-90ff-4e3e-9cc7-2b45ddf57a00",
+      "updatedAt": "2026-03-06T20:44:37.547Z"
     },
     {
       "id": "b7f17cd0-daf4-492a-a9c7-f21af53ad10c",
@@ -1699,7 +2833,9 @@
       "level": 1,
       "createdAt": "2026-02-15T09:39:39.983+00:00",
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
-      "nextReview": "2026-02-14T19:39:27.085+00:00"
+      "nextReview": "2026-02-14T19:39:27.085+00:00",
+      "supabaseId": "b7f17cd0-daf4-492a-a9c7-f21af53ad10c",
+      "updatedAt": "2026-03-06T20:44:37.547Z"
     },
     {
       "id": "ea7477f9-6627-4635-9eb6-7840eb7e971a",
@@ -1711,7 +2847,9 @@
       "level": 1,
       "createdAt": "2026-02-15T09:40:20.64+00:00",
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
-      "nextReview": "2026-02-14T19:40:07.765+00:00"
+      "nextReview": "2026-02-14T19:40:07.765+00:00",
+      "supabaseId": "ea7477f9-6627-4635-9eb6-7840eb7e971a",
+      "updatedAt": "2026-03-06T20:44:37.547Z"
     },
     {
       "id": "44d88bd6-85fa-4535-a85e-8897ba0d227d",
@@ -1723,7 +2861,205 @@
       "level": 1,
       "createdAt": "2026-02-15T09:40:57.391+00:00",
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
-      "nextReview": "2026-02-14T19:40:44.518+00:00"
+      "nextReview": "2026-02-14T19:40:44.518+00:00",
+      "supabaseId": "44d88bd6-85fa-4535-a85e-8897ba0d227d",
+      "updatedAt": "2026-03-06T20:44:37.547Z"
+    },
+    {
+      "id": "e8781c26-e57b-42f6-a8f9-a8ceee598946",
+      "deckId": "66a5cbb6-043e-4425-b04e-9ebcde764b30",
+      "question": null,
+      "answer": null,
+      "level": 2,
+      "createdAt": "2026-03-06T20:44:37.547Z",
+      "userId": "1738640325000",
+      "nextReview": "2026-02-13T15:06:21.619+00:00",
+      "updatedAt": "2026-02-13T15:06:40.033+00:00",
+      "front": "WHAT IS MACHINE OPP",
+      "back": "HRYUEHYRHRURJUFRHT",
+      "supabaseId": "e8781c26-e57b-42f6-a8f9-a8ceee598946"
+    },
+    {
+      "id": "cd71cec6-b191-4cd7-b8cc-22f419b55bcd",
+      "deckId": "b56f1d2b-f0ee-43dc-a5ae-730a2d50e340",
+      "question": null,
+      "answer": null,
+      "level": 3,
+      "createdAt": "2026-03-06T20:44:37.547Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "nextReview": "2026-03-05T19:49:05.915+00:00",
+      "updatedAt": "2026-03-06T21:58:06.778+00:00",
+      "front": "INTERNETWORKING OPERATING SYSTEM",
+      "back": "IT IS A SPECIALIZED SYSTEM SOFTWARE USED TO MANAGE NETWORKING DEVICES SUCH AS ROUTERS,SWITCHES AND MUCH",
+      "supabaseId": "cd71cec6-b191-4cd7-b8cc-22f419b55bcd"
+    },
+    {
+      "id": "695475c9-9b4b-4ec9-9d95-935df3b3bf2f",
+      "deckId": "4c8ac434-e7db-4bae-9a80-a358aef89379",
+      "question": null,
+      "answer": null,
+      "level": 1,
+      "createdAt": "2026-03-06T20:44:37.547Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "nextReview": "2026-03-06T09:10:47.448+00:00",
+      "updatedAt": "2026-03-06T23:10:45.516+00:00",
+      "front": "TROUBLESHOOTING ",
+      "back": "DISCOVERING,DIAGNOSING AND REOLVING PRONLEM WITH PHYSICAL COMPUTERS",
+      "supabaseId": "695475c9-9b4b-4ec9-9d95-935df3b3bf2f"
+    },
+    {
+      "id": "c0947523-606f-4655-9b2b-2d520f1853a9",
+      "deckId": "415ab09c-0c99-41da-92ca-b00188611bc2",
+      "question": null,
+      "answer": null,
+      "level": 2,
+      "createdAt": "2026-03-06T20:44:37.547Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "nextReview": "2026-03-05T20:50:29.689+00:00",
+      "updatedAt": "2026-03-06T10:50:41.925+00:00",
+      "front": "Key Term from OOP",
+      "back": "Refer to your recent summary for the full definition.",
+      "supabaseId": "c0947523-606f-4655-9b2b-2d520f1853a9"
+    },
+    {
+      "id": "4ff38d44-b5ef-4fd4-8f49-4c14eebe2234",
+      "deckId": "415ab09c-0c99-41da-92ca-b00188611bc2",
+      "question": null,
+      "answer": null,
+      "level": 3,
+      "createdAt": "2026-03-06T20:44:37.547Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "nextReview": "2026-03-05T20:50:30.38+00:00",
+      "updatedAt": "2026-03-06T10:50:50.884+00:00",
+      "front": "How does this concept connect to your previous topics?",
+      "back": "Analyze the relationship to build deep understanding.",
+      "supabaseId": "4ff38d44-b5ef-4fd4-8f49-4c14eebe2234"
+    },
+    {
+      "id": "7580e952-6eb0-4bca-96ca-3f0cbfa27e36",
+      "deckId": "4c4ae412-8d10-4863-a33a-df8b8847c35f",
+      "question": null,
+      "answer": null,
+      "level": 1,
+      "createdAt": "2026-03-06T20:44:37.547Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "nextReview": "2026-03-05T21:46:57.815+00:00",
+      "updatedAt": "2026-03-06T11:46:55.831+00:00",
+      "front": "COMPONENTS OF THE .NET FRAMEWORK",
+      "back": "COMMON LANGAUGE RUNTIME(CLM) CLASS LIBRARY(CL)",
+      "supabaseId": "7580e952-6eb0-4bca-96ca-3f0cbfa27e36"
+    },
+    {
+      "id": "f5d8802d-7e54-44a5-903f-13f64089e52d",
+      "deckId": "4c4ae412-8d10-4863-a33a-df8b8847c35f",
+      "question": null,
+      "answer": null,
+      "level": 2,
+      "createdAt": "2026-03-06T20:44:37.547Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "nextReview": "2026-03-05T21:06:37.209+00:00",
+      "updatedAt": "2026-03-06T11:06:46.629+00:00",
+      "front": "COMPONENTS OF AN EXCEPTION HANDLING ",
+      "back": "TRY-THE CODE THAT MAY CAUSE AN EXCEPTION IS HERE ;CATCH-THE EXCEPTION IS HANDLED IN HERE ; FINALLY-THIS BLOCK IS EXCUTED REGARDLESS OF WHEATHER AN EXCEPTION OCCURS OR NOT ",
+      "supabaseId": "f5d8802d-7e54-44a5-903f-13f64089e52d"
+    },
+    {
+      "id": "b083da06-6e69-4dc6-bd32-df06400f76a0",
+      "deckId": "4c4ae412-8d10-4863-a33a-df8b8847c35f",
+      "question": null,
+      "answer": null,
+      "level": 2,
+      "createdAt": "2026-03-06T20:44:37.547Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "nextReview": "2026-03-05T20:50:03.352+00:00",
+      "updatedAt": "2026-03-06T11:06:52.551+00:00",
+      "front": "EXCEPTION ",
+      "back": "AN EXCEPTION IS AN UNEXPECTED EVENT THAT OCCURS DURING EXECUTION WHICH DISRUPTS THE NORMAL FLOW OF THE PROGRAM",
+      "supabaseId": "b083da06-6e69-4dc6-bd32-df06400f76a0"
+    },
+    {
+      "id": "a2619baf-4c9a-4ec7-a503-6e1db40c652e",
+      "deckId": "b56f1d2b-f0ee-43dc-a5ae-730a2d50e340",
+      "question": null,
+      "answer": null,
+      "level": 3,
+      "createdAt": "2026-03-06T20:44:37.547Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "nextReview": "2026-03-05T19:53:06.581+00:00",
+      "updatedAt": "2026-03-06T21:58:01.528+00:00",
+      "front": "FUNCTIONS OF AN INTERNETWORKING OPERATING SYSTEMS",
+      "back": "NETWORK ROUTING ;DEVICE CONFIGURATION ;NETWORK MONITORING AND MANAGEMENT ;SECURITY MANAGEMENT ;TRAFFIC CONTROL ;FAULT DETECTION",
+      "supabaseId": "a2619baf-4c9a-4ec7-a503-6e1db40c652e"
+    },
+    {
+      "id": "3b50b3e2-256a-4e2d-9869-018343019777",
+      "deckId": "b56f1d2b-f0ee-43dc-a5ae-730a2d50e340",
+      "question": null,
+      "answer": null,
+      "level": 3,
+      "createdAt": "2026-03-06T20:44:37.547Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "nextReview": "2026-03-05T20:10:19.26+00:00",
+      "updatedAt": "2026-03-06T21:57:55.168+00:00",
+      "front": "DOMAIN NAME SYSTEM(DNS)",
+      "back": "IT IS A NETWORK SERVICE THAT CHANGES HUMAN READABLE DOMAIN NAMES INTO IP ADDRESSES  e.g www.joshwebs.co.zw to 192.164.168.1",
+      "supabaseId": "3b50b3e2-256a-4e2d-9869-018343019777"
+    },
+    {
+      "id": "3d874850-131d-461a-b10e-caba13ed6e1c",
+      "deckId": "b56f1d2b-f0ee-43dc-a5ae-730a2d50e340",
+      "question": null,
+      "answer": null,
+      "level": 3,
+      "createdAt": "2026-03-06T20:44:37.547Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "nextReview": "2026-03-05T20:06:30.746+00:00",
+      "updatedAt": "2026-03-06T21:57:51.283+00:00",
+      "front": "DHCP DORA",
+      "back": "D=DISCOVER ; O=OFFER ; R=REQUEST ; A=ACKNOWLEDGE",
+      "supabaseId": "3d874850-131d-461a-b10e-caba13ed6e1c"
+    },
+    {
+      "id": "ccf34d9b-3d42-49f2-8d68-aaedcdad210b",
+      "deckId": "4c4ae412-8d10-4863-a33a-df8b8847c35f",
+      "question": null,
+      "answer": null,
+      "level": 1,
+      "createdAt": "2026-03-06T20:44:37.547Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "nextReview": "2026-03-06T07:08:05.732+00:00",
+      "updatedAt": "2026-03-06T21:08:03.088+00:00",
+      "front": "USING DIRECTIVE",
+      "back": "TELLS A COMPILER TO USE DIRECTIVES ",
+      "supabaseId": "ccf34d9b-3d42-49f2-8d68-aaedcdad210b"
+    },
+    {
+      "id": "02212267-0799-4561-b15a-66998e65ab12",
+      "deckId": "b56f1d2b-f0ee-43dc-a5ae-730a2d50e340",
+      "question": null,
+      "answer": null,
+      "level": 2,
+      "createdAt": "2026-03-06T20:44:37.547Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "nextReview": "2026-03-05T20:00:14.683+00:00",
+      "updatedAt": "2026-03-06T21:57:41.748+00:00",
+      "front": "WHAT ARE NETWORK SERVICES DHCP &DNS",
+      "back": "IT IS A PROGRAM THAT HELPS COMPUTERS COMMUNICATE AND FUNCTION PROPERLY ON A NETWORK",
+      "supabaseId": "02212267-0799-4561-b15a-66998e65ab12"
+    },
+    {
+      "id": "533e7e39-151d-4dae-9be5-c407257e423f",
+      "deckId": "b56f1d2b-f0ee-43dc-a5ae-730a2d50e340",
+      "question": null,
+      "answer": null,
+      "level": 3,
+      "createdAt": "2026-03-06T20:44:37.547Z",
+      "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "nextReview": "2026-03-05T20:02:40.597+00:00",
+      "updatedAt": "2026-03-06T21:57:46.437+00:00",
+      "front": "DYNAMIC HOST CONFIGURATION PROTOCOL",
+      "back": "IT IS USED TO ASSIGN AUTOMATICALLY IP ADDRESSES TO DEVICES CONNECTED TO A NETWORK",
+      "supabaseId": "533e7e39-151d-4dae-9be5-c407257e423f"
     }
   ],
   "calendarEvents": [],
@@ -1739,7 +3075,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-02-10T02:56:51.278+00:00",
-      "updatedAt": "2026-02-07T11:53:33.647+00:00"
+      "updatedAt": "2026-03-06T20:44:37.757Z",
+      "supabaseId": "21dd4bc7-fc03-4f93-af64-de8d0939fd33"
     },
     {
       "id": "4edbb7f3-2904-4571-a800-e1e398b2a162",
@@ -1751,7 +3088,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-02-15T11:59:39.54+00:00",
-      "updatedAt": "2026-02-15T11:59:39.54+00:00"
+      "updatedAt": "2026-03-06T20:44:37.757Z",
+      "supabaseId": "4edbb7f3-2904-4571-a800-e1e398b2a162"
     },
     {
       "id": "76dc84ad-2a0b-4d81-8009-665f8d181763",
@@ -1763,7 +3101,8 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-02-25T12:38:47.335+00:00",
-      "updatedAt": "2026-02-25T12:38:47.335+00:00"
+      "updatedAt": "2026-03-06T20:44:37.757Z",
+      "supabaseId": "76dc84ad-2a0b-4d81-8009-665f8d181763"
     },
     {
       "id": "30da032e-0af9-4c86-bd03-69c5deb67374",
@@ -1775,7 +3114,21 @@
       "userId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
       "moduleId": "0b1a972b-c0e3-44f4-be83-1bbcdb8e9099",
       "createdAt": "2026-02-26T17:47:01.614+00:00",
-      "updatedAt": "2026-02-26T17:47:01.614+00:00"
+      "updatedAt": "2026-03-06T20:44:37.757Z",
+      "supabaseId": "30da032e-0af9-4c86-bd03-69c5deb67374"
+    },
+    {
+      "id": "dc00aaf0-b2c2-45d9-9b81-95b6158c001a",
+      "userId": "1738640325000",
+      "title": "machine ops",
+      "youtubeUrl": null,
+      "moduleId": "54d3897e-f954-4942-95cf-3e1c6059f95a",
+      "topic": "",
+      "description": "",
+      "createdAt": "2026-03-06T20:44:37.757Z",
+      "updatedAt": "2026-02-13T15:05:20.642+00:00",
+      "url": "https://youtu.be/uutTJgY7Br0?si=SGOHChLpX5kT3xbP",
+      "supabaseId": "dc00aaf0-b2c2-45d9-9b81-95b6158c001a"
     }
   ],
   "conversations": [
@@ -1823,10 +3176,402 @@
       "status": "pending",
       "initiatorId": "94b96706-33d1-4bed-bcc8-cd0c5281ea85",
       "supabaseId": "69773f22-220d-4d4c-8ef4-b6470e2b2e14"
+    },
+    {
+      "id": "608bd5ec-7e46-4b1b-aa36-75b52ab11f17",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "1769561085648",
+        "b887a328-07d6-4388-b59c-084389b1159f"
+      ],
+      "lastMessage": "",
+      "lastMessageTime": "2026-02-12T18:06:41.191+00:00",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "status": "pending",
+      "initiatorId": "1769561085648",
+      "updatedAt": "2026-02-12T18:06:41.267988+00:00",
+      "groupName": null,
+      "inviteCode": null,
+      "supabaseId": "608bd5ec-7e46-4b1b-aa36-75b52ab11f17"
+    },
+    {
+      "id": "fb8d6ddb-f88b-4f2c-b6da-8c03a293039e",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "1769561085648",
+        "9902c275-b983-433b-9b3f-f0eada3c1d00"
+      ],
+      "lastMessage": "",
+      "lastMessageTime": "2026-02-12T18:07:04.669+00:00",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "status": "pending",
+      "initiatorId": "1769561085648",
+      "updatedAt": "2026-02-12T18:07:04.746935+00:00",
+      "groupName": null,
+      "inviteCode": null,
+      "supabaseId": "fb8d6ddb-f88b-4f2c-b6da-8c03a293039e"
+    },
+    {
+      "id": "3e554f84-c485-409c-850b-776da2d68682",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "1769561085648",
+        "f8de887a-ab76-4970-b19d-68783a778d8b"
+      ],
+      "lastMessage": "",
+      "lastMessageTime": "2026-02-11T18:01:03.347+00:00",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "status": "pending",
+      "initiatorId": "1769561085648",
+      "updatedAt": "2026-02-11T18:01:03.476196+00:00",
+      "groupName": null,
+      "inviteCode": null,
+      "supabaseId": "3e554f84-c485-409c-850b-776da2d68682"
+    },
+    {
+      "id": "c2557f6b-0aa2-4634-a6d7-d7f34c7474eb",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "93380b42-ed1f-4140-a84b-43bc1abbe032",
+        "3815cad6-958d-41a7-97f3-03730096af24"
+      ],
+      "lastMessage": "ayewa handinaba",
+      "lastMessageTime": "2026-03-07T09:42:44.997+00:00",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "status": "active",
+      "initiatorId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "updatedAt": "2026-03-06T20:39:02.96554+00:00",
+      "groupName": null,
+      "inviteCode": null,
+      "supabaseId": "c2557f6b-0aa2-4634-a6d7-d7f34c7474eb"
+    },
+    {
+      "id": "60dea97f-c576-474e-af54-ee4a96776382",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "4dbd2ac5-3f3a-4cc1-b198-4012b917cace",
+        "1769561085648"
+      ],
+      "lastMessage": "hie",
+      "lastMessageTime": "2026-02-12T22:02:44.273+00:00",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "status": "active",
+      "initiatorId": "4dbd2ac5-3f3a-4cc1-b198-4012b917cace",
+      "updatedAt": "2026-02-12T21:11:27.062383+00:00",
+      "groupName": null,
+      "inviteCode": null,
+      "supabaseId": "60dea97f-c576-474e-af54-ee4a96776382"
+    },
+    {
+      "id": "772683b0-a1fc-424d-9b6a-81714f674336",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "1769561085648",
+        "af2f088a-3cf9-4772-8901-572bdf4b88cd"
+      ],
+      "lastMessage": "",
+      "lastMessageTime": "2026-02-13T07:58:58.628+00:00",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "status": "pending",
+      "initiatorId": "1769561085648",
+      "updatedAt": "2026-02-13T07:58:58.721032+00:00",
+      "groupName": null,
+      "inviteCode": null,
+      "supabaseId": "772683b0-a1fc-424d-9b6a-81714f674336"
+    },
+    {
+      "id": "d8479a0c-b20c-4633-8e07-09ee77deaddf",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "1769561085648",
+        "928b1fb8-928f-4739-88ef-4c956c13dabe"
+      ],
+      "lastMessage": "",
+      "lastMessageTime": "2026-02-11T19:01:29.75+00:00",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "status": "pending",
+      "initiatorId": "1769561085648",
+      "updatedAt": "2026-02-11T19:01:29.874635+00:00",
+      "groupName": null,
+      "inviteCode": null,
+      "supabaseId": "d8479a0c-b20c-4633-8e07-09ee77deaddf"
+    },
+    {
+      "id": "a2dc16b3-57f6-4353-b237-6925d9f530f9",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "1769561085648",
+        "1eb558ac-6ca1-4ed5-97c7-6e83577a5613"
+      ],
+      "lastMessage": "",
+      "lastMessageTime": "2026-02-11T19:09:19.962+00:00",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "status": "pending",
+      "initiatorId": "1769561085648",
+      "updatedAt": "2026-02-11T19:09:20.050285+00:00",
+      "groupName": null,
+      "inviteCode": null,
+      "supabaseId": "a2dc16b3-57f6-4353-b237-6925d9f530f9"
+    },
+    {
+      "id": "14c0353f-4421-4fe9-8627-a588c0354feb",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "94b96706-33d1-4bed-bcc8-cd0c5281ea85",
+        "9902c275-b983-433b-9b3f-f0eada3c1d00"
+      ],
+      "lastMessage": "",
+      "lastMessageTime": "2026-02-13T08:29:29.36+00:00",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "status": "pending",
+      "initiatorId": "94b96706-33d1-4bed-bcc8-cd0c5281ea85",
+      "updatedAt": "2026-02-13T08:29:29.441061+00:00",
+      "groupName": null,
+      "inviteCode": null,
+      "supabaseId": "14c0353f-4421-4fe9-8627-a588c0354feb"
+    },
+    {
+      "id": "6ccb6857-888f-4a8b-a28b-fe63c576962e",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "97d031e6-00f7-4b26-8722-682254410b29",
+        "928b1fb8-928f-4739-88ef-4c956c13dabe"
+      ],
+      "lastMessage": "",
+      "lastMessageTime": "2026-02-11T23:05:19.323+00:00",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "status": "pending",
+      "initiatorId": "97d031e6-00f7-4b26-8722-682254410b29",
+      "updatedAt": "2026-02-11T23:05:19.408939+00:00",
+      "groupName": null,
+      "inviteCode": null,
+      "supabaseId": "6ccb6857-888f-4a8b-a28b-fe63c576962e"
+    },
+    {
+      "id": "d5f409aa-00a4-4cc6-b1b1-8d32451cf494",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "97d031e6-00f7-4b26-8722-682254410b29",
+        "1eb558ac-6ca1-4ed5-97c7-6e83577a5613"
+      ],
+      "lastMessage": "",
+      "lastMessageTime": "2026-02-11T23:05:35.389+00:00",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "status": "pending",
+      "initiatorId": "97d031e6-00f7-4b26-8722-682254410b29",
+      "updatedAt": "2026-02-11T23:05:35.50969+00:00",
+      "groupName": null,
+      "inviteCode": null,
+      "supabaseId": "d5f409aa-00a4-4cc6-b1b1-8d32451cf494"
+    },
+    {
+      "id": "bad2ef24-c653-45f2-9f77-c422f742310b",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "97d031e6-00f7-4b26-8722-682254410b29",
+        "1769561085648"
+      ],
+      "lastMessage": "HEY",
+      "lastMessageTime": "2026-02-11T23:11:58.265+00:00",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "status": "active",
+      "initiatorId": "97d031e6-00f7-4b26-8722-682254410b29",
+      "updatedAt": "2026-02-11T18:20:13.281651+00:00",
+      "groupName": null,
+      "inviteCode": null,
+      "supabaseId": "bad2ef24-c653-45f2-9f77-c422f742310b"
+    },
+    {
+      "id": "80ed608e-a789-4744-b3d4-d5b2d60e4191",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "1769561085648",
+        "d80b48b4-5026-4140-88a0-703daa3a9c28"
+      ],
+      "lastMessage": "",
+      "lastMessageTime": "2026-02-12T11:18:44.134+00:00",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "status": "pending",
+      "initiatorId": "1769561085648",
+      "updatedAt": "2026-02-12T11:18:44.22779+00:00",
+      "groupName": null,
+      "inviteCode": null,
+      "supabaseId": "80ed608e-a789-4744-b3d4-d5b2d60e4191"
+    },
+    {
+      "id": "a9db589c-8429-4afc-947c-b1fe2ca4c157",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "1769561085648",
+        "644ebcee-00cf-472a-9ab3-aba33fd4ee85"
+      ],
+      "lastMessage": "",
+      "lastMessageTime": "2026-02-12T11:38:26.916+00:00",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "status": "pending",
+      "initiatorId": "1769561085648",
+      "updatedAt": "2026-02-12T11:38:27.012066+00:00",
+      "groupName": null,
+      "inviteCode": null,
+      "supabaseId": "a9db589c-8429-4afc-947c-b1fe2ca4c157"
+    },
+    {
+      "id": "ea77e4f9-cc22-407e-ba45-9362d75f5bc1",
+      "type": "group",
+      "groupId": "d4054acc-91cf-4a10-b82e-bafcf7fb13b1",
+      "participants": [
+        "1769561085648"
+      ],
+      "lastMessage": "GENTLEMEN",
+      "lastMessageTime": "2026-02-11T21:25:35.046+00:00",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "status": "active",
+      "initiatorId": null,
+      "updatedAt": "2026-02-10T19:52:06.296771+00:00",
+      "groupName": "DATABASE ADMIN",
+      "inviteCode": "GHX75P",
+      "supabaseId": "ea77e4f9-cc22-407e-ba45-9362d75f5bc1"
+    },
+    {
+      "id": "c0db8651-6cf9-4532-b92d-cfe6329cd72d",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "1769561085648",
+        "37f98a6a-1fab-4ef1-9c8e-916e6a371251"
+      ],
+      "lastMessage": "",
+      "lastMessageTime": "2026-02-25T16:41:15.992+00:00",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "status": "pending",
+      "initiatorId": "1769561085648",
+      "updatedAt": "2026-02-25T16:41:16.092348+00:00",
+      "groupName": null,
+      "inviteCode": null,
+      "supabaseId": "c0db8651-6cf9-4532-b92d-cfe6329cd72d"
+    },
+    {
+      "id": "d37f50bb-f4db-49c1-bc62-2ca0ffe0b759",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "1769561085648",
+        "3815cad6-958d-41a7-97f3-03730096af24"
+      ],
+      "lastMessage": "Shared note: OOP SUPER",
+      "lastMessageTime": "2026-02-25T16:42:07.848+00:00",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "status": "active",
+      "initiatorId": "1769561085648",
+      "updatedAt": "2026-02-15T21:25:25.195186+00:00",
+      "groupName": null,
+      "inviteCode": null,
+      "supabaseId": "d37f50bb-f4db-49c1-bc62-2ca0ffe0b759"
+    },
+    {
+      "id": "ac4d89d1-93e3-4d43-8ddd-75c2feb75fa0",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "c10d10a6-415f-4ac5-b82c-70a42349e5cb",
+        "1769561085648"
+      ],
+      "lastMessage": "Shared note: HARDWARE ADMIN www.joshwebs.co.zw",
+      "lastMessageTime": "2026-02-14T17:33:30.413+00:00",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "status": "active",
+      "initiatorId": "c10d10a6-415f-4ac5-b82c-70a42349e5cb",
+      "updatedAt": "2026-02-14T17:32:25.035213+00:00",
+      "groupName": null,
+      "inviteCode": null,
+      "supabaseId": "ac4d89d1-93e3-4d43-8ddd-75c2feb75fa0"
+    },
+    {
+      "id": "466144f3-4534-4f99-ac52-1aac7d3d97d1",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "1769561085648",
+        "1738640325000"
+      ],
+      "lastMessage": "HIE",
+      "lastMessageTime": "2026-02-25T17:07:44.654+00:00",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "status": "active",
+      "initiatorId": "1769561085648",
+      "updatedAt": "2026-02-13T14:26:37.296414+00:00",
+      "groupName": null,
+      "inviteCode": null,
+      "supabaseId": "466144f3-4534-4f99-ac52-1aac7d3d97d1"
+    },
+    {
+      "id": "1d89c59e-0712-44e3-92de-7d0c0ac721dc",
+      "type": "direct",
+      "groupId": null,
+      "participants": [
+        "93380b42-ed1f-4140-a84b-43bc1abbe032",
+        "37f98a6a-1fab-4ef1-9c8e-916e6a371251"
+      ],
+      "lastMessage": "",
+      "lastMessageTime": "2026-03-06T16:35:56.773+00:00",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "status": "pending",
+      "initiatorId": "93380b42-ed1f-4140-a84b-43bc1abbe032",
+      "updatedAt": "2026-03-06T16:35:56.873023+00:00",
+      "groupName": null,
+      "inviteCode": null,
+      "supabaseId": "1d89c59e-0712-44e3-92de-7d0c0ac721dc"
     }
   ],
   "messages": [],
-  "groups": [],
+  "groups": [
+    {
+      "id": "2509ec01-d5f5-410b-a3dd-20d8ea40ea2b",
+      "name": "DATABASE ADMIN",
+      "description": "STUDY GROUP",
+      "createdBy": "1769561085648",
+      "members": [
+        "1769561085648",
+        "97d031e6-00f7-4b26-8722-682254410b29"
+      ],
+      "inviteCode": "2S49U9",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "updatedAt": "2026-02-10T19:43:53.223267+00:00",
+      "userId": null,
+      "creatorId": "1769561085648",
+      "supabaseId": "2509ec01-d5f5-410b-a3dd-20d8ea40ea2b"
+    },
+    {
+      "id": "d4054acc-91cf-4a10-b82e-bafcf7fb13b1",
+      "name": "DATABASE ADMIN",
+      "description": "STUDY PLATFORM",
+      "createdBy": "1769561085648",
+      "members": [
+        "1769561085648",
+        "97d031e6-00f7-4b26-8722-682254410b29"
+      ],
+      "inviteCode": "GHX75P",
+      "createdAt": "2026-03-06T20:44:38.205Z",
+      "updatedAt": "2026-02-10T19:52:06.041577+00:00",
+      "userId": null,
+      "creatorId": "1769561085648",
+      "supabaseId": "d4054acc-91cf-4a10-b82e-bafcf7fb13b1"
+    }
+  ],
   "settings": {
     "owner": {
       "uid": "93380b42-ed1f-4140-a84b-43bc1abbe032",

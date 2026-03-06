@@ -301,6 +301,65 @@ app.get('/api/leaderboard', async (req, res) => {
     }
 });
 
+// --- MARKETPLACE & ECONOMY ---
+const MARKET_ITEMS = [
+    { id: 'streak_freeze', name: 'Streak Freeze', price: 500, type: 'consumable', icon: 'Ice', description: 'Prevents your study streak from breaking for 24h.' },
+    { id: 'gold_frame', name: 'Legendary Gold Frame', price: 1500, type: 'cosmetic', icon: 'Shield', description: 'A glowing gold border for your profile avatar.' },
+    { id: 'cyber_icon', name: 'Cyberpunk Icon Set', price: 800, type: 'cosmetic', icon: 'Cpu', description: 'Replace your default level icons with neon versions.' },
+    { id: 'focus_booster', name: 'XP Booster (2h)', price: 300, type: 'consumable', icon: 'Zap', description: 'Double XP for the next 2 hours of study.' }
+];
+
+app.get('/api/marketplace/items', authenticateToken, (req, res) => {
+    res.json(MARKET_ITEMS);
+});
+
+app.post('/api/marketplace/purchase', authenticateToken, async (req, res) => {
+    try {
+        const { itemId } = req.body;
+        const item = MARKET_ITEMS.find(i => i.id === itemId);
+
+        if (!item) return res.status(404).json({ error: 'Item not found' });
+
+        // Get current user balance
+        const user = db.getById('users', req.user.id);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const currentCoins = user.syncCoins || 0;
+        if (currentCoins < item.price) {
+            return res.status(400).json({ error: 'Insufficient SyncCoins balance' });
+        }
+
+        // Deduct coins
+        const newBalance = currentCoins - item.price;
+        db.update('users', req.user.id, { syncCoins: newBalance });
+
+        // Add item to inventory
+        const inventory = user.inventory || [];
+        if (item.type === 'cosmetic' && inventory.includes(item.id)) {
+            return res.status(400).json({ error: 'You already own this item' });
+        }
+
+        inventory.push(item.id);
+        db.update('users', req.user.id, { inventory });
+
+        // Sync to Supabase
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(req.user.id);
+        if (supabase && isUUID) {
+            await supabase.from('profiles')
+                .update({
+                    sync_coins: newBalance,
+                    inventory: inventory
+                })
+                .eq('id', req.user.id);
+        }
+
+        res.json({ success: true, balance: newBalance, inventory });
+    } catch (err) {
+        console.error('Purchase error:', err);
+        res.status(500).json({ error: 'Failed to process purchase' });
+    }
+});
+
 // --- DOWNLOAD INSTALLER ---
 app.get('/api/download/installer', (req, res) => {
     const distPath = path.join(__dirname, '../dist_electron');
@@ -1617,24 +1676,30 @@ genericCollections.forEach(collection => {
         let item = db.insert(collection, rawItem);
         let syncStatus = 'local-only';
 
-        // Smarter XP Logic
+        // Smarter XP & Coin Logic
         let xpGained = 0;
+        let coinsGained = 0;
         if (collection === 'studyLogs') {
             // Safeguard: Ensure hours is always present for Supabase, fallback to duration
             if (req.body.hours === undefined && req.body.duration !== undefined) {
                 rawItem.hours = parseFloat(req.body.duration);
             }
             xpGained = Math.round(parseFloat(rawItem.hours || 0) * 100) || 50;
+            coinsGained = Math.round(xpGained / 2) || 25; // 50% of XP as coins
         } else if (collection === 'tasks' && item.status === 'Completed') {
-            xpGained = 150; // Increased to match syncService live calculation
+            xpGained = 150;
+            coinsGained = 50;
         } else if (collection === 'pomodoroSessions') {
             xpGained = Math.round(parseFloat(req.body.duration || 0) * 100) || 50;
+            coinsGained = Math.round(xpGained / 2) || 25;
         }
 
-        if (xpGained > 0) {
-            const xpResult = db.addXP(req.user.id, xpGained);
+        if (xpGained > 0 || coinsGained > 0) {
+            if (xpGained > 0) db.addXP(req.user.id, xpGained);
+            if (coinsGained > 0) db.addCoins(req.user.id, coinsGained);
+
             try {
-                // Fetch full user to get latest XP/Level
+                // Fetch full user to get latest XP/Level/Coins
                 const updatedUser = db.getById('users', req.user.id);
                 if (updatedUser) {
                     await supabasePersistence.upsertProfile({
@@ -1642,11 +1707,12 @@ genericCollections.forEach(collection => {
                         email: req.user.email,
                         xp: updatedUser.xp,
                         level: updatedUser.level,
+                        syncCoins: updatedUser.syncCoins || 0,
                         updated_at: now
                     });
                 }
             } catch (e) {
-                console.warn('Could not sync XP from collection gain:', e.message);
+                console.warn('Could not sync XP/Coins from collection gain:', e.message);
             }
         }
 

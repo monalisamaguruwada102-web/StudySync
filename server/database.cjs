@@ -264,6 +264,16 @@ const db = {
         return { user, levelUp };
     },
 
+    addCoins: (userId, amount) => {
+        const data = readDB();
+        const user = data.users.find(u => u.id === userId);
+        if (!user) return null;
+
+        user.syncCoins = (user.syncCoins || 0) + amount;
+        writeDB(data);
+        return user;
+    },
+
     // Raw data access for export
     getRawData: () => readDB(),
 

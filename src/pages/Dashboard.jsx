@@ -15,6 +15,7 @@ import JourneyMap from '../components/dashboard/JourneyMap';
 import FocusRadar from '../components/dashboard/FocusRadar';
 import LoadingReactor from '../components/ui/LoadingReactor';
 import LivePresence from '../components/dashboard/LivePresence';
+import MilestoneMap from '../components/dashboard/MilestoneMap';
 import {
     Clock,
     Layers,
@@ -275,18 +276,18 @@ const Dashboard = () => {
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`mb-8 p-1 rounded-[2.5rem] bg-gradient-to-br ${league.gradient || 'from-slate-200 to-slate-100'} shadow-2xl relative overflow-hidden group`}
+                className={`mb - 8 p - 1 rounded - [2.5rem] bg - gradient - to - br ${league.gradient || 'from-slate-200 to-slate-100'} shadow - 2xl relative overflow - hidden group`}
             >
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-150 contrast-150 mix-blend-overlay"></div>
                 <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-[2.2rem] p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-8 h-full relative z-10">
                     <div className="flex items-center gap-6 text-center md:text-left">
-                        <div className={`w-20 h-20 rounded-2xl flex items-center justify-center text-white shadow-2xl shadow-primary-500/40 relative overflow-hidden ${league.color.replace('text', 'bg').replace('-400', '-500')}`}>
+                        <div className={`w - 20 h - 20 rounded - 2xl flex items - center justify - center text - white shadow - 2xl shadow - primary - 500 / 40 relative overflow - hidden ${league.color.replace('text', 'bg').replace('-400', '-500')} `}>
                             <Trophy size={40} className="relative z-10 drop-shadow-md" />
                             <div className="absolute inset-0 bg-gradient-to-tr from-white/30 to-transparent" />
                         </div>
                         <div>
                             <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
-                                <span className={`text-xs font-black uppercase tracking-[0.25em] ${league.color}`}>{league.name} League</span>
+                                <span className={`text - xs font - black uppercase tracking - [0.25em] ${league.color} `}>{league.name} League</span>
                                 <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[9px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 dark:border-slate-700">Ranked</span>
                             </div>
                             <h2 className="text-3xl font-black text-slate-900 dark:text-white leading-none tracking-tight">Level {user?.level || 1} Elite</h2>
@@ -308,8 +309,8 @@ const Dashboard = () => {
                             <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
                                 <motion.div
                                     initial={{ width: 0 }}
-                                    animate={{ width: `${levelProgress}%` }}
-                                    className={`h-full bg-gradient-to-r ${league.gradient || 'from-primary-500 to-primary-400'} shadow-[0_0_20px_rgba(99,102,241,0.5)]`}
+                                    animate={{ width: `${levelProgress}% ` }}
+                                    className={`h - full bg - gradient - to - r ${league.gradient || 'from-primary-500 to-primary-400'} shadow - [0_0_20px_rgba(99, 102, 241, 0.5)]`}
                                 />
                             </div>
                         </div>
@@ -323,7 +324,7 @@ const Dashboard = () => {
                     <button
                         onClick={handleTriggerGlobalEmails}
                         disabled={isBroadcasting}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-lg border border-red-500/20 ${isBroadcasting ? 'bg-slate-100 text-slate-400' : 'bg-gradient-to-r from-slate-900 to-slate-800 dark:from-red-500/20 dark:to-rose-600/20 text-white dark:text-red-400 hover:scale-105 active:scale-95 shadow-xl'}`}
+                        className={`flex items - center gap - 2 px - 6 py - 3 rounded - 2xl font - bold transition - all shadow - lg border border - red - 500 / 20 ${isBroadcasting ? 'bg-slate-100 text-slate-400' : 'bg-gradient-to-r from-slate-900 to-slate-800 dark:from-red-500/20 dark:to-rose-600/20 text-white dark:text-red-400 hover:scale-105 active:scale-95 shadow-xl'} `}
                     >
                         <Mail size={18} className={isBroadcasting ? 'animate-bounce' : ''} />
                         {isBroadcasting ? 'Broadcasting...' : 'Trigger Global Broadcast'}
@@ -373,7 +374,7 @@ const Dashboard = () => {
                     value={`${stats.streak} Days`}
                     trend="Keep it going!"
                 />
-            </div>
+            </div >
 
 
 
@@ -463,6 +464,21 @@ const Dashboard = () => {
                     )}
                 </div>
             </div>
+
+            {/* Milestone Map - New Premium Feature */}
+            {modules && modules.length > 0 && tasks && (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="mb-8"
+                >
+                    <MilestoneMap
+                        moduleName={modules[0].name}
+                        tasks={tasks.filter(t => t.moduleId === modules[0].id)}
+                    />
+                </motion.div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                 <Card title="Weekly Study Trend" className="lg:col-span-2">
@@ -587,7 +603,7 @@ const Dashboard = () => {
                     </div>
                 </Card>
             </div>
-        </Layout>
+        </Layout >
     );
 };
 

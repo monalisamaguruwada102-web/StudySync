@@ -49,7 +49,7 @@ const mapToTable = (item, table = null) => {
     // Keys to skip by default or based on table
     const skipKeys = [
         'supabaseId', 'supabaseAuthId', 'videoId', 'thumbnail', 'active', 'lastActive',
-        'password'
+        'password', 'syncCoins'
     ];
 
     // profiles table is strict about metadata; some fields live only in users (legacy)
@@ -444,6 +444,42 @@ const updateLastSeen = async (userId) => {
     return true;
 };
 
+const awardSyncCoins = async (userId, amount) => {
+    const client = initSupabase();
+    if (!client) return null;
+
+    // Get current coins
+    const { data: profile, error: fetchError } = await client
+        .from('profiles')
+        .select('sync_coins')
+        .eq('id', userId)
+        .single();
+
+    if (fetchError) {
+        console.error('Error fetching coins for award:', fetchError);
+        return null;
+    }
+
+    const newBalance = (profile.sync_coins || 0) + amount;
+
+    const { data, error } = await client
+        .from('profiles')
+        .update({ sync_coins: newBalance })
+        .eq('id', userId)
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error awarding coins:', error);
+        return null;
+    }
+
+    // Also update users table for legacy sync
+    await client.from('users').update({ sync_coins: newBalance }).eq('id', userId);
+
+    return mapRow(data, 'profiles');
+};
+
 module.exports = {
     initSupabase,
     mapRow,
@@ -469,8 +505,8 @@ module.exports = {
     getAllProfiles,
     upsertProfile,
     getItemByField,
-    getLeaderboardData,
     getActiveUserCount,
-    updateLastSeen
+    updateLastSeen,
+    awardSyncCoins
 };
 
