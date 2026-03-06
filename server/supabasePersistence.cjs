@@ -400,6 +400,50 @@ const deleteAllUserData = async (userId) => {
     }
 };
 
+const getLeaderboardData = async (limit = 50) => {
+    const client = initSupabase();
+    if (!client) return null;
+    const { data, error } = await client
+        .from('profiles')
+        .select('id, name, xp, level, badges')
+        .order('xp', { ascending: false })
+        .limit(limit);
+    if (error) {
+        console.error('Error fetching leaderboard:', error);
+        return null;
+    }
+    return data.map(row => mapRow(row, 'profiles'));
+};
+
+const getActiveUserCount = async () => {
+    const client = initSupabase();
+    if (!client) return 0;
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const { count, error } = await client
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .gt('last_seen_at', fiveMinutesAgo);
+    if (error) {
+        console.error('Error fetching active count:', error);
+        return 0;
+    }
+    return count || 0;
+};
+
+const updateLastSeen = async (userId) => {
+    const client = initSupabase();
+    if (!client) return false;
+    const { error } = await client
+        .from('profiles')
+        .update({ last_seen_at: new Date().toISOString() })
+        .eq('id', userId);
+    if (error) {
+        // If profile doesn't exist, ignore (handled by sync normally)
+        return false;
+    }
+    return true;
+};
+
 module.exports = {
     initSupabase,
     mapRow,
@@ -424,6 +468,9 @@ module.exports = {
     signInUser,
     getAllProfiles,
     upsertProfile,
-    getItemByField
+    getItemByField,
+    getLeaderboardData,
+    getActiveUserCount,
+    updateLastSeen
 };
 

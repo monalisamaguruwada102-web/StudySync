@@ -281,6 +281,26 @@ app.post('/api/presence/heartbeat', authenticateToken, async (req, res) => {
     }
 });
 
+// --- LIVE PRESENCE COUNT ---
+app.get('/api/presence/active-count', async (req, res) => {
+    try {
+        const count = await supabasePersistence.getActiveUserCount();
+        res.json({ count });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// --- GLOBAL LEADERBOARD ---
+app.get('/api/leaderboard', async (req, res) => {
+    try {
+        const leaderboard = await supabasePersistence.getLeaderboardData();
+        res.json(leaderboard);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // --- DOWNLOAD INSTALLER ---
 app.get('/api/download/installer', (req, res) => {
     const distPath = path.join(__dirname, '../dist_electron');

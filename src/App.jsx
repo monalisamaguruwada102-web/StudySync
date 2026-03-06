@@ -37,6 +37,7 @@ const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
 const Articles = React.lazy(() => import('./pages/Articles'));
 const ArticleDetail = React.lazy(() => import('./pages/ArticleDetail'));
 const CodeSandbox = React.lazy(() => import('./pages/CodeSandbox'));
+const Leaderboard = React.lazy(() => import('./pages/Leaderboard'));
 
 // Loading Screen Component
 const LoadingScreen = () => (
@@ -96,6 +97,7 @@ function App() {
                       <Route path="/articles" element={<Articles />} />
                       <Route path="/articles/:id" element={<ArticleDetail />} />
                       <Route path="/sandbox" element={<CodeSandbox />} />
+                      <Route path="/leaderboard" element={<Leaderboard />} />
                       {/* Analytics link points to dashboard as it contains the main charts */}
                       <Route path="/analytics" element={<Dashboard />} />
                     </Route>

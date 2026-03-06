@@ -683,9 +683,9 @@ const sendRestorationNotification = async (user) => {
                     <div style="background-color: #1e293b; padding: 25px; border-radius: 12px; border: 1px solid #10b98133; margin-bottom: 35px;">
                         <h4 style="margin: 0 0 10px 0; font-size: 14px; color: #34d399; text-transform: uppercase; letter-spacing: 0.05em;">What was fixed:</h4>
                         <ul style="margin: 0; padding-left: 20px; color: #94a3b8; font-size: 14px; line-height: 1.8;">
+                            <li>Login & Access Restrictions (Limits removed)</li>
                             <li>Production Timer Synchronization issues</li>
-                            <li>Background Report AI Engine 404 errors</li>
-                            <li>System Stability & Performance Optimizations</li>
+                            <li>Background Report AI Engine stability</li>
                         </ul>
                     </div>
 

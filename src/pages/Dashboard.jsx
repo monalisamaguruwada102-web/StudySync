@@ -14,6 +14,7 @@ import KnowledgeGraph from '../components/analytics/KnowledgeGraph';
 import JourneyMap from '../components/dashboard/JourneyMap';
 import FocusRadar from '../components/dashboard/FocusRadar';
 import LoadingReactor from '../components/ui/LoadingReactor';
+import LivePresence from '../components/dashboard/LivePresence';
 import {
     Clock,
     Layers,
@@ -78,6 +79,9 @@ const DashboardHeader = ({ user }) => {
                 <p className="text-slate-500 dark:text-slate-400 font-medium tracking-wide">
                     Here's your academic progress overview for today.
                 </p>
+                <div className="mt-2">
+                    <LivePresence />
+                </div>
             </div>
 
 

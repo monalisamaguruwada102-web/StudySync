@@ -14,6 +14,7 @@ import {
     Activity,
     Zap,
     Users,
+    Trophy,
     Database,
     Star,
     Youtube,
@@ -44,6 +45,7 @@ export const navGroups = [
             { icon: MessageCircle, label: 'Chat', path: '/chat', gradient: 'from-blue-500 to-sky-500' },
             { icon: Code2, label: 'Code Sandbox', path: '/sandbox', gradient: 'from-emerald-500 to-teal-500' },
             { icon: Zap, label: 'Deep Focus', path: '/focus', gradient: 'from-yellow-500 to-orange-500' },
+            { icon: Trophy, label: 'Leaderboard', path: '/leaderboard', gradient: 'from-orange-500 to-yellow-500' },
         ]
     },
     {
