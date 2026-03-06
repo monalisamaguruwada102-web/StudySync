@@ -1,103 +1,71 @@
 import {
     LayoutDashboard,
-    Activity,
-    BookOpen,
-    History,
     CheckSquare,
-    FileText,
-    TrendingUp,
-    GraduationCap,
-    Calculator,
-    Brain,
-    CalendarDays,
-    Settings,
-    Columns,
-    Zap,
+    Timer,
+    BarChart3,
+    BookOpen,
     Users,
-    Trophy,
-    Database,
-    Star,
-    Youtube,
-    MessageCircle,
-    Info,
-    Mail,
-    Shield,
-    Newspaper,
-    Code2,
-    ShoppingBag,
-    Swords,
+    MessageSquare,
+    Sparkles,
     Award,
-    Target,
-    HardDrive,
-    Rocket,
-    LayoutGrid,
-    Volume2
+    Music,
+    Terminal,
+    ShoppingBag,
+    Map,
+    Swords,
+    Heart,
+    Backpack,
+    Shield,
+    FileText,
+    Zap,
+    Target
 } from 'lucide-react';
 
 export const navGroups = [
     {
-        title: "Strategic Overview",
+        title: 'Overview',
         items: [
-            { icon: LayoutGrid, label: 'Dashboard', path: '/analytics', gradient: 'from-blue-500 to-indigo-600' },
-            { icon: Target, label: 'Command Center', path: '/command-center', gradient: 'from-rose-500 to-orange-500' },
-            { icon: BookOpen, label: 'Academy Commons', path: '/commons', gradient: 'from-emerald-500 to-teal-600' },
+            { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, color: 'primary' }
         ]
     },
     {
-        title: "Academy Ops",
+        title: 'Study Zone',
         items: [
-            { icon: BookOpen, label: 'Modules', path: '/modules', gradient: 'from-purple-500 to-pink-500' },
-            { icon: FileText, label: 'Notes', path: '/notes', gradient: 'from-teal-500 to-cyan-500' },
-            { icon: HardDrive, label: 'The Vault', path: '/vault', gradient: 'from-slate-700 to-slate-900' },
-            { icon: Rocket, label: 'Blueprints', path: '/blueprints', gradient: 'from-indigo-600 to-blue-700' },
-            { icon: Code2, label: 'Code Sandbox', path: '/sandbox', gradient: 'from-emerald-500 to-teal-500' },
+            { path: '/tasks', label: 'Tasks', icon: CheckSquare, color: 'emerald' },
+            { path: '/timer', label: 'Focus Timer', icon: Timer, color: 'rose' },
+            { path: '/ai-chat', label: 'AI Study Chat', icon: Sparkles, color: 'indigo' },
+            { path: '/flashcards', label: 'Flashcards', icon: BookOpen, color: 'amber' }
         ]
     },
     {
-        title: "Personal Growth",
+        title: 'Analytics',
         items: [
-            { icon: Award, label: 'Focus Guardians', path: '/guardians', gradient: 'from-primary-500 to-indigo-500' },
-            { icon: GraduationCap, label: 'Ultimate Portfolio', path: '/portfolio', gradient: 'from-purple-600 to-pink-600' },
-            { icon: Trophy, label: 'Leaderboard', path: '/leaderboard', gradient: 'from-orange-500 to-yellow-500' },
+            { path: '/stats', label: 'Performance', icon: BarChart3, color: 'blue' },
+            { path: '/goals', label: 'Goals', icon: Target, color: 'violet' }
         ]
     },
     {
-        title: "Social & Competitive",
+        title: 'Community',
         items: [
-            { icon: Users, label: 'Sync-Rooms', path: '/sync-rooms', gradient: 'from-purple-500 to-indigo-600' },
-            { icon: Swords, label: 'Knowledge Duels', path: '/duels', gradient: 'from-rose-500 to-red-600' },
-            { icon: MessageCircle, label: 'Global Chat', path: '/chat', gradient: 'from-blue-500 to-sky-500' },
-            { icon: Users, label: 'Study Groups', path: '/groups', gradient: 'from-blue-500 to-indigo-500' },
+            { path: '/communities', label: 'Study Groups', icon: Users, color: 'cyan' },
+            { path: '/messages', label: 'Messages', icon: MessageSquare, color: 'primary' }
         ]
     },
     {
-        title: "Focus Arsenal",
+        title: 'Premium Hub',
+        isPremium: true,
         items: [
-            { icon: Zap, label: 'Deep Focus', path: '/focus', gradient: 'from-yellow-500 to-orange-500' },
-            { icon: Volume2, label: 'Sonic Studio', path: '/focus', gradient: 'from-indigo-400 to-blue-500' },
-            { icon: Brain, label: 'Flashcards', path: '/flashcards', gradient: 'from-fuchsia-500 to-pink-500' },
-        ]
-    },
-    {
-        title: "Intel & Analytics",
-        items: [
-            { icon: History, label: 'Study Logs', path: '/logs', gradient: 'from-green-500 to-emerald-500' },
-            { icon: TrendingUp, label: 'Performance', path: '/deep-analytics', gradient: 'from-indigo-500 to-purple-500' },
-            { icon: Database, label: 'Knowledge Graph', path: '/knowledge-graph', gradient: 'from-cyan-500 to-blue-500' },
-        ]
-    },
-    {
-        title: "Economy",
-        items: [
-            { icon: ShoppingBag, label: 'Sync-Market', path: '/marketplace', gradient: 'from-yellow-400 to-orange-500' },
-        ]
-    },
-    {
-        title: "System",
-        items: [
-            { icon: Settings, label: 'Settings', path: '/settings', gradient: 'from-slate-500 to-gray-500' },
-            { icon: Info, label: 'About', path: '/about', gradient: 'from-blue-400 to-indigo-500' },
-            { icon: Shield, label: 'Privacy', path: '/privacy', gradient: 'from-slate-600 to-slate-800' },
+            { path: '/focus', label: 'Sonic Studio', icon: Music, color: 'rose', description: 'Ambient sound mixer' },
+            { path: '/command-center', label: 'Command Center', icon: Terminal, color: 'slate', description: 'Deadline overview' },
+            { path: '/marketplace', label: 'Sync-Market', icon: ShoppingBag, color: 'amber', description: 'In-app shop' },
+            { path: '/dashboard', label: 'Milestone Map', icon: Map, color: 'emerald', description: 'Visual progress' },
+            { path: '/sync-rooms', label: 'Sync-Rooms', icon: Users, color: 'indigo', description: 'Collaborative study' },
+            { path: '/duels', label: 'Knowledge Duels', icon: Swords, color: 'rose', description: '1v1 Focus battles' },
+            { path: '/guardians', label: 'Focus Guardian', icon: Heart, color: 'pink', description: 'Digital study pet' },
+            { path: '/commons', label: 'Academy Commons', icon: BookOpen, color: 'primary', description: 'Resource sharing' },
+            { path: '/vault', label: 'The Vault', icon: Shield, color: 'slate', description: 'Secure file storage' },
+            { path: '/blueprints', label: 'Blueprints', icon: Zap, color: 'yellow', description: 'Subject kits' },
+            { path: '/portfolio', label: 'Ultimate Portfolio', icon: FileText, color: 'indigo', description: 'PDF Performance export' }
         ]
     }
 ];

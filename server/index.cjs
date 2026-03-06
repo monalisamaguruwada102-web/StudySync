@@ -313,6 +313,53 @@ app.get('/api/marketplace/items', authenticateToken, (req, res) => {
     res.json(MARKET_ITEMS);
 });
 
+// --- NEW PREMIUM FEATURE ENDPOINTS ---
+
+const ACADEMY_RESOURCES = [
+    { id: 1, title: 'Organic Chemistry Master Notes', author: 'Dr_Study', downloads: 1240, rating: 4.9, tags: ['Chemistry', 'Pre-Med'], type: 'PDF' },
+    { id: 2, title: 'Calculus III cheat sheet', author: 'MathWhiz', downloads: 850, rating: 4.8, tags: ['Math', 'Calculus'], type: 'Image' },
+    { id: 3, title: 'World History Timeline (1900-2000)', author: 'HistoryBuff', downloads: 420, rating: 4.6, tags: ['History'], type: 'PDF' },
+    { id: 4, title: 'Python Algorithms & Data Structures', author: 'Dev_Josh', downloads: 2100, rating: 5.0, tags: ['CS', 'Python'], type: 'Code' },
+    { id: 5, title: 'Anatomy Flashcard Deck', author: 'MedStudent_01', downloads: 630, rating: 4.7, tags: ['Medicine', 'Flashcards'], type: 'Archive' },
+];
+
+const BLUEPRINTS = [
+    { id: 1, name: 'Final Month Sprint', description: 'Intensive 4-week preparation kit for major exams with daily milestones.', difficulty: 'Expert', duration: '30 Days', users: 1240, color: 'indigo', features: ['Daily Recap Logic', 'Morning Intensity Flow', 'Stress Monitor integration'] },
+    { id: 2, name: 'Foundation Builder', description: 'Establish consistent study habits over 14 days with graduated intensity.', difficulty: 'Beginner', duration: '14 Days', users: 3500, color: 'emerald', features: ['Habit Gating', 'Sonic Environment Presets', 'Achievement Tracking'] },
+    { id: 3, name: 'Deep-Research Kit', description: 'Optimized workflow for thesis writing and literature review.', difficulty: 'Intermediate', duration: '60 Days', users: 820, color: 'rose', features: ['Citation Milestones', 'Reference Mapping', 'Focus Room exclusivity'] },
+];
+
+const VAULT_FILES = [
+    { id: 1, name: 'Advanced Calculus Notes.pdf', size: '2.4 MB', type: 'PDF', folder: 'Math', date: '2024-03-01' },
+    { id: 2, name: 'Neuroscience Final Review.docx', size: '1.1 MB', type: 'DOCX', folder: 'Medical', date: '2024-03-05' },
+    { id: 3, name: 'System Architecture.png', size: '4.5 MB', type: 'Image', folder: 'CS', date: '2024-02-28' },
+    { id: 4, name: 'Python Scripts.zip', size: '12.8 MB', type: 'Archive', folder: 'CS', date: '2024-03-10' },
+    { id: 5, name: 'Constitutional Law.pdf', size: '3.2 MB', type: 'PDF', folder: 'Law', date: '2024-03-12' },
+];
+
+app.get('/api/premium/commons', authenticateToken, (req, res) => res.json(ACADEMY_RESOURCES));
+app.get('/api/premium/blueprints', authenticateToken, (req, res) => res.json(BLUEPRINTS));
+app.get('/api/premium/vault', authenticateToken, (req, res) => res.json(VAULT_FILES));
+app.get('/api/premium/guardian', authenticateToken, (req, res) => {
+    // Return mock guardian data for the user
+    res.json({
+        id: 'g1',
+        name: 'Astro',
+        type: 'Celestial Owl',
+        level: 12,
+        xp: 450,
+        nextLevelXp: 1000,
+        status: 'Focusing',
+        buffs: ['+10% XP Gain', 'Deep Focus Shield']
+    });
+});
+app.get('/api/premium/duels/history', authenticateToken, (req, res) => {
+    res.json([
+        { id: 1, opponent: 'StudyMaster_24', duration: '2h 15m', result: 'Victory', xpEarned: 450 },
+        { id: 2, opponent: 'MathWhiz', duration: '45m', result: 'Defeat', xpEarned: 50 },
+    ]);
+});
+
 app.post('/api/marketplace/purchase', authenticateToken, async (req, res) => {
     try {
         const { itemId } = req.body;

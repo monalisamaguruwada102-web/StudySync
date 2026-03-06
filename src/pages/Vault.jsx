@@ -1,20 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '../components/layout/Layout';
 import Card from '../components/ui/Card';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Folder, File, Shield, HardDrive, Download, Trash2, Search, Filter, MoreVertical, Plus, Lock, FolderPlus } from 'lucide-react';
 
 const Vault = () => {
     const { user } = useAuth();
     const [view, setView] = useState('grid');
-    const [files] = useState([
-        { id: 1, name: 'Advanced Calculus Notes.pdf', size: '2.4 MB', type: 'PDF', folder: 'Math', date: '2024-03-01' },
-        { id: 2, name: 'Neuroscience Final Review.docx', size: '1.1 MB', type: 'DOCX', folder: 'Medical', date: '2024-03-05' },
-        { id: 3, name: 'System Architecture.png', size: '4.5 MB', type: 'Image', folder: 'CS', date: '2024-02-28' },
-        { id: 4, name: 'Python Scripts.zip', size: '12.8 MB', type: 'Archive', folder: 'CS', date: '2024-03-10' },
-        { id: 5, name: 'Constitutional Law.pdf', size: '3.2 MB', type: 'PDF', folder: 'Law', date: '2024-03-12' },
-    ]);
+    const [files, setFiles] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchFiles = async () => {
+            try {
+                const res = await api.get('/api/premium/vault');
+                setFiles(res.data);
+            } catch (err) {
+                console.error('Failed to fetch vault files:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchFiles();
+    }, []);
 
     const folders = ['Math', 'Medical', 'CS', 'Law', 'Research'];
 
@@ -127,47 +137,53 @@ const Vault = () => {
                         </div>
 
                         <div className={`grid ${view === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'} gap-6`}>
-                            {files.map((file) => (
-                                <motion.div
-                                    whileHover={{ y: -5 }}
-                                    key={file.id}
-                                    className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2rem] p-6 shadow-xl relative group overflow-hidden"
-                                >
-                                    <div className="flex items-start justify-between relative z-10">
-                                        <div className="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-primary-500">
-                                            {file.type === 'PDF' ? <File size={24} /> : <HardDrive size={24} />}
+                            {loading ? (
+                                [1, 2, 3].map(i => (
+                                    <div key={i} className="h-48 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-[2rem]" />
+                                ))
+                            ) : (
+                                files.map((file) => (
+                                    <motion.div
+                                        whileHover={{ y: -5 }}
+                                        key={file.id}
+                                        className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2rem] p-6 shadow-xl relative group overflow-hidden"
+                                    >
+                                        <div className="flex items-start justify-between relative z-10">
+                                            <div className="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-primary-500">
+                                                {file.type === 'PDF' ? <File size={24} /> : <HardDrive size={24} />}
+                                            </div>
+                                            <button className="p-2 text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
+                                                <MoreVertical size={16} />
+                                            </button>
                                         </div>
-                                        <button className="p-2 text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
-                                            <MoreVertical size={16} />
-                                        </button>
-                                    </div>
 
-                                    <div className="mt-6 mb-8">
-                                        <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">{file.name}</h4>
-                                        <div className="flex items-center gap-3 mt-2">
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-primary-500 px-2 py-1 bg-primary-50 dark:bg-primary-900/10 rounded-md">
-                                                {file.folder}
-                                            </span>
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{file.size}</span>
+                                        <div className="mt-6 mb-8">
+                                            <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">{file.name}</h4>
+                                            <div className="flex items-center gap-3 mt-2">
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-primary-500 px-2 py-1 bg-primary-50 dark:bg-primary-900/10 rounded-md">
+                                                    {file.folder}
+                                                </span>
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{file.size}</span>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    <div className="flex gap-2">
-                                        <button className="flex-1 py-3 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-primary-500 rounded-xl transition-all flex items-center justify-center gap-2">
-                                            <Download size={14} />
-                                            <span className="text-[10px] font-black uppercase tracking-widest">Download</span>
-                                        </button>
-                                        <button className="p-3 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-rose-500 rounded-xl transition-all">
-                                            <Trash2 size={14} />
-                                        </button>
-                                    </div>
+                                        <div className="flex gap-2">
+                                            <button className="flex-1 py-3 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-primary-500 rounded-xl transition-all flex items-center justify-center gap-2">
+                                                <Download size={14} />
+                                                <span className="text-[10px] font-black uppercase tracking-widest">Download</span>
+                                            </button>
+                                            <button className="p-3 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-rose-500 rounded-xl transition-all">
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
 
-                                    {/* Security Indicator */}
-                                    <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <Lock size={12} className="text-emerald-500" />
-                                    </div>
-                                </motion.div>
-                            ))}
+                                        {/* Security Indicator */}
+                                        <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Lock size={12} className="text-emerald-500" />
+                                        </div>
+                                    </motion.div>
+                                ))
+                            )}
                         </div>
                     </div>
                 </div>

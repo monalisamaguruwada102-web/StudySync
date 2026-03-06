@@ -1,20 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '../components/layout/Layout';
 import Card from '../components/ui/Card';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, BookOpen, Download, ThumbsUp, Share2, Plus, Star, Tag, MessageCircle } from 'lucide-react';
+import { Search, Filter, BookOpen, Download, ThumbsUp, Share2, Plus, Star, Tag, MessageCircle, Award, Zap } from 'lucide-react';
 
 const AcademyCommons = () => {
     const { user } = useAuth();
     const [searchQuery, setSearchQuery] = useState('');
-    const [resources] = useState([
-        { id: 1, title: 'Organic Chemistry Master Notes', author: 'Dr_Study', downloads: 1240, rating: 4.9, tags: ['Chemistry', 'Pre-Med'], type: 'PDF' },
-        { id: 2, title: 'Calculus III cheat sheet', author: 'MathWhiz', downloads: 850, rating: 4.8, tags: ['Math', 'Calculus'], type: 'Image' },
-        { id: 3, title: 'World History Timeline (1900-2000)', author: 'HistoryBuff', downloads: 420, rating: 4.6, tags: ['History'], type: 'PDF' },
-        { id: 4, title: 'Python Algorithms & Data Structures', author: 'Dev_Josh', downloads: 2100, rating: 5.0, tags: ['CS', 'Python'], type: 'Code' },
-        { id: 5, title: 'Anatomy Flashcard Deck', author: 'MedStudent_01', downloads: 630, rating: 4.7, tags: ['Medicine', 'Flashcards'], type: 'Archive' },
-    ]);
+    const [resources, setResources] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchResources = async () => {
+            try {
+                const res = await api.get('/api/premium/commons');
+                setResources(res.data);
+            } catch (err) {
+                console.error('Failed to fetch resources:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchResources();
+    }, []);
 
     return (
         <Layout title="Academy Commons">
@@ -64,58 +74,69 @@ const AcademyCommons = () => {
                 </div>
 
                 {/* Resource Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {resources.map((res) => (
-                        <motion.div
-                            whileHover={{ y: -10 }}
-                            key={res.id}
-                            className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[3rem] p-8 shadow-xl flex flex-col group"
-                        >
-                            <div className="flex items-start justify-between mb-8">
-                                <div className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/10 flex items-center justify-center text-primary-500 border border-primary-100 dark:border-primary-900/30">
-                                    <Tag size={24} />
-                                </div>
-                                <div className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-full shadow-sm">
-                                    <Star size={12} className="text-yellow-400 fill-current" />
-                                    <span className="text-[10px] font-black text-slate-700 dark:text-slate-200">{res.rating}</span>
-                                </div>
-                            </div>
-
-                            <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 leading-tight group-hover:text-primary-500 transition-colors cursor-pointer">
-                                {res.title}
-                            </h3>
-                            <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-6">By {res.author}</p>
-
-                            <div className="flex flex-wrap gap-2 mb-8">
-                                {res.tags.map(t => (
-                                    <span key={t} className="px-3 py-1 bg-slate-50 dark:bg-slate-800 text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 rounded-lg">
-                                        #{t}
-                                    </span>
-                                ))}
-                            </div>
-
-                            <div className="mt-auto pt-8 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
-                                <div className="flex items-center gap-6">
-                                    <div className="flex items-center gap-2">
-                                        <Download size={14} className="text-slate-400" />
-                                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{res.downloads}</span>
+                {loading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="h-64 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-[3rem]" />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {resources.filter(res =>
+                            res.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            res.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()))
+                        ).map((res) => (
+                            <motion.div
+                                whileHover={{ y: -10 }}
+                                key={res.id}
+                                className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[3rem] p-8 shadow-xl flex flex-col group"
+                            >
+                                <div className="flex items-start justify-between mb-8">
+                                    <div className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/10 flex items-center justify-center text-primary-500 border border-primary-100 dark:border-primary-900/30">
+                                        <Tag size={24} />
                                     </div>
-                                    <button className="text-slate-400 hover:text-rose-500 transition-colors">
-                                        <ThumbsUp size={16} />
-                                    </button>
+                                    <div className="flex items-center gap-1.5 px-3 py-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-full shadow-sm">
+                                        <Star size={12} className="text-yellow-400 fill-current" />
+                                        <span className="text-[10px] font-black text-slate-700 dark:text-slate-200">{res.rating}</span>
+                                    </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    <button className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-400 hover:text-primary-500 transition-all border border-transparent hover:border-primary-100">
-                                        <Share2 size={16} />
-                                    </button>
-                                    <button className="p-3 bg-primary-500 text-white rounded-xl shadow-lg shadow-primary-500/20 hover:bg-primary-600 transition-all active:scale-95">
-                                        <Download size={16} />
-                                    </button>
+
+                                <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2 leading-tight group-hover:text-primary-500 transition-colors cursor-pointer">
+                                    {res.title}
+                                </h3>
+                                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-6">By {res.author}</p>
+
+                                <div className="flex flex-wrap gap-2 mb-8">
+                                    {res.tags.map(t => (
+                                        <span key={t} className="px-3 py-1 bg-slate-50 dark:bg-slate-800 text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 rounded-lg">
+                                            #{t}
+                                        </span>
+                                    ))}
                                 </div>
-                            </div>
-                        </motion.div>
-                    ))}
-                </div>
+
+                                <div className="mt-auto pt-8 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between">
+                                    <div className="flex items-center gap-6">
+                                        <div className="flex items-center gap-2">
+                                            <Download size={14} className="text-slate-400" />
+                                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{res.downloads}</span>
+                                        </div>
+                                        <button className="text-slate-400 hover:text-rose-500 transition-colors">
+                                            <ThumbsUp size={16} />
+                                        </button>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-400 hover:text-primary-500 transition-all border border-transparent hover:border-primary-100">
+                                            <Share2 size={16} />
+                                        </button>
+                                        <button className="p-3 bg-primary-500 text-white rounded-xl shadow-lg shadow-primary-500/20 hover:bg-primary-600 transition-all active:scale-95">
+                                            <Download size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                )}
 
                 {/* Community Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

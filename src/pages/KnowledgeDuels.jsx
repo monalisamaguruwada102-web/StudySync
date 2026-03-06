@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import Layout from '../components/layout/Layout';
 import Card from '../components/ui/Card';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Swords, Trophy, Timer, Zap, User, Search, Play, X, ShieldAlert } from 'lucide-react';
+import { Swords, Trophy, Users, Zap, Timer, Star, Shield, ArrowRight, CheckCircle2, AlertCircle, Sword, User, Search, Play, X, ShieldAlert } from 'lucide-react';
 
 const KnowledgeDuels = () => {
     const { user } = useAuth();
@@ -11,6 +12,22 @@ const KnowledgeDuels = () => {
     const [duelStarted, setDuelStarted] = useState(false);
     const [opponent, setOpponent] = useState(null);
     const [timer, setTimer] = useState(1500); // 25 min duel
+    const [history, setHistory] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchHistory = async () => {
+            try {
+                const res = await api.get('/api/premium/duels/history');
+                setHistory(res.data);
+            } catch (err) {
+                console.error('Failed to fetch duel history:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchHistory();
+    }, []);
 
     const startMatchmaking = () => {
         setMatching(true);
@@ -60,9 +77,9 @@ const KnowledgeDuels = () => {
                                 {/* Opponent Side */}
                                 <div className="text-center">
                                     <div className="w-24 h-24 rounded-3xl bg-slate-800 border-2 border-rose-400 p-4 mb-4">
-                                        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${opponent.avatarSeed}`} alt="Opponent" />
+                                        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${opponent?.avatarSeed}`} alt="Opponent" />
                                     </div>
-                                    <h3 className="font-black uppercase tracking-widest text-xs text-rose-400">{opponent.name}</h3>
+                                    <h3 className="font-black uppercase tracking-widest text-xs text-rose-400">{opponent?.name}</h3>
                                     <span className="text-2xl font-black">385 XP</span>
                                 </div>
                             </div>
@@ -211,28 +228,32 @@ const KnowledgeDuels = () => {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                    <Card title="Duel Hall of Fame" className="overflow-hidden">
-                        <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className="py-6 flex items-center justify-between group">
-                                    <div className="flex items-center gap-4">
-                                        <div className="text-lg font-black text-slate-300 dark:text-slate-700 w-6">#{i}</div>
-                                        <div className="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 p-2">
-                                            <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=rank${i}`} alt="User" />
+                    <Card title="Recent Battle History">
+                        <div className="space-y-4">
+                            {loading ? (
+                                [1, 2].map(i => (
+                                    <div key={i} className="h-20 bg-slate-50 dark:bg-slate-800 animate-pulse rounded-2xl" />
+                                ))
+                            ) : (
+                                history.map((duel) => (
+                                    <div key={duel.id} className="flex items-center justify-between p-5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 group hover:border-primary-500/30 transition-all">
+                                        <div className="flex items-center gap-4">
+                                            <div className={`p-3 rounded-xl ${duel.result === 'Victory' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+                                                {duel.result === 'Victory' ? <Trophy size={18} /> : <Sword size={18} />}
+                                            </div>
+                                            <div>
+                                                <h4 className="font-bold text-slate-900 dark:text-white text-sm">vs {duel.opponent}</h4>
+                                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{duel.duration} • {duel.result}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h4 className="font-bold text-slate-900 dark:text-white text-sm">Top_Scholar_{i}</h4>
-                                            <p className="text-[10px] font-bold text-rose-500 uppercase tracking-widest">{45 - i * 3} Wins</p>
+                                        <div className="text-right">
+                                            <span className={`text-xs font-black ${duel.result === 'Victory' ? 'text-emerald-500' : 'text-slate-400'}`}>
+                                                {duel.result === 'Victory' ? `+${duel.xpEarned} XP` : `+${duel.xpEarned} XP`}
+                                            </span>
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <span className="text-xs font-black text-slate-900 dark:text-white">Diamond League</span>
-                                        <div className="flex gap-1 mt-1 justify-end">
-                                            {[1, 2, 3].map(s => <Zap key={s} size={10} className="text-yellow-400 fill-current" />)}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     </Card>
 
