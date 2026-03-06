@@ -10,16 +10,10 @@ const app = express();
 app.use(helmet());
 app.use(express.json());
 
-// Auth Rate Limiter
-const authLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: 15, // 15 attempts per hour
-    message: { error: 'Too many auth attempts from this IP, please try again later.' },
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-app.use('/login', authLimiter);
-app.use('/register', authLimiter);
+// Auth Rate Limiter removed to prevent user login restrictions
+// app.use('/login', authLimiter);
+// app.use('/register', authLimiter);
+
 
 const PORT = process.env.PORT || 8001;
 

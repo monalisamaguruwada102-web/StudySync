@@ -9,10 +9,10 @@ require('dotenv').config();
 const app = express();
 app.use(helmet());
 
-// Message Service Rate Limiter
+// Message Service Rate Limiter (Increased to prevent user restrictions)
 const messageLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 200, // 200 requests per 15 minutes
+    max: 10000, // Increased from 200 to 10,000 requests per 15 minutes
     message: { error: 'Too many requests from this IP, please try again later.' },
     standardHeaders: true,
     legacyHeaders: false,

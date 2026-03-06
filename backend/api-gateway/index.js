@@ -23,10 +23,10 @@ app.use(helmet({
 app.use(cors());
 app.use(morgan('dev'));
 
-// Rate Limiting
+// Rate Limiting (Increased to prevent user restrictions)
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 500, // 500 requests per 15 mins for the gateway
+    max: 10000, // Increased from 500 to 10,000 requests per 15 mins
     message: { error: 'Too many requests from this IP, please try again later.' },
     standardHeaders: true,
     legacyHeaders: false,
