@@ -4,7 +4,7 @@ import Card from '../components/ui/Card';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Star, Zap, Shield, Ice, CheckCircle2, AlertCircle, Coins } from 'lucide-react';
+import { ShoppingBag, Star, Zap, Shield, Snowflake, CheckCircle2, AlertCircle, Coins } from 'lucide-react';
 
 const Marketplace = () => {
     const { user, refreshUser } = useAuth();
@@ -45,7 +45,7 @@ const Marketplace = () => {
 
     const getIcon = (iconName) => {
         switch (iconName) {
-            case 'Ice': return <Ice size={24} className="text-cyan-400" />;
+            case 'Snowflake': return <Snowflake size={24} className="text-cyan-400" />;
             case 'Shield': return <Shield size={24} className="text-amber-400" />;
             case 'Zap': return <Zap size={24} className="text-yellow-400" />;
             default: return <Star size={24} className="text-primary-400" />;

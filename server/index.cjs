@@ -303,7 +303,7 @@ app.get('/api/leaderboard', async (req, res) => {
 
 // --- MARKETPLACE & ECONOMY ---
 const MARKET_ITEMS = [
-    { id: 'streak_freeze', name: 'Streak Freeze', price: 500, type: 'consumable', icon: 'Ice', description: 'Prevents your study streak from breaking for 24h.' },
+    { id: 'streak_freeze', name: 'Streak Freeze', price: 500, type: 'consumable', icon: 'Snowflake', description: 'Prevents your study streak from breaking for 24h.' },
     { id: 'gold_frame', name: 'Legendary Gold Frame', price: 1500, type: 'cosmetic', icon: 'Shield', description: 'A glowing gold border for your profile avatar.' },
     { id: 'cyber_icon', name: 'Cyberpunk Icon Set', price: 800, type: 'cosmetic', icon: 'Cpu', description: 'Replace your default level icons with neon versions.' },
     { id: 'focus_booster', name: 'XP Booster (2h)', price: 300, type: 'consumable', icon: 'Zap', description: 'Double XP for the next 2 hours of study.' }
