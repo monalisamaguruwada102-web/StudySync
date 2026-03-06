@@ -141,12 +141,22 @@ app.use(cors({
 // --- MIDDLEWARE ---
 function authenticateToken(req, res, next) {
     // Check cookies first, then header fallback
-    const token = req.cookies.auth_token || (req.headers['authorization'] && req.headers['authorization'].split(' ')[1]);
+    const cookieToken = req.cookies?.auth_token;
+    const headerToken = req.headers['authorization'] && req.headers['authorization'].split(' ')[1];
+    const token = cookieToken || headerToken;
 
-    if (!token) return res.sendStatus(401);
+    if (!token) {
+        console.warn(`🔒 Auth Failure: No token found for ${req.method} ${req.url}`);
+        console.debug('Headers:', JSON.stringify(req.headers));
+        console.debug('Cookies present:', Object.keys(req.cookies || {}).join(', '));
+        return res.sendStatus(401);
+    }
 
     jwt.verify(token, JWT_SECRET, async (err, decoded) => {
-        if (err) return res.sendStatus(403);
+        if (err) {
+            console.error('❌ Token Verification Failed:', err.message);
+            return res.sendStatus(403);
+        }
         req.user = decoded;
 
         // Asynchronously update last_seen_at in Supabase (throttled)
@@ -435,8 +445,9 @@ app.post('/api/auth/register', async (req, res) => {
     // Set Secure HttpOnly Cookie
     res.cookie('auth_token', token, {
         httpOnly: true,
-        secure: true, // Always secure for production domains like joshwebs.co.zw
-        sameSite: 'lax',
+        secure: true, // Required for SameSite: none
+        sameSite: 'none', // Cross-domain compatibility for www/root
+        domain: '.joshwebs.co.zw', // Wildcard domain
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
@@ -556,8 +567,9 @@ app.post('/api/auth/login', async (req, res) => {
     // Set Secure HttpOnly Cookie
     res.cookie('auth_token', token, {
         httpOnly: true,
-        secure: true, // Always secure for production domains like joshwebs.co.zw
-        sameSite: 'lax',
+        secure: true, // Required for SameSite: none
+        sameSite: 'none', // Cross-domain compatibility for www/root
+        domain: '.joshwebs.co.zw', // Wildcard domain
         maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
     });
 
@@ -583,7 +595,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 app.post('/api/auth/logout', (req, res) => {
-    res.clearCookie('auth_token');
+    res.clearCookie('auth_token', { domain: '.joshwebs.co.zw' });
     res.json({ success: true });
 });
 
