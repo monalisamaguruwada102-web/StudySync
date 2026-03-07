@@ -134,13 +134,13 @@ const Sidebar = ({ isOpen, onClose }) => {
 
                         {user?.badges && user.badges.length > 0 && (
                             <div className="flex gap-1.5 mt-3 overflow-x-auto no-scrollbar">
-                                {user.badges.map((badge) => (
+                                {user.badges.map((badge, index) => (
                                     <span
-                                        key={badge}
+                                        key={typeof badge === 'object' ? badge.name : `${badge}-${index}`}
                                         className="flex-shrink-0 px-2.5 py-1 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-800/30 rounded-lg text-[9px] font-bold text-yellow-700 dark:text-yellow-400 flex items-center gap-1 shadow-sm"
                                     >
                                         <Star size={10} className="text-yellow-500" fill="currentColor" />
-                                        {badge}
+                                        {typeof badge === 'object' ? badge.name : badge}
                                     </span>
                                 ))}
                             </div>

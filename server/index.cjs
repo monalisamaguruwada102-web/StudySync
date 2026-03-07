@@ -39,7 +39,8 @@ app.use(helmet({
                 "https://www.google-analytics.com",
                 "https://www.youtube.com",
                 "https://*.youtube.com",
-                "https://s.ytimg.com"
+                "https://s.ytimg.com",
+                "https://ep2.adtrafficquality.google"
             ],
             "connect-src": [
                 "'self'",
