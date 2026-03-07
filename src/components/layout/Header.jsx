@@ -35,7 +35,8 @@ const Header = ({ title, toggleSidebar }) => {
                 <div className="flex items-center gap-4 shrink-0">
                     <button
                         onClick={toggleSidebar}
-                        className="lg:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+                        className="p-2 -ml-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg lg:hover:bg-transparent"
+                        title="Toggle Sidebar"
                     >
                         <Menu size={24} />
                     </button>
@@ -99,27 +100,43 @@ const Header = ({ title, toggleSidebar }) => {
                                     <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Elite Tools</h4>
                                 </div>
                                 <div className="grid grid-cols-1 gap-1">
-                                    {premiumFeatures.map((item) => (
-                                        <NavLink
-                                            key={item.path}
-                                            to={item.path}
-                                            className={({ isActive }) => `
-                                                flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group/item
-                                                ${isActive
-                                                    ? 'bg-primary-50 dark:bg-primary-900/20'
-                                                    : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                                                }
-                                            `}
-                                        >
-                                            <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover/item:text-primary-500 group-hover/item:bg-white dark:group-hover/item:bg-slate-900 shadow-sm transition-colors">
-                                                <item.icon size={16} />
+                                    {premiumFeatures.map((item) => {
+                                        const isLocked = user && user.email !== 'joshuamujakari15@gmail.com';
+                                        return isLocked ? (
+                                            <div key={item.path} className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 opacity-60 cursor-not-allowed bg-slate-50/50 dark:bg-slate-800/20 group relative overflow-hidden" title="Coming Soon">
+                                                <div className="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-400 shadow-sm transition-colors opacity-70">
+                                                    <item.icon size={16} />
+                                                </div>
+                                                <div className="flex flex-col min-w-0 flex-1">
+                                                    <span className="text-sm font-bold text-slate-500 dark:text-slate-500 truncate flex items-center justify-between">
+                                                        <span className="truncate">{item.label}</span>
+                                                        <span className="text-[9px] bg-slate-200 dark:bg-slate-700 text-slate-500 px-1.5 py-0.5 rounded font-black uppercase tracking-widest ml-2 shrink-0">Soon</span>
+                                                    </span>
+                                                    <span className="text-[10px] text-slate-400 truncate">{item.description}</span>
+                                                </div>
                                             </div>
-                                            <div className="flex flex-col min-w-0">
-                                                <span className="text-sm font-bold text-slate-700 dark:text-slate-200 group-hover/item:text-primary-600 dark:group-hover/item:text-primary-400 truncate">{item.label}</span>
-                                                <span className="text-[10px] text-slate-400 truncate">{item.description}</span>
-                                            </div>
-                                        </NavLink>
-                                    ))}
+                                        ) : (
+                                            <NavLink
+                                                key={item.path}
+                                                to={item.path}
+                                                className={({ isActive }) => `
+                                                    flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group/item
+                                                    ${isActive
+                                                        ? 'bg-primary-50 dark:bg-primary-900/20'
+                                                        : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                                                    }
+                                                `}
+                                            >
+                                                <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover/item:text-primary-500 group-hover/item:bg-white dark:group-hover/item:bg-slate-900 shadow-sm transition-colors">
+                                                    <item.icon size={16} />
+                                                </div>
+                                                <div className="flex flex-col min-w-0">
+                                                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200 group-hover/item:text-primary-600 dark:group-hover/item:text-primary-400 truncate">{item.label}</span>
+                                                    <span className="text-[10px] text-slate-400 truncate">{item.description}</span>
+                                                </div>
+                                            </NavLink>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>

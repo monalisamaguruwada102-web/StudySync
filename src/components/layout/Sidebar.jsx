@@ -74,7 +74,6 @@ const Sidebar = ({ isOpen, onClose }) => {
                     shadow-2xl shadow-slate-900/10 dark:shadow-black/50
                     transition-transform duration-300 ease-in-out
                     ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-                    lg:translate-x-0
                 `}
             >
                 {/* Premium gradient overlay */}
@@ -181,14 +180,14 @@ const Sidebar = ({ isOpen, onClose }) => {
                     ))}
                 </nav>
 
-                {/* Music Player & Timer */}
-                <div className="relative z-10">
-                    <MusicPlayer />
-                    <PomodoroTimer />
+                {/* Space out the bottom section so it doesn't overlap */}
+                <div className="mt-auto relative z-10 flex flex-col gap-2 p-4 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-200/50 dark:border-slate-800">
+                    <MusicPlayer compact />
+                    <PomodoroTimer compact />
                 </div>
 
                 {/* Logout Button */}
-                <div className="p-4 border-t border-slate-200/50 dark:border-slate-700/50 relative z-10">
+                <div className="p-4 border-t border-slate-200/50 dark:border-slate-700/50 relative z-10 bg-white dark:bg-slate-900">
                     <button
                         onClick={() => logout()}
                         className="flex items-center gap-3 w-full px-4 py-3.5 text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 dark:hover:from-red-900/20 dark:hover:to-pink-900/20 rounded-2xl transition-all duration-300 font-semibold group relative overflow-hidden"

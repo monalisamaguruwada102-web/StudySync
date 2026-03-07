@@ -41,7 +41,14 @@ export const logout = async () => {
 export const getCurrentUser = async () => {
     try {
         const response = await api.get('/auth/me');
-        return response.data.user;
+        const user = response.data.user;
+        if (!user) return null;
+        try {
+            const profileRes = await api.get('/user/profile');
+            return { ...user, ...profileRes.data };
+        } catch {
+            return user;
+        }
     } catch {
         return null;
     }
