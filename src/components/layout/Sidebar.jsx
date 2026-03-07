@@ -172,36 +172,87 @@ const Sidebar = ({ isOpen, onClose }) => {
                         </div>
                     ))}
 
-                    {/* Study Buddies Section */}
+                    {/* Live Activity Section */}
                     <div>
-                        <h3 className="px-2 mb-1 text-[9px] font-black text-emerald-500 uppercase tracking-[0.2em] flex items-center gap-1">
-                            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                            Study Buddies
-                        </h3>
-                        <div className="space-y-1 max-h-40 overflow-y-auto pr-1">
+                        <div className="flex items-center justify-between px-2 mb-2">
+                            <h3 className="text-[9px] font-black text-emerald-500 uppercase tracking-[0.2em] flex items-center gap-1.5">
+                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                                Live Activity
+                            </h3>
+                            <span className="text-[9px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-full">
+                                {onlineUsers.length + 1} online
+                            </span>
+                        </div>
+
+                        <div className="space-y-1 max-h-52 overflow-y-auto pr-1 custom-scrollbar">
+                            {/* Current user (you) */}
+                            {user && (
+                                <div className="flex items-center gap-2 p-2 rounded-xl bg-emerald-50/80 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/30">
+                                    <div className="relative shrink-0">
+                                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center text-[11px] font-bold text-white overflow-hidden shadow-md shadow-primary-500/20">
+                                            {user.avatar_url ? (
+                                                <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                                            ) : (
+                                                (user.name || user.email || 'Me').substring(0, 2).toUpperCase()
+                                            )}
+                                        </div>
+                                        <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full shadow-sm" />
+                                    </div>
+                                    <div className="flex flex-col min-w-0 flex-1">
+                                        <div className="flex items-center justify-between gap-1">
+                                            <span className="text-[11px] font-black text-slate-800 dark:text-slate-100 truncate">
+                                                {user.name || user.email?.split('@')[0]} <span className="text-primary-500">(You)</span>
+                                            </span>
+                                        </div>
+                                        <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-semibold truncate flex items-center gap-1">
+                                            <span>●</span> Active now
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Other online users */}
                             {onlineUsers.filter(u => u.id !== user?.id).length === 0 ? (
                                 <div className="p-3 text-[10px] text-slate-400 italic text-center bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
-                                    No buddies online yet
+                                    No one else online right now
                                 </div>
                             ) : (
-                                onlineUsers.filter(u => u.id !== user?.id).map((buddy) => (
-                                    <div key={buddy.id} className="flex items-center gap-2 p-2 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 transition-all">
-                                        <div className="relative">
-                                            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center text-[10px] font-bold text-white overflow-hidden">
-                                                {buddy.avatar_url ? (
-                                                    <img src={buddy.avatar_url} alt="" className="w-full h-full object-cover" />
-                                                ) : (
-                                                    buddy.name?.substring(0, 2).toUpperCase()
-                                                )}
+                                onlineUsers.filter(u => u.id !== user?.id).map((buddy) => {
+                                    // Map activity to a status color
+                                    const act = (buddy.activity || '').toLowerCase();
+                                    const isFocusing = act.includes('focus') || act.includes('study') || act.includes('module');
+                                    const isInChat = act.includes('chat');
+                                    const statusColor = isFocusing
+                                        ? 'bg-orange-500'
+                                        : isInChat
+                                            ? 'bg-blue-500'
+                                            : 'bg-emerald-500';
+                                    const activityLabel = buddy.activity || 'Browsing';
+
+                                    return (
+                                        <div key={buddy.id} className="flex items-center gap-2 p-2 rounded-xl bg-white/60 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-700/50 hover:bg-white dark:hover:bg-slate-800 transition-all group">
+                                            <div className="relative shrink-0">
+                                                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center text-[11px] font-bold text-white overflow-hidden">
+                                                    {buddy.avatar_url ? (
+                                                        <img src={buddy.avatar_url} alt="" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        (buddy.name || '??').substring(0, 2).toUpperCase()
+                                                    )}
+                                                </div>
+                                                <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 ${statusColor} border-2 border-white dark:border-slate-900 rounded-full shadow-sm`} />
                                             </div>
-                                            <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-emerald-500 border border-white dark:border-slate-800 rounded-full" />
+                                            <div className="flex flex-col min-w-0 flex-1">
+                                                <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate">
+                                                    {buddy.name || 'Student'}
+                                                </span>
+                                                <span className="text-[9px] text-slate-400 dark:text-slate-500 truncate flex items-center gap-1">
+                                                    <span className={`text-[8px] ${isFocusing ? 'text-orange-400' : isInChat ? 'text-blue-400' : 'text-emerald-400'}`}>●</span>
+                                                    {activityLabel}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <div className="flex flex-col min-w-0">
-                                            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate">{buddy.name}</span>
-                                            <span className="text-[9px] text-slate-400 truncate">{buddy.activity || 'Online'}</span>
-                                        </div>
-                                    </div>
-                                ))
+                                    );
+                                })
                             )}
                         </div>
                     </div>
