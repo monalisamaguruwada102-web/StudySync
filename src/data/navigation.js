@@ -1,71 +1,81 @@
 import {
     LayoutDashboard,
-    CheckSquare,
-    Timer,
-    BarChart3,
     BookOpen,
-    Users,
-    MessageSquare,
-    Sparkles,
-    Award,
-    Music,
-    Terminal,
-    ShoppingBag,
-    Map,
-    Swords,
-    Heart,
-    Backpack,
-    Shield,
+    History,
+    CheckSquare,
     FileText,
+    TrendingUp,
+    GraduationCap,
+    Calculator,
+    Brain,
+    CalendarDays,
+    Settings,
+    Columns,
+    Activity,
     Zap,
-    Target
+    Users,
+    Trophy,
+    Database,
+    Star,
+    Youtube,
+    MessageCircle,
+    Info,
+    Mail,
+    Shield,
+    Newspaper,
+    Code2
 } from 'lucide-react';
 
 export const navGroups = [
     {
-        title: 'Overview',
+        title: "Overview",
         items: [
-            { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, color: 'primary' }
+            { icon: LayoutDashboard, label: 'Dashboard', path: '/', gradient: 'from-blue-500 to-cyan-500' },
+            { icon: CalendarDays, label: 'Calendar', path: '/calendar', gradient: 'from-blue-500 to-indigo-500' },
+            { icon: Columns, label: 'Kanban', path: '/kanban', gradient: 'from-orange-500 to-red-500' },
         ]
     },
     {
-        title: 'Study Zone',
+        title: "Study Zone",
         items: [
-            { path: '/tasks', label: 'Tasks', icon: CheckSquare, color: 'emerald' },
-            { path: '/timer', label: 'Focus Timer', icon: Timer, color: 'rose' },
-            { path: '/ai-chat', label: 'AI Study Chat', icon: Sparkles, color: 'indigo' },
-            { path: '/flashcards', label: 'Flashcards', icon: BookOpen, color: 'amber' }
+            { icon: BookOpen, label: 'Modules', path: '/modules', gradient: 'from-purple-500 to-pink-500' },
+            { icon: Youtube, label: 'Tutorials', path: '/tutorials', gradient: 'from-red-500 to-pink-500' },
+            { icon: Brain, label: 'Flashcards', path: '/flashcards', gradient: 'from-fuchsia-500 to-pink-500' },
+            { icon: FileText, label: 'Notes', path: '/notes', gradient: 'from-teal-500 to-cyan-500' },
+            { icon: MessageCircle, label: 'Chat', path: '/chat', gradient: 'from-blue-500 to-sky-500' },
+            { icon: Code2, label: 'Code Sandbox', path: '/sandbox', gradient: 'from-emerald-500 to-teal-500' },
+            { icon: Zap, label: 'Deep Focus', path: '/focus', gradient: 'from-yellow-500 to-orange-500' },
+            { icon: Trophy, label: 'Leaderboard', path: '/leaderboard', gradient: 'from-orange-500 to-yellow-500' },
         ]
     },
     {
-        title: 'Analytics',
+        title: "Analytics",
         items: [
-            { path: '/stats', label: 'Performance', icon: BarChart3, color: 'blue' },
-            { path: '/goals', label: 'Goals', icon: Target, color: 'violet' }
+            { icon: History, label: 'Study Logs', path: '/logs', gradient: 'from-green-500 to-emerald-500' },
+            { icon: Calculator, label: 'Grades', path: '/grades', gradient: 'from-violet-500 to-purple-500' },
+            { icon: Activity, label: 'Deep Analytics', path: '/deep-analytics', gradient: 'from-indigo-500 to-purple-500' },
+            { icon: TrendingUp, label: 'Analytics', path: '/analytics', gradient: 'from-emerald-500 to-teal-500' },
         ]
     },
     {
-        title: 'Community',
+        title: "Visual Map",
         items: [
-            { path: '/communities', label: 'Study Groups', icon: Users, color: 'cyan' },
-            { path: '/messages', label: 'Messages', icon: MessageSquare, color: 'primary' }
+            { icon: Database, label: 'Knowledge Graph', path: '/knowledge-graph', gradient: 'from-cyan-500 to-blue-500' },
         ]
     },
     {
-        title: 'Premium Hub',
-        isPremium: true,
+        title: "Resources & Info",
         items: [
-            { path: '/focus', label: 'Sonic Studio', icon: Music, color: 'rose', description: 'Ambient sound mixer' },
-            { path: '/command-center', label: 'Command Center', icon: Terminal, color: 'slate', description: 'Deadline overview' },
-            { path: '/marketplace', label: 'Sync-Market', icon: ShoppingBag, color: 'amber', description: 'In-app shop' },
-            { path: '/dashboard', label: 'Milestone Map', icon: Map, color: 'emerald', description: 'Visual progress' },
-            { path: '/sync-rooms', label: 'Sync-Rooms', icon: Users, color: 'indigo', description: 'Collaborative study' },
-            { path: '/duels', label: 'Knowledge Duels', icon: Swords, color: 'rose', description: '1v1 Focus battles' },
-            { path: '/guardians', label: 'Focus Guardian', icon: Heart, color: 'pink', description: 'Digital study pet' },
-            { path: '/commons', label: 'Academy Commons', icon: BookOpen, color: 'primary', description: 'Resource sharing' },
-            { path: '/vault', label: 'The Vault', icon: Shield, color: 'slate', description: 'Secure file storage' },
-            { path: '/blueprints', label: 'Blueprints', icon: Zap, color: 'yellow', description: 'Subject kits' },
-            { path: '/portfolio', label: 'Ultimate Portfolio', icon: FileText, color: 'indigo', description: 'PDF Performance export' }
+            { icon: Newspaper, label: 'Articles', path: '/articles', gradient: 'from-orange-500 to-pink-500' },
+            { icon: Info, label: 'About', path: '/about', gradient: 'from-blue-400 to-indigo-500' },
+            { icon: Mail, label: 'Contact', path: '/contact', gradient: 'from-emerald-400 to-teal-500' },
+            { icon: Shield, label: 'Privacy', path: '/privacy', gradient: 'from-slate-600 to-slate-800' },
+        ]
+    },
+    {
+        title: "System",
+        items: [
+            { icon: Settings, label: 'Settings', path: '/settings', gradient: 'from-slate-500 to-gray-500' },
         ]
     }
 ];
