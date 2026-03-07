@@ -117,6 +117,7 @@ const Blueprints = () => {
                             <p className="text-xs text-slate-400 font-medium text-center">Convert your current setup into a reusable study blueprint.</p>
                         </div>
                     </div>
+                )}
             </div>
         </Layout>
     );
