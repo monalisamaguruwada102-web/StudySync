@@ -476,7 +476,7 @@
     {
       "id": "f3cc7e82-9156-4dc1-a95b-fb17171419fd",
       "email": "blesse10dchiwaye@gmail.com",
-      "password": null,
+      "password": "$2b$10$u1M51ekf6zjCGspQECBkBOGcOVm4vLxbY8GhSu8g92PPaEaciS9IS",
       "xp": 0,
       "level": 1,
       "badges": [],
@@ -585,6 +585,46 @@
       },
       "lastSeenAt": "2026-03-07T10:30:14.896+00:00",
       "streak": 1,
+      "settings": {},
+      "tutorial_completed": false
+    },
+    {
+      "id": "262e41c0-01cb-4ad0-b72e-7f0122169164",
+      "email": "Blesse10dchiwaye@gmail.com",
+      "password": null,
+      "xp": 0,
+      "level": 1,
+      "badges": [],
+      "createdAt": "2026-03-07T01:27:06.826Z",
+      "name": "Blesse10dchiwaye",
+      "supabaseId": "262e41c0-01cb-4ad0-b72e-7f0122169164",
+      "newlyRegistered": true,
+      "updatedAt": "2026-03-07T15:26:05.843+00:00",
+      "tutorialCompleted": false,
+      "darkMode": false,
+      "theme": "default",
+      "timerState": {
+        "isBreak": false,
+        "timeLeft": 3330,
+        "isRunning": true,
+        "lastUpdate": 1772292347165,
+        "selectedTask": {
+          "id": "8d84c278-5f69-4f1c-9337-1cacfc76d32a",
+          "title": "C++",
+          "status": "In Progress",
+          "userId": "262e41c0-01cb-4ad0-b72e-7f0122169164",
+          "dueDate": "2026-03-07T00:00:00+00:00",
+          "moduleId": "dcaefdff-dbfd-4015-8678-cd5465f22da7",
+          "priority": "Medium",
+          "subtasks": [],
+          "createdAt": "2026-03-07T15:21:39.087+00:00",
+          "updatedAt": "2026-03-07T15:21:45.226+00:00",
+          "description": ""
+        },
+        "sessionsCompleted": 0
+      },
+      "lastSeenAt": "2026-03-07T15:25:35.862+00:00",
+      "streak": 0,
       "settings": {},
       "tutorial_completed": false
     }
@@ -803,6 +843,17 @@
       "userId": "c10d10a6-415f-4ac5-b82c-70a42349e5cb",
       "totalHoursStudied": 0,
       "supabaseId": "27c0b9b7-060b-4f1b-893a-d8e1eb08087d"
+    },
+    {
+      "id": "dcaefdff-dbfd-4015-8678-cd5465f22da7",
+      "name": "C++",
+      "description": "HARDEST",
+      "targetHours": 900,
+      "createdAt": "2026-03-07T01:27:07.197Z",
+      "updatedAt": "2026-03-07T15:21:16.448+00:00",
+      "userId": "262e41c0-01cb-4ad0-b72e-7f0122169164",
+      "totalHoursStudied": 0,
+      "supabaseId": "dcaefdff-dbfd-4015-8678-cd5465f22da7"
     }
   ],
   "studyLogs": [
@@ -2165,6 +2216,34 @@
       "subtasks": [],
       "updatedAt": "2026-03-07T10:29:01.693+00:00",
       "supabaseId": "9579a621-7630-4a7e-a46c-98c0e1426317"
+    },
+    {
+      "id": "8d84c278-5f69-4f1c-9337-1cacfc76d32a",
+      "moduleId": "dcaefdff-dbfd-4015-8678-cd5465f22da7",
+      "title": "C++",
+      "priority": "Medium",
+      "status": "In Progress",
+      "dueDate": "2026-03-07T00:00:00+00:00",
+      "createdAt": "2026-03-07T01:27:07.278Z",
+      "userId": "262e41c0-01cb-4ad0-b72e-7f0122169164",
+      "description": "",
+      "subtasks": [],
+      "updatedAt": "2026-03-07T15:21:45.226+00:00",
+      "supabaseId": "8d84c278-5f69-4f1c-9337-1cacfc76d32a"
+    },
+    {
+      "id": "a75f074b-4b90-4519-ada7-ac3b5fcae6dc",
+      "moduleId": "01ff51d7-be9d-4fdb-8218-6b9aacb5257f",
+      "title": "Test discussion",
+      "priority": "Medium",
+      "status": "In Progress",
+      "dueDate": "2026-03-07T00:00:00+00:00",
+      "createdAt": "2026-03-07T01:27:07.278Z",
+      "userId": "3815cad6-958d-41a7-97f3-03730096af24",
+      "description": "",
+      "subtasks": [],
+      "updatedAt": "2026-03-07T15:22:16.478+00:00",
+      "supabaseId": "a75f074b-4b90-4519-ada7-ac3b5fcae6dc"
     }
   ],
   "notes": [
