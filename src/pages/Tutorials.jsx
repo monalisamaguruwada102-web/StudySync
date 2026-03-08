@@ -114,7 +114,7 @@ const Tutorials = () => {
             // Call API to ensure it's public (or toggle)
             const response = await api.post(`/public/tutorials/${tutorial.id}/toggle`);
             if (response.data.isPublic) {
-                const url = `${window.location.origin}/share/tutorials/${tutorial.id}`;
+                const url = `${window.location.origin}/study/share/tutorials/${tutorial.id}`;
                 const shareText = `Check out this tutorial on StudySync: ${tutorial.title}\n${url}`;
                 await navigator.clipboard.writeText(shareText);
                 showToast('Link copied & made public!', 'success');

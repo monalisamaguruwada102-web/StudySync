@@ -263,11 +263,23 @@ const Notes = () => {
         }
     };
 
-    const handleCopyExternalLink = (note) => {
-        const url = `${window.location.origin}/study/share/notes/${note.id}`;
-        const shareText = `Check out this note on StudySync: ${note.title}\n${url}`;
-        navigator.clipboard.writeText(shareText);
-        showToast('External link copied to clipboard!', 'success');
+    const handleCopyExternalLink = async (note) => {
+        try {
+            // Ensure the note is public before copying the link
+            const response = await api.post(`/public/notes/${note.id}/toggle`);
+            if (response.data.isPublic) {
+                const url = `${window.location.origin}/study/share/notes/${note.id}`;
+                const shareText = `Check out this note on StudySync: ${note.title}\n${url}`;
+                await navigator.clipboard.writeText(shareText);
+                showToast('Link copied & made public!', 'success');
+            } else {
+                showToast('Note is now private.', 'info');
+            }
+            await refresh(); // Refresh to ensure UI consistency
+        } catch (error) {
+            console.error('Failed to share note:', error);
+            showToast('Failed to generate share link', 'error');
+        }
     };
 
     // Deep Link & Isolation Effect

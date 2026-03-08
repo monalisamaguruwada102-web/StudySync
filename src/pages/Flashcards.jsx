@@ -154,7 +154,7 @@ const Flashcards = () => {
         try {
             const response = await api.post(`/public/flashcardDecks/${deck.id}/toggle`);
             if (response.data.isPublic) {
-                const url = `${window.location.origin}/share/flashcards/${deck.id}`;
+                const url = `${window.location.origin}/study/share/flashcards/${deck.id}`;
                 const shareText = `Check out this flashcard deck on StudySync: ${deck.name}\n${url}`;
                 await navigator.clipboard.writeText(shareText);
                 showToast('Link copied & made public!', 'success');
