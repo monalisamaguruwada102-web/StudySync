@@ -34,6 +34,7 @@ import { supabase } from '../services/supabase';
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import ShareToChatModal from '../components/ui/ShareToChatModal';
 import { useNotification } from '../context/NotificationContext';
+import api from '../services/api';
 
 const Notes = () => {
     const navigate = useNavigate();
@@ -142,7 +143,6 @@ const Notes = () => {
             const formData = new FormData();
             formData.append('file', blob, fileName);
 
-            const { default: api } = await import('../services/api');
             const response = await api.post('/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
@@ -301,18 +301,16 @@ const Notes = () => {
                 // Fetch shared note directly from backend
                 setSharedNoteLoading(true);
                 setSharedNoteError(null);
-                import('../services/api').then(api => {
-                    api.default.get(`/notes/shared/${noteId}`)
-                        .then(res => {
-                            setSharedNote(res.data);
-                            document.title = `StudySync - ${res.data.title}`;
-                        })
-                        .catch(err => {
-                            console.error('Failed to fetch shared note:', err);
-                            setSharedNoteError('Shared note not found or you do not have permission to view it.');
-                        })
-                        .finally(() => setSharedNoteLoading(false));
-                });
+                api.get(`/notes/shared/${noteId}`)
+                    .then(res => {
+                        setSharedNote(res.data);
+                        document.title = `StudySync - ${res.data.title}`;
+                    })
+                    .catch(err => {
+                        console.error('Failed to fetch shared note:', err);
+                        setSharedNoteError('Shared note not found or you do not have permission to view it.');
+                    })
+                    .finally(() => setSharedNoteLoading(false));
             }
         } else {
             setSharedNote(null);
