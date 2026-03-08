@@ -20,21 +20,23 @@ const PublicViewer = () => {
     useEffect(() => {
         const fetchContent = async () => {
             try {
-                // Determine collection from path if not in params (e.g. /share/tutorials/:id)
+                // Determine collection from path if not in params
                 let targetCollection = collection;
                 let targetId = id;
 
-                // If using specific routes like /share/tutorials/:id
-                if (!collection) {
+                // If using old specific routes or if split is needed
+                if (!targetCollection) {
                     const pathParts = window.location.pathname.split('/');
                     if (pathParts.includes('tutorials')) targetCollection = 'tutorials';
-                    else if (pathParts.includes('flashcards')) targetCollection = 'flashcardDecks';
+                    else if (pathParts.includes('flashcards')) targetCollection = 'flashcards';
                     else if (pathParts.includes('notes')) targetCollection = 'notes';
-                    targetId = pathParts[pathParts.length - 1];
+                    targetId = id || pathParts[pathParts.length - 1];
                 }
 
-                // If flashcards route, map to flashcardDecks for API
-                if (targetCollection === 'flashcards') targetCollection = 'flashcardDecks';
+                // Standardize collection name for backend
+                if (targetCollection === 'flashcards' || targetCollection === 'flashcard') {
+                    targetCollection = 'flashcardDecks';
+                }
 
                 const response = await api.get(`/public/${targetCollection}/${targetId}`);
                 const data = response.data;
