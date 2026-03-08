@@ -152,7 +152,7 @@ const Flashcards = () => {
 
     const handleCopyExternalLink = async (deck) => {
         try {
-            const response = await api.post(`/public/flashcardDecks/${deck.id}/toggle`);
+            const response = await api.post(`/public/flashcardDecks/${deck.id}/toggle`, { isPublic: true });
             if (response.data.isPublic) {
                 const url = `${window.location.origin}/study/share/flashcards/${deck.id}`;
                 const shareText = `Check out this flashcard deck on StudySync: ${deck.name}\n${url}`;

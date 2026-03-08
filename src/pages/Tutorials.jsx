@@ -112,7 +112,7 @@ const Tutorials = () => {
             // Let's stick to the plan: "Share Externally" button toggles public visibility.
 
             // Call API to ensure it's public (or toggle)
-            const response = await api.post(`/public/tutorials/${tutorial.id}/toggle`);
+            const response = await api.post(`/public/tutorials/${tutorial.id}/toggle`, { isPublic: true });
             if (response.data.isPublic) {
                 const url = `${window.location.origin}/study/share/tutorials/${tutorial.id}`;
                 const shareText = `Check out this tutorial on StudySync: ${tutorial.title}\n${url}`;

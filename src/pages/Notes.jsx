@@ -266,7 +266,7 @@ const Notes = () => {
     const handleCopyExternalLink = async (note) => {
         try {
             // Ensure the note is public before copying the link
-            const response = await api.post(`/public/notes/${note.id}/toggle`);
+            const response = await api.post(`/public/notes/${note.id}/toggle`, { isPublic: true });
             if (response.data.isPublic) {
                 const url = `${window.location.origin}/study/share/notes/${note.id}`;
                 const shareText = `Check out this note on StudySync: ${note.title}\n${url}`;
