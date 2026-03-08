@@ -1865,8 +1865,8 @@ app.get('/api/public/:collection/:id', async (req, res) => {
     }
 
     try {
-        // 1. Try to find locally first (fastest)
-        let item = db.getById(collection, id);
+        // 1. Try to find locally first (fastest) - Try both numeric and string IDs
+        let item = db.getById(collection, id) || db.getById(collection, parseInt(id));
 
         // 2. If not found locally, try Supabase (for persistent links)
         if (!item) {
@@ -1928,13 +1928,20 @@ app.get('/api/public/:collection/:id', async (req, res) => {
 
 app.post('/api/public/:collection/:id/toggle', authenticateToken, async (req, res) => {
     const { collection, id } = req.params;
+    const { isPublic } = req.body;
+
     // simple endpoint to toggle public state
-    const item = db.getById(collection, id);
+    let item = db.getById(collection, id);
+    if (!item) {
+        // Try numeric ID fallback
+        item = db.getById(collection, parseInt(id));
+    }
+
     if (!item) return res.sendStatus(404);
 
-    // specific logic to update isPublic
-    const newState = !item.isPublic;
-    db.update(collection, id, { isPublic: newState });
+    // If isPublic is provided in body, use it, otherwise toggle
+    const newState = (isPublic !== undefined) ? !!isPublic : !item.isPublic;
+    db.update(collection, item.id, { isPublic: newState });
 
     // Sync to supabase
     const supabaseTable = tableMap[collection];
